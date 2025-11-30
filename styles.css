@@ -2048,11 +2048,14 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   display: flex;
   flex-direction: column;
   gap: 20px;
+  height: 100%;
+  overflow: hidden;
 }
 
 .exams-header {
   display: flex;
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .btn-add-exam {
@@ -2078,6 +2081,7 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   border-radius: 10px;
   border: 2px solid rgba(16, 185, 129, 0.2);
   animation: slideDown 0.3s ease;
+  flex-shrink: 0;
 }
 
 .add-exam-form h3 {
@@ -2128,8 +2132,10 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-height: 400px;
+  flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
 }
 
 .exam-item {
