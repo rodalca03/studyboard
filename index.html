@@ -28,7 +28,6 @@
   <button id="dark-mode-toggle" class="dark-mode-toggle" aria-label="Alternar modo oscuro" title="Modo oscuro">🌙</button>
   <button id="show-archived-toggle" class="show-archived-toggle" aria-label="Mostrar archivados" title="Mostrar archivados">📦</button>
   <button id="firebase-btn" class="firebase-toggle" aria-label="Sincronización en la nube" title="Sincronizar con la nube">☁️</button>
-  <button id="widget-btn" class="widget-toggle" aria-label="Abrir widget" title="Widget rápido">📊</button>
   <div id="sync-indicator" class="sync-indicator" style="display:none;">
     <span class="sync-spinner"></span>
     <span class="sync-text">Sincronizando...</span>
@@ -317,16 +316,6 @@ showSubjectsScreen = function(semester) {
 if (menuScreen.classList.contains('active')) {
   history.replaceState({ screen: 'menu' }, '', '#menu');
 }
-
-/* -------------------------
-   Botón de Widget
-   ------------------------- */
-const widgetBtn = document.getElementById('widget-btn');
-widgetBtn.addEventListener('click', () => {
-  // Abrir widget en nueva pestaña
-  const widgetUrl = window.location.origin + '/studyboard/widget.html';
-  window.open(widgetUrl, '_blank', 'width=400,height=600');
-});
 
 // Búsqueda global en menú principal
 const globalSearchInput = document.getElementById('global-search-input');

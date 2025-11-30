@@ -1098,21 +1098,15 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   left: 12px;
 }
 
-.widget-toggle {
-  left: 60px;
-}
-
 .dark-mode-toggle:hover,
 .show-archived-toggle:hover,
-.firebase-toggle:hover,
-.widget-toggle:hover {
+.firebase-toggle:hover {
   transform: scale(1.05);
 }
 
 .dark-mode .dark-mode-toggle,
 .dark-mode .show-archived-toggle,
-.dark-mode .firebase-toggle,
-.dark-mode .widget-toggle {
+.dark-mode .firebase-toggle {
   background: var(--card-bg);
 }
 
