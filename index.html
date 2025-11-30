@@ -48,8 +48,8 @@
   <header>
     <h1>📚 Mis Cursos</h1>
     <p class="hint">Selecciona un cuatrimestre para gestionar tus asignaturas.</p>
-    <div id="upcoming-exams-alert" class="upcoming-exams-alert" style="display:none;"></div>
   </header>
+  <div id="upcoming-exams-alert" class="upcoming-exams-alert" style="display:none;"></div>
   <div class="search-container">
     <input type="text" id="global-search-input" placeholder="🔍 Buscar en todos los cuatrimestres..." aria-label="Buscar cuatrimestre o asignatura">
   </div>
@@ -353,6 +353,12 @@ backBtn.addEventListener('click', showMenuScreen);
 
 // Soporte para gestos nativos de Android/iOS (botón atrás del navegador)
 window.addEventListener('popstate', (event) => {
+  // Si el modal de exámenes está abierto, cerrarlo
+  if (examsModal && examsModal.classList.contains('show')) {
+    closeExamsModal();
+    return;
+  }
+  
   if (subjectsScreen.classList.contains('active')) {
     event.preventDefault();
     showMenuScreen();
@@ -2429,6 +2435,8 @@ examsBtn.addEventListener('click', () => {
   renderExams();
   examsModal.style.display = 'flex';
   setTimeout(() => examsModal.classList.add('show'), 10);
+  // Agregar al historial para manejo del botón atrás
+  history.pushState({ modal: 'exams' }, '', '#exams');
 });
 
 function closeExamsModal() {
@@ -2437,6 +2445,10 @@ function closeExamsModal() {
     examsModal.style.display = 'none';
     closeAddExamForm();
   }, 300);
+  // Limpiar historial si estamos en el modal
+  if (window.location.hash === '#exams') {
+    history.back();
+  }
 }
 
 // Cerrar modal al hacer clic fuera
