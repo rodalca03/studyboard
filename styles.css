@@ -91,6 +91,7 @@ h1 { margin: 6px 0 4px; font-weight: 500; font-size: 20px; color: var(--text); }
   max-width: 600px;
   width: calc(100% - 24px);
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .exam-alerts-header {
@@ -105,14 +106,9 @@ h1 { margin: 6px 0 4px; font-weight: 500; font-size: 20px; color: var(--text); }
 
 .exam-alerts-list {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 8px;
-}
-
-@media (min-width: 500px) {
-  .exam-alerts-list {
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  }
+  width: 100%;
 }
 
 .exam-alert-item {
@@ -124,8 +120,11 @@ h1 { margin: 6px 0 4px; font-weight: 500; font-size: 20px; color: var(--text); }
   border-radius: 8px;
   border-left: 3px solid #f59e0b;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  min-height: 70px;
-  justify-content: center;
+  min-height: 75px;
+  max-height: 85px;
+  justify-content: space-between;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .exam-alert-item:hover {
