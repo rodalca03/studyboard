@@ -1891,3 +1891,215 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   }
 }
 
+/* -------------------------
+   MODAL EXÁMENES
+   ------------------------- */
+.exams-modal {
+  max-width: 600px;
+  max-height: 85vh;
+}
+
+.exams-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.exams-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-add-exam {
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-add-exam:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.add-exam-form {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 10px;
+  border: 2px solid rgba(16, 185, 129, 0.2);
+  animation: slideDown 0.3s ease;
+}
+
+.add-exam-form h3 {
+  margin: 0 0 16px 0;
+  color: var(--text);
+  font-size: 16px;
+}
+
+.exam-form-group {
+  margin-bottom: 16px;
+}
+
+.exam-form-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.exam-select,
+.exam-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.exam-select:focus,
+.exam-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.exam-form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.exams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.exam-item {
+  background: var(--card-bg);
+  padding: 16px;
+  border-radius: 10px;
+  border-left: 4px solid #10b981;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: fadeInStagger 0.3s ease forwards;
+}
+
+.exam-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.exam-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.exam-subject-name {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.exam-delete-btn {
+  background: rgba(239, 68, 68, 0.1);
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #ef4444;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.exam-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.exam-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.exam-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.exam-countdown {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+  border-radius: 6px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 13px;
+  color: #10b981;
+}
+
+.exam-countdown.urgent {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+  color: #ef4444;
+}
+
+.exam-countdown.soon {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+  color: #f59e0b;
+}
+
+.no-exams-message {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+}
+
+.no-exams-message p {
+  margin: 8px 0;
+}
+
+.no-exams-message p:first-child {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.dark-mode .exam-item {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .exam-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .exam-details {
+  color: #94a3b8;
+}
+
+@media (max-width: 640px) {
+  .exams-modal {
+    max-width: 100%;
+    max-height: 95vh;
+  }
+  
+  .exams-list {
+    max-height: 300px;
+  }
+}

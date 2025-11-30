@@ -80,6 +80,9 @@
       <button id="export-pdf-btn" class="fab-option" data-tooltip="Exportar PDF" aria-label="Exportar informe PDF">
         <span>📄</span>
       </button>
+      <button id="exams-btn" class="fab-option" data-tooltip="Exámenes" aria-label="Gestionar exámenes">
+        <span>📅</span>
+      </button>
     </div>
   </div>
   
@@ -184,6 +187,58 @@
         <div id="export-progress" class="export-progress" style="display: none;">
           <div class="progress-spinner"></div>
           <span>Generando PDF...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Exámenes -->
+<div id="exams-modal" class="modal-overlay" style="display:none;">
+  <div class="modal exams-modal">
+    <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+      <h2 class="modal-title">📅 Exámenes Futuros</h2>
+      <button class="close-modal-btn" onclick="closeExamsModal()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="exams-content">
+        <div class="exams-header">
+          <button class="btn-add-exam" onclick="openAddExamForm()">➕ Añadir Examen</button>
+        </div>
+        
+        <div id="add-exam-form" class="add-exam-form" style="display:none;">
+          <h3>Nuevo Examen</h3>
+          <div class="exam-form-group">
+            <label for="exam-subject-select">Asignatura:</label>
+            <select id="exam-subject-select" class="exam-select">
+              <option value="">Selecciona una asignatura...</option>
+            </select>
+          </div>
+          <div class="exam-form-group">
+            <label for="exam-date-input">Fecha del examen:</label>
+            <input type="date" id="exam-date-input" class="exam-input" />
+          </div>
+          <div class="exam-form-group">
+            <label for="exam-time-input">Hora (opcional):</label>
+            <input type="time" id="exam-time-input" class="exam-input" />
+          </div>
+          <div class="exam-form-group">
+            <label for="exam-location-input">Ubicación (opcional):</label>
+            <input type="text" id="exam-location-input" class="exam-input" placeholder="Ej: Aula 203" />
+          </div>
+          <div class="exam-form-actions">
+            <button class="btn btn-ghost" onclick="closeAddExamForm()">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveExam()">Guardar</button>
+          </div>
+        </div>
+        
+        <div id="exams-list" class="exams-list">
+          <!-- Los exámenes se renderizarán aquí -->
+        </div>
+        
+        <div id="no-exams-message" class="no-exams-message" style="display:none;">
+          <p>📚 No hay exámenes programados</p>
+          <p class="hint">Añade tu primer examen para llevar un seguimiento de tus fechas importantes.</p>
         </div>
       </div>
     </div>
@@ -2345,6 +2400,194 @@ function closeExportModal() {
 exportModal.addEventListener('click', (e) => {
   if (e.target === exportModal) closeExportModal();
 });
+
+/* -------------------------
+   MODAL EXÁMENES
+   ------------------------- */
+const examsBtn = document.getElementById('exams-btn');
+const examsModal = document.getElementById('exams-modal');
+const addExamForm = document.getElementById('add-exam-form');
+const examsList = document.getElementById('exams-list');
+const noExamsMessage = document.getElementById('no-exams-message');
+
+// Abrir modal de exámenes
+examsBtn.addEventListener('click', () => {
+  populateSubjectSelect();
+  renderExams();
+  examsModal.style.display = 'flex';
+  setTimeout(() => examsModal.classList.add('show'), 10);
+});
+
+function closeExamsModal() {
+  examsModal.classList.remove('show');
+  setTimeout(() => {
+    examsModal.style.display = 'none';
+    closeAddExamForm();
+  }, 300);
+}
+
+// Cerrar modal al hacer clic fuera
+examsModal.addEventListener('click', (e) => {
+  if (e.target === examsModal) closeExamsModal();
+});
+
+function openAddExamForm() {
+  addExamForm.style.display = 'block';
+  populateSubjectSelect();
+  // Establecer fecha mínima a hoy
+  const dateInput = document.getElementById('exam-date-input');
+  const today = new Date().toISOString().split('T')[0];
+  dateInput.min = today;
+}
+
+function closeAddExamForm() {
+  addExamForm.style.display = 'none';
+  // Limpiar formulario
+  document.getElementById('exam-subject-select').value = '';
+  document.getElementById('exam-date-input').value = '';
+  document.getElementById('exam-time-input').value = '';
+  document.getElementById('exam-location-input').value = '';
+}
+
+function populateSubjectSelect() {
+  const select = document.getElementById('exam-subject-select');
+  select.innerHTML = '<option value="">Selecciona una asignatura...</option>';
+  
+  if (!currentSemester || !currentSemester.asignaturas) return;
+  
+  currentSemester.asignaturas.forEach((asig, index) => {
+    const option = document.createElement('option');
+    option.value = index;
+    option.textContent = asig.nombre;
+    select.appendChild(option);
+  });
+}
+
+function saveExam() {
+  const subjectIndex = document.getElementById('exam-subject-select').value;
+  const date = document.getElementById('exam-date-input').value;
+  const time = document.getElementById('exam-time-input').value;
+  const location = document.getElementById('exam-location-input').value;
+  
+  if (!subjectIndex || !date) {
+    alert('Por favor, selecciona una asignatura y una fecha');
+    return;
+  }
+  
+  const subjectName = currentSemester.asignaturas[subjectIndex].nombre;
+  
+  const exam = {
+    id: Date.now(),
+    semesterId: currentSemester.id,
+    subjectIndex: parseInt(subjectIndex),
+    subjectName: subjectName,
+    date: date,
+    time: time || '',
+    location: location || ''
+  };
+  
+  // Guardar en localStorage
+  let exams = JSON.parse(localStorage.getItem('exams') || '[]');
+  exams.push(exam);
+  localStorage.setItem('exams', JSON.stringify(exams));
+  
+  closeAddExamForm();
+  renderExams();
+  showSyncIndicator('Examen añadido correctamente', 'success');
+}
+
+function renderExams() {
+  if (!currentSemester) return;
+  
+  let exams = JSON.parse(localStorage.getItem('exams') || '[]');
+  // Filtrar exámenes del cuatrimestre actual
+  exams = exams.filter(e => e.semesterId === currentSemester.id);
+  
+  // Ordenar por fecha
+  exams.sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  if (exams.length === 0) {
+    examsList.innerHTML = '';
+    noExamsMessage.style.display = 'block';
+    return;
+  }
+  
+  noExamsMessage.style.display = 'none';
+  examsList.innerHTML = '';
+  
+  exams.forEach(exam => {
+    const examItem = document.createElement('div');
+    examItem.className = 'exam-item';
+    
+    const examDate = new Date(exam.date + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const daysUntil = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
+    
+    let countdownClass = '';
+    let countdownText = '';
+    
+    if (daysUntil < 0) {
+      countdownText = 'Examen pasado';
+      countdownClass = '';
+    } else if (daysUntil === 0) {
+      countdownText = '¡HOY!';
+      countdownClass = 'urgent';
+    } else if (daysUntil === 1) {
+      countdownText = '¡MAÑANA!';
+      countdownClass = 'urgent';
+    } else if (daysUntil <= 7) {
+      countdownText = `En ${daysUntil} días`;
+      countdownClass = 'soon';
+    } else {
+      countdownText = `En ${daysUntil} días`;
+    }
+    
+    const formattedDate = new Date(exam.date).toLocaleDateString('es-ES', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+    
+    examItem.innerHTML = `
+      <div class="exam-item-header">
+        <div class="exam-subject-name">${exam.subjectName}</div>
+        <button class="exam-delete-btn" onclick="deleteExam(${exam.id})">Eliminar</button>
+      </div>
+      <div class="exam-details">
+        <div class="exam-detail-item">
+          <span>📅</span>
+          <span>${formattedDate}</span>
+        </div>
+        ${exam.time ? `
+        <div class="exam-detail-item">
+          <span>🕐</span>
+          <span>${exam.time}</span>
+        </div>` : ''}
+        ${exam.location ? `
+        <div class="exam-detail-item">
+          <span>📍</span>
+          <span>${exam.location}</span>
+        </div>` : ''}
+      </div>
+      ${daysUntil >= 0 ? `<div class="exam-countdown ${countdownClass}">${countdownText}</div>` : ''}
+    `;
+    
+    examsList.appendChild(examItem);
+  });
+}
+
+function deleteExam(examId) {
+  if (!confirm('¿Eliminar este examen?')) return;
+  
+  let exams = JSON.parse(localStorage.getItem('exams') || '[]');
+  exams = exams.filter(e => e.id !== examId);
+  localStorage.setItem('exams', JSON.stringify(exams));
+  
+  renderExams();
+  showSyncIndicator('Examen eliminado', 'success');
+}
 
 // Generar PDF
 async function generatePDF() {
