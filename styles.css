@@ -93,6 +93,10 @@ h1 { margin: 6px 0 4px; font-weight: 500; font-size: 20px; color: var(--text); }
   margin-left: auto;
   margin-right: auto;
   flex-shrink: 0;
+  max-height: calc(100vh - 180px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .exam-alerts-header {
@@ -103,14 +107,34 @@ h1 { margin: 6px 0 4px; font-weight: 500; font-size: 20px; color: var(--text); }
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .exam-alerts-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: none;
-  overflow: visible;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+
+.exam-alerts-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.exam-alerts-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.exam-alerts-list::-webkit-scrollbar-thumb {
+  background: rgba(239, 68, 68, 0.3);
+  border-radius: 3px;
+}
+
+.exam-alerts-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(239, 68, 68, 0.5);
 }
 
 .exam-alert-item {
@@ -191,6 +215,18 @@ h1 { margin: 6px 0 4px; font-weight: 500; font-size: 20px; color: var(--text); }
 .dark-mode .upcoming-exams-alert {
   background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1));
   border-left-color: #fca5a5;
+}
+
+.dark-mode .exam-alerts-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .exam-alerts-list::-webkit-scrollbar-thumb {
+  background: rgba(252, 165, 165, 0.3);
+}
+
+.dark-mode .exam-alerts-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(252, 165, 165, 0.5);
 }
 
 .dark-mode .exam-alerts-header {
