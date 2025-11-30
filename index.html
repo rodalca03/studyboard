@@ -234,6 +234,29 @@ function showSubjectsScreen(semester) {
 
 backBtn.addEventListener('click', showMenuScreen);
 
+// Soporte para gestos nativos de Android/iOS (botón atrás del navegador)
+window.addEventListener('popstate', (event) => {
+  if (subjectsScreen.classList.contains('active')) {
+    event.preventDefault();
+    showMenuScreen();
+  }
+});
+
+// Agregar entrada al historial cuando se navega a asignaturas
+const originalShowSubjectsScreen = showSubjectsScreen;
+showSubjectsScreen = function(semester) {
+  originalShowSubjectsScreen(semester);
+  // Añadir estado al historial para permitir volver con gesto
+  if (!window.location.hash || window.location.hash !== '#subjects') {
+    history.pushState({ screen: 'subjects', semester: semester.id }, '', '#subjects');
+  }
+};
+
+// Inicializar: si está en menu, limpiar hash
+if (menuScreen.classList.contains('active')) {
+  history.replaceState({ screen: 'menu' }, '', '#menu');
+}
+
 // Búsqueda global en menú principal
 const globalSearchInput = document.getElementById('global-search-input');
 globalSearchInput.addEventListener('input', (e) => {
