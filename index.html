@@ -1912,8 +1912,15 @@ async function loadFromFirebase() {
       if (data.cuatrimestres) {
         localStorage.setItem('cuatrimestres', JSON.stringify(data.cuatrimestres));
         renderSemesters();
-        showSyncIndicator('Datos cargados ✓', 'success');
       }
+      if (data.exams) {
+        localStorage.setItem('exams', JSON.stringify(data.exams));
+        // Actualizar avisos si estamos en el menú
+        if (menuScreen.classList.contains('active')) {
+          checkUpcomingExams();
+        }
+      }
+      showSyncIndicator('Datos cargados ✓', 'success');
     } else {
       showSyncIndicator('No hay datos en la nube', 'success');
     }
@@ -1935,6 +1942,7 @@ async function saveToFirebase() {
   try {
     const data = {
       cuatrimestres: obtenerCuatrimestres(),
+      exams: JSON.parse(localStorage.getItem('exams') || '[]'),
       lastSync: firebase.firestore.FieldValue.serverTimestamp(),
       version: '1.0'
     };
@@ -2498,6 +2506,7 @@ function saveExam() {
   
   closeAddExamForm();
   renderExams();
+  scheduleSyncToFirebase(); // Sincronizar con la nube
   showSyncIndicator('Examen añadido correctamente', 'success');
   // Actualizar avisos en menú principal
   if (menuScreen.classList.contains('active')) {
@@ -2595,6 +2604,7 @@ function deleteExam(examId) {
   localStorage.setItem('exams', JSON.stringify(exams));
   
   renderExams();
+  scheduleSyncToFirebase(); // Sincronizar con la nube
   showSyncIndicator('Examen eliminado', 'success');
   // Actualizar avisos en menú principal
   if (menuScreen.classList.contains('active')) {
