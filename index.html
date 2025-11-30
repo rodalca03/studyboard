@@ -28,6 +28,7 @@
   <button id="dark-mode-toggle" class="dark-mode-toggle" aria-label="Alternar modo oscuro" title="Modo oscuro">🌙</button>
   <button id="show-archived-toggle" class="show-archived-toggle" aria-label="Mostrar archivados" title="Mostrar archivados">📦</button>
   <button id="firebase-btn" class="firebase-toggle" aria-label="Sincronización en la nube" title="Sincronizar con la nube">☁️</button>
+  <button id="widget-btn" class="widget-toggle" aria-label="Abrir widget" title="Widget rápido">📊</button>
   <div id="sync-indicator" class="sync-indicator" style="display:none;">
     <span class="sync-spinner"></span>
     <span class="sync-text">Sincronizando...</span>
@@ -316,6 +317,16 @@ showSubjectsScreen = function(semester) {
 if (menuScreen.classList.contains('active')) {
   history.replaceState({ screen: 'menu' }, '', '#menu');
 }
+
+/* -------------------------
+   Botón de Widget
+   ------------------------- */
+const widgetBtn = document.getElementById('widget-btn');
+widgetBtn.addEventListener('click', () => {
+  // Abrir widget en nueva pestaña
+  const widgetUrl = window.location.origin + '/studyboard/widget.html';
+  window.open(widgetUrl, '_blank', 'width=400,height=600');
+});
 
 // Búsqueda global en menú principal
 const globalSearchInput = document.getElementById('global-search-input');
@@ -2394,7 +2405,7 @@ async function generatePDF() {
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(28);
       doc.setFont(undefined, 'bold');
-      doc.text('📚 StudyBoard', pageWidth / 2, 35, { align: 'center' });
+      doc.text('StudyBoard', pageWidth / 2, 35, { align: 'center' });
       
       doc.setFontSize(20);
       doc.setFont(undefined, 'normal');
@@ -2418,7 +2429,7 @@ async function generatePDF() {
       doc.setFontSize(16);
       doc.setFont(undefined, 'bold');
       doc.setTextColor(99, 102, 241);
-      doc.text('📊 Estadísticas Generales', margin, yPos);
+      doc.text('Estadisticas Generales', margin, yPos);
       yPos += 10;
       
       const cards = Array.from(document.querySelectorAll('.card'));
@@ -2448,7 +2459,7 @@ async function generatePDF() {
       
       stats.forEach(stat => {
         checkSpace(8);
-        doc.text(`• ${stat}`, margin + 5, yPos);
+        doc.text(`- ${stat}`, margin + 5, yPos);
         yPos += 8;
       });
       
@@ -2462,7 +2473,7 @@ async function generatePDF() {
       doc.setFontSize(16);
       doc.setFont(undefined, 'bold');
       doc.setTextColor(99, 102, 241);
-      doc.text('📈 Distribución de Notas', margin, yPos);
+      doc.text('Distribucion de Notas', margin, yPos);
       yPos += 10;
       
       const cards = Array.from(document.querySelectorAll('.card'));
@@ -2499,7 +2510,7 @@ async function generatePDF() {
       doc.setFontSize(16);
       doc.setFont(undefined, 'bold');
       doc.setTextColor(99, 102, 241);
-      doc.text('📚 Detalle por Asignatura', margin, yPos);
+      doc.text('Detalle por Asignatura', margin, yPos);
       yPos += 10;
       
       const cards = Array.from(document.querySelectorAll('.card'));
@@ -2529,13 +2540,13 @@ async function generatePDF() {
         doc.setFontSize(11);
         doc.setFont(undefined, 'normal');
         
-        let emoji = '';
-        if (grade >= 9) emoji = '🎉';
-        else if (grade >= 7) emoji = '😊';
-        else if (grade >= 5) emoji = '🙂';
-        else if (grade > 0) emoji = '😰';
+        let status = '';
+        if (grade >= 9) status = '[Excelente]';
+        else if (grade >= 7) status = '[Notable]';
+        else if (grade >= 5) status = '[Aprobado]';
+        else if (grade > 0) status = '[Suspenso]';
         
-        doc.text(`   Nota: ${gradeText} ${emoji}`, margin, yPos);
+        doc.text(`   Nota: ${gradeText} ${status}`, margin, yPos);
         yPos += 6;
         doc.text(`   Progreso evaluado: ${progress.toFixed(0)}%`, margin, yPos);
         yPos += 10;
@@ -2549,7 +2560,7 @@ async function generatePDF() {
       doc.setFontSize(16);
       doc.setFont(undefined, 'bold');
       doc.setTextColor(99, 102, 241);
-      doc.text('🤖 Recomendaciones', margin, yPos);
+      doc.text('Recomendaciones IA', margin, yPos);
       yPos += 10;
       
       const aiText = document.getElementById('ai-recommendation-text');
@@ -2588,7 +2599,7 @@ async function generatePDF() {
     closeExportModal();
     
     // Mostrar notificación de éxito
-    showSyncIndicator('PDF generado correctamente ✓', 'success');
+    showSyncIndicator('PDF generado correctamente', 'success');
     
   } catch (error) {
     console.error('Error generando PDF:', error);
