@@ -3,21 +3,22 @@
   "short_name": "StudyBoard",
   "description": "Gestor de asignaturas, notas y horarios universitarios",
   "start_url": "/studyboard/",
+  "scope": "/studyboard/",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#6366f1",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23667eea'/%3E%3Cstop offset='100%25' style='stop-color:%23764ba2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='192' height='192' rx='40' fill='url(%23g)'/%3E%3Ctext x='96' y='130' font-family='Arial' font-size='100' text-anchor='middle' fill='white'%3E📚%3C/text%3E%3C/svg%3E",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23667eea'/%3E%3Cstop offset='100%25' style='stop-color:%23764ba2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='100' fill='url(%23g)'/%3E%3Ctext x='256' y='350' font-family='Arial' font-size='280' text-anchor='middle' fill='white'%3E📚%3C/text%3E%3C/svg%3E",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ],
@@ -29,7 +30,11 @@
       "short_name": "Asignaturas",
       "description": "Accede directamente a tus asignaturas",
       "url": "/studyboard/#subjects",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+      "icons": [{ 
+        "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Crect width='96' height='96' rx='20' fill='%236366f1'/%3E%3Ctext x='48' y='65' font-size='50' text-anchor='middle'%3E📚%3C/text%3E%3C/svg%3E", 
+        "sizes": "96x96",
+        "type": "image/svg+xml"
+      }]
     }
   ]
 }
