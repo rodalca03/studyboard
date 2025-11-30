@@ -705,18 +705,61 @@ function actualizarNotasCards() {
     if (gradeDiv) {
       const nota = calcularNotaAsignatura(card);
       let emoji = '';
+      
       if (nota !== '-') {
-        const notaNum = parseFloat(nota);
-        if (notaNum < 3) {
-          emoji = '😰';
-        } else if (notaNum < 5) {
-          emoji = '😟';
-        } else if (notaNum < 7) {
-          emoji = '😊';
+        const notaActual = parseFloat(nota);
+        
+        // Calcular porcentaje evaluado
+        let totalPonderacion = 0;
+        if (card._tests && card._tests.length > 0) {
+          card._tests.forEach(t => {
+            totalPonderacion += parseFloat(t.ponderacion) || 0;
+          });
+        }
+        
+        // Proyectar nota final (suponiendo que saca la misma nota en lo que falta)
+        const porcentajeEvaluado = Math.min(100, totalPonderacion);
+        const porcentajeFaltante = 100 - porcentajeEvaluado;
+        
+        let notaProyectada;
+        if (porcentajeEvaluado === 0) {
+          notaProyectada = 0;
+        } else if (porcentajeEvaluado >= 100) {
+          notaProyectada = notaActual;
         } else {
-          emoji = '🎉';
+          // Proyección: (nota_actual * % evaluado + nota_actual * % faltante) / 100
+          // Simplificado: nota_actual (asume continuidad)
+          notaProyectada = notaActual;
+        }
+        
+        // Emoji basado en nota proyectada
+        if (notaProyectada >= 9) {
+          emoji = '🎉'; // Sobresaliente
+        } else if (notaProyectada >= 7) {
+          emoji = '😊'; // Notable
+        } else if (notaProyectada >= 5) {
+          emoji = '🙂'; // Aprobado
+        } else if (notaProyectada >= 4) {
+          // Entre 4 y 5: depende del % evaluado
+          if (porcentajeEvaluado < 50) {
+            emoji = '🙂'; // Aún tiene mucho margen para mejorar
+          } else if (porcentajeEvaluado < 75) {
+            emoji = '😐'; // Está justo, necesita esfuerzo
+          } else {
+            emoji = '😟'; // Poco margen, preocupante
+          }
+        } else {
+          // Menos de 4
+          if (porcentajeEvaluado < 30) {
+            emoji = '😐'; // Recién empieza, puede recuperar
+          } else if (porcentajeEvaluado < 60) {
+            emoji = '😟'; // Necesita mejorar urgente
+          } else {
+            emoji = '😰'; // Difícil de recuperar
+          }
         }
       }
+      
       gradeDiv.textContent = nota + (emoji ? ' ' + emoji : '');
     }
     actualizarProgresoCard(card);
