@@ -1,0 +1,54 @@
+===============================================
+CONFIGURACIÓN FINAL DE FIREBASE - PASOS CRÍTICOS
+===============================================
+
+PASO 1: HABILITAR AUTENTICACIÓN ANÓNIMA
+----------------------------------------
+1. Ve a: https://console.firebase.google.com/project/studyboard-262ae/authentication/providers
+2. Click en "Get started" o "Comenzar"
+3. Click en "Anonymous" (Anónimo)
+4. ACTIVA el interruptor (toggle)
+5. Click en "Guardar"
+
+PASO 2: CONFIGURAR REGLAS DE SEGURIDAD
+---------------------------------------
+1. Ve a: https://console.firebase.google.com/project/studyboard-262ae/firestore/rules
+
+2. REEMPLAZA todas las reglas por esto:
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /sync/{syncCode} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+
+3. Click en "PUBLICAR" o "PUBLISH" o "PUBLISH"
+
+===============================================
+LISTO! Ahora ya puedes usar la app
+===============================================
+
+CÓMO USAR:
+
+1. Abre index.html en tu navegador (o en el APK)
+2. Click en el botón ☁️ (nube azul)
+3. Se conectará automáticamente
+4. Todos los cambios se guardan automáticamente en la nube
+5. Abre la app en otro dispositivo, click en ☁️ y verás todos tus datos
+
+VENTAJAS:
+✅ Funciona en móvil (APK) sin servidor
+✅ Sincronización automática en tiempo real
+✅ 100% gratis (1GB de almacenamiento)
+✅ Sin necesidad de cuenta de Google (usa autenticación anónima)
+✅ Los datos persisten aunque desinstales la app
+
+IMPORTANTE:
+- La primera vez que uses la app en un dispositivo nuevo, haz click en ☁️
+- Se creará un ID único para ese dispositivo
+- Ese ID se guarda automáticamente
+- Si borras los datos del navegador/app, necesitarás reconectar
+

@@ -1,0 +1,2179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StudyBoard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<!-- Pantalla de menú principal -->
+<div id="menu-screen" class="screen active">
+  <button id="dark-mode-toggle" class="dark-mode-toggle" aria-label="Alternar modo oscuro" title="Modo oscuro">🌙</button>
+  <button id="show-archived-toggle" class="show-archived-toggle" aria-label="Mostrar archivados" title="Mostrar archivados">📦</button>
+  <button id="firebase-btn" class="firebase-toggle" aria-label="Sincronización en la nube" title="Sincronizar con la nube">☁️</button>
+  <div id="sync-indicator" class="sync-indicator" style="display:none;">
+    <span class="sync-spinner"></span>
+    <span class="sync-text">Sincronizando...</span>
+  </div>
+  
+  <!-- Modal para código de sincronización -->
+  <div id="sync-code-modal" class="modal-overlay" style="display:none;">
+    <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
+      <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);">
+        <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
+      </div>
+      <div class="modal-body">
+        <div id="sync-code-content"></div>
+      </div>
+    </div>
+  </div>
+  
+  <header>
+    <h1>📚 Mis Cursos</h1>
+    <p class="hint">Selecciona un cuatrimestre para gestionar tus asignaturas.</p>
+  </header>
+  <div class="search-container">
+    <input type="text" id="global-search-input" placeholder="🔍 Buscar en todos los cuatrimestres..." aria-label="Buscar cuatrimestre o asignatura">
+  </div>
+  <main>
+    <div id="semesters-container" class="semesters-grid" aria-label="Lista de cuatrimestres"></div>
+  </main>
+  <button id="add-semester-btn" aria-label="Añadir cuatrimestre" class="fab-btn">+</button>
+</div>
+
+<!-- Pantalla de gestión de asignaturas -->
+<div id="subjects-screen" class="screen">
+  <button id="back-btn" class="btn-back" aria-label="Volver al menú">Volver</button>
+  
+  <!-- Menú de herramientas (FAB) -->
+  <div class="tools-menu-wrapper">
+    <button id="tools-menu-toggle" class="fab-main" aria-label="Abrir menú de herramientas">
+      <span class="fab-icon">✨</span>
+    </button>
+    <div class="fab-menu" id="tools-menu">
+      <button id="toggle-all-progress-btn" class="fab-option" data-tooltip="Progreso" aria-label="Mostrar/ocultar progresos">
+        <span>📊</span>
+      </button>
+      <button id="calculator-btn" class="fab-option" data-tooltip="Calculadora" aria-label="Calculadora de notas">
+        <span>🧮</span>
+      </button>
+      <button id="dashboard-btn" class="fab-option" data-tooltip="Dashboard" aria-label="Ver estadísticas">
+        <span>📈</span>
+      </button>
+    </div>
+  </div>
+  
+  <header>
+    <h1 id="subjects-title">Asignaturas</h1>
+    <div id="ai-recommendation" class="ai-recommendation" style="display:none;">
+      <span id="ai-recommendation-text"></span>
+    </div>
+  </header>
+  <div class="subjects-stats" id="subjects-stats" style="display:none;">
+    <div class="stat-item">
+      <span class="stat-label">Media:</span>
+      <span class="stat-value" id="stat-average">-</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">ECTS:</span>
+      <span class="stat-value" id="stat-ects">0</span>
+    </div>
+  </div>
+  <main>
+    <div id="container" aria-label="Lista de asignaturas"></div>
+  </main>
+  <button id="add-btn" aria-label="Añadir asignatura" class="fab-btn">+</button>
+</div>
+
+<!-- Modal Calculadora de Notas -->
+<div id="calculator-modal" class="modal-overlay" style="display:none;">
+  <div class="modal calculator-modal">
+    <div class="modal-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">
+      <h2 class="modal-title">🧮 ¿Qué nota necesito?</h2>
+      <button class="close-modal-btn" onclick="closeCalculatorModal()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="calculator-content">
+        <div class="calc-input-group">
+          <label for="calc-current-grade">Nota actual acumulada:</label>
+          <input type="number" id="calc-current-grade" min="0" max="10" step="0.1" placeholder="0.0" />
+        </div>
+        <div class="calc-input-group">
+          <label for="calc-percentage-done">% del curso completado:</label>
+          <input type="number" id="calc-percentage-done" min="0" max="100" step="1" placeholder="0" />
+        </div>
+        <div class="calc-input-group">
+          <label for="calc-target-grade">Nota objetivo:</label>
+          <input type="number" id="calc-target-grade" min="0" max="10" step="0.1" value="5.0" placeholder="5.0" />
+        </div>
+        <button class="calc-btn-primary" onclick="calculateNeededGrade()">Calcular</button>
+        <div id="calc-result" class="calc-result" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Dashboard -->
+<div id="dashboard-modal" class="modal-overlay" style="display:none;">
+  <div class="modal dashboard-modal">
+    <div class="modal-header" style="background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);">
+      <h2 class="modal-title">📊 Dashboard</h2>
+      <button class="close-modal-btn" onclick="closeDashboardModal()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="dashboard-content">
+        <!-- Tabs -->
+        <div class="dashboard-tabs">
+          <button class="dashboard-tab active" data-tab="stats">📊 Estadísticas</button>
+          <button class="dashboard-tab" data-tab="chart">📈 Gráfico</button>
+          <button class="dashboard-tab" data-tab="ranking">🏆 Ranking</button>
+        </div>
+        
+        <!-- Tab Content: Estadísticas -->
+        <div class="dashboard-tab-content active" data-content="stats">
+          <div class="dashboard-stats-grid">
+            <div class="stat-card">
+              <span class="stat-card-label">Promedio</span>
+              <span class="stat-card-value" id="dash-average">-</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-card-label">Aprobadas</span>
+              <span class="stat-card-value" id="dash-passed">-</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-card-label">Suspendidas</span>
+              <span class="stat-card-value" id="dash-failed">-</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-card-label">ECTS Totales</span>
+              <span class="stat-card-value" id="dash-ects">-</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Tab Content: Gráfico -->
+        <div class="dashboard-tab-content" data-content="chart">
+          <div class="dashboard-chart">
+            <h3 class="chart-title">Distribución de Notas</h3>
+            <div id="grades-chart-bars" class="chart-bars"></div>
+          </div>
+        </div>
+        
+        <!-- Tab Content: Ranking -->
+        <div class="dashboard-tab-content" data-content="ranking">
+          <div class="dashboard-list">
+            <div id="subjects-ranking"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* -------------------------
+   Configuración y utilidades
+   ------------------------- */
+const container = document.getElementById('container');
+const ADD_BTN = document.getElementById('add-btn');
+const menuScreen = document.getElementById('menu-screen');
+const subjectsScreen = document.getElementById('subjects-screen');
+const backBtn = document.getElementById('back-btn');
+const addSemesterBtn = document.getElementById('add-semester-btn');
+const semestersContainer = document.getElementById('semesters-container');
+const subjectsTitle = document.getElementById('subjects-title');
+const toggleAllProgressBtn = document.getElementById('toggle-all-progress-btn');
+const darkModeToggle = document.getElementById('dark-mode-toggle');
+const showArchivedToggle = document.getElementById('show-archived-toggle');
+
+let currentSemester = null; // Semestre actualmente seleccionado
+
+const COLOR_OPTIONS = [
+  { value: '#ff4d4d', label: 'Rojo' },
+  { value: '#ff954d', label: 'Naranja' },
+  { value: '#ffe14d', label: 'Amarillo' },
+  { value: '#9cff4d', label: 'Verde claro' },
+  { value: '#2e8b57', label: 'Verde oscuro' }
+];
+
+/* -------------------------
+   Gestión de pantallas
+   ------------------------- */
+function showMenuScreen() {
+  menuScreen.classList.add('active');
+  subjectsScreen.classList.remove('active');
+  currentSemester = null;
+  renderSemesters();
+}
+
+function showSubjectsScreen(semester) {
+  currentSemester = semester;
+  subjectsTitle.textContent = semester.nombre;
+  menuScreen.classList.remove('active');
+  subjectsScreen.classList.add('active');
+  renderSubjects();
+  updateAIRecommendation();
+}
+
+backBtn.addEventListener('click', showMenuScreen);
+
+// Búsqueda global en menú principal
+const globalSearchInput = document.getElementById('global-search-input');
+globalSearchInput.addEventListener('input', (e) => {
+  const query = e.target.value.toLowerCase().trim();
+  const semesterCards = document.querySelectorAll('.semester-card');
+  
+  if (query === '') {
+    // Mostrar todos los cuatrimestres
+    semesterCards.forEach(card => {
+      card.style.display = 'block';
+      // Eliminar tarjetas de asignaturas si existen
+      const subjectResults = card.querySelector('.subject-search-results');
+      if (subjectResults) subjectResults.remove();
+    });
+    return;
+  }
+  
+  const cuatrimestres = obtenerCuatrimestres();
+  
+  semesterCards.forEach(card => {
+    const semesterName = card.querySelector('h3').textContent.toLowerCase();
+    const semesterId = parseInt(card.querySelector('.btn-edit-semester').dataset.id);
+    const semester = cuatrimestres.find(c => c.id === semesterId);
+    
+    // Eliminar resultados anteriores
+    const oldResults = card.querySelector('.subject-search-results');
+    if (oldResults) oldResults.remove();
+    
+    // Buscar en nombre del cuatrimestre
+    if (semesterName.includes(query)) {
+      card.style.display = 'block';
+      return;
+    }
+    
+    // Buscar en asignaturas del cuatrimestre
+    if (semester && semester.asignaturas) {
+      const matchingSubjects = semester.asignaturas.filter(a => 
+        a.nombre.toLowerCase().includes(query)
+      );
+      
+      if (matchingSubjects.length > 0) {
+        card.style.display = 'block';
+        
+        // Crear contenedor de resultados
+        const resultsContainer = document.createElement('div');
+        resultsContainer.className = 'subject-search-results';
+        
+        matchingSubjects.forEach(subject => {
+          const subjectCard = document.createElement('div');
+          subjectCard.className = 'subject-result-card';
+          subjectCard.style.background = subject.color || '#ff4d4d';
+          subjectCard.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-weight: 500; color: #06243b;">${escapeHtml(subject.nombre)}</span>
+              <button class="view-subject-btn" data-semester-id="${semesterId}" data-subject-name="${escapeHtml(subject.nombre)}" style="background: rgba(255,255,255,0.3); border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; color: #06243b;">
+                Ver →
+              </button>
+            </div>
+          `;
+          
+          // Event listener para ir a la asignatura
+          subjectCard.querySelector('.view-subject-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            showSubjectsScreen(semester);
+            // Esperar a que se rendericen las tarjetas
+            setTimeout(() => {
+              const cards = document.querySelectorAll('.card');
+              cards.forEach(c => {
+                if (c.querySelector('.titulo').textContent === subject.nombre) {
+                  c.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  c.style.transform = 'scale(1.05)';
+                  setTimeout(() => c.style.transform = '', 300);
+                }
+              });
+            }, 100);
+          });
+          
+          resultsContainer.appendChild(subjectCard);
+        });
+        
+        // Insertar después de la info del semestre
+        const semesterInfo = card.querySelector('.semester-info');
+        semesterInfo.insertAdjacentElement('afterend', resultsContainer);
+      } else {
+        card.style.display = 'none';
+      }
+    } else {
+      card.style.display = 'none';
+    }
+  });
+});
+
+// Toggle todos los progresos
+toggleAllProgressBtn.addEventListener('click', () => {
+  const allCards = document.querySelectorAll('.card');
+  if (allCards.length === 0) return;
+  
+  // Verificar si alguno está visible
+  const firstProgress = allCards[0].querySelector('.progress-container');
+  const isAnyVisible = firstProgress && firstProgress.style.display !== 'none';
+  
+  allCards.forEach(card => {
+    const progressContainer = card.querySelector('.progress-container');
+    if (progressContainer) {
+      progressContainer.style.display = isAnyVisible ? 'none' : 'block';
+      if (!isAnyVisible) {
+        actualizarProgresoCard(card);
+      }
+    }
+  });
+  
+  // Actualizar texto del botón
+  toggleAllProgressBtn.textContent = '📊';
+});
+
+// Modo oscuro
+function initDarkMode() {
+  const isDark = localStorage.getItem('darkMode') === 'true';
+  if (isDark) {
+    document.body.classList.add('dark-mode');
+    darkModeToggle.textContent = '☀️';
+  }
+}
+
+darkModeToggle.addEventListener('click', () => {
+  const isDark = document.body.classList.toggle('dark-mode');
+  localStorage.setItem('darkMode', isDark);
+  darkModeToggle.textContent = isDark ? '☀️' : '🌙';
+});
+
+// Mostrar/ocultar archivados
+showArchivedToggle.addEventListener('click', () => {
+  const current = localStorage.getItem('showArchived') === 'true';
+  localStorage.setItem('showArchived', (!current).toString());
+  showArchivedToggle.textContent = !current ? '📂' : '📦';
+  showArchivedToggle.title = !current ? 'Ocultar archivados' : 'Mostrar archivados';
+  renderSemesters();
+});
+
+/* -------------------------
+   Gestión de cuatrimestres
+   ------------------------- */
+function guardarCuatrimestres() {
+  const datos = JSON.parse(localStorage.getItem('cuatrimestres')) || [];
+  localStorage.setItem('cuatrimestres', JSON.stringify(datos));
+}
+
+function obtenerCuatrimestres() {
+  return JSON.parse(localStorage.getItem('cuatrimestres')) || [];
+}
+
+function renderSemesters() {
+  semestersContainer.innerHTML = '';
+  let cuatrimestres = obtenerCuatrimestres();
+  const showArchived = localStorage.getItem('showArchived') === 'true';
+  
+  if (cuatrimestres.length === 0) {
+    // Verificar si hay datos antiguos (asignaturas) SOLO en primera carga
+    const datosAntiguos = JSON.parse(localStorage.getItem('asignaturas')) || [];
+    
+    if (datosAntiguos.length > 0) {
+      // Solo migrar si hay datos antiguos
+      cuatrimestres = [
+        { 
+          id: Date.now(), 
+          nombre: 'Curso 2025/26 - Cuatrimestre 1', 
+          asignaturas: datosAntiguos,
+          archived: false
+        },
+        { 
+          id: Date.now() + 1, 
+          nombre: 'Curso 2025/26 - Cuatrimestre 2', 
+          asignaturas: [],
+          archived: false
+        }
+      ];
+      localStorage.setItem('cuatrimestres', JSON.stringify(cuatrimestres));
+      // Limpiar datos antiguos
+      localStorage.removeItem('asignaturas');
+    } else {
+      // No hay cuatrimestres ni datos antiguos - mostrar mensaje
+      semestersContainer.innerHTML = '<div class="empty-state">No hay cursos que mostrar</div>';
+      return;
+    }
+  }
+
+  const filteredSemesters = cuatrimestres.filter(sem => showArchived || !sem.archived);
+  
+  if (filteredSemesters.length === 0) {
+    semestersContainer.innerHTML = '<div class="empty-state">No hay cursos que mostrar</div>';
+    return;
+  }
+
+  filteredSemesters.forEach(sem => {
+    const card = document.createElement('div');
+    card.className = 'semester-card' + (sem.archived ? ' archived' : '');
+    card.draggable = true;
+    card.dataset.semesterId = sem.id;
+    const numAsignaturas = sem.asignaturas ? sem.asignaturas.length : 0;
+    card.innerHTML = `
+      <h3>${escapeHtml(sem.nombre)}</h3>
+      <p class="semester-info">${numAsignaturas} asignatura${numAsignaturas !== 1 ? 's' : ''}</p>
+      <div class="semester-actions">
+        <div class="semester-actions-top">
+          <button class="btn-duplicate-semester" data-id="${sem.id}" aria-label="Duplicar" title="Duplicar">📋 Duplicar</button>
+          <button class="btn-archive-semester" data-id="${sem.id}" aria-label="${sem.archived ? 'Desarchivar' : 'Archivar'}" title="${sem.archived ? 'Desarchivar' : 'Archivar'}">${sem.archived ? '📂' : '📦'} ${sem.archived ? 'Desarchivar' : 'Archivar'}</button>
+        </div>
+        <div class="semester-actions-bottom">
+          <button class="btn-edit-semester" data-id="${sem.id}" aria-label="Editar nombre">Editar</button>
+          <button class="btn-delete-semester" data-id="${sem.id}" aria-label="Eliminar">Eliminar</button>
+        </div>
+      </div>
+    `;
+    
+    // Click para abrir
+    card.addEventListener('click', (e) => {
+      if (!e.target.closest('.semester-actions')) {
+        showSubjectsScreen(sem);
+      }
+    });
+
+    // Drag & Drop para reordenar
+    card.addEventListener('dragstart', (e) => {
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    card.addEventListener('dragend', (e) => {
+      card.classList.remove('dragging');
+      saveSemestersOrder();
+    });
+
+    // Touch para móviles
+    let touchStartY = 0;
+    let touchStartX = 0;
+    let isTouching = false;
+    let longPressTimer = null;
+    let isDragEnabled = false;
+
+    card.addEventListener('touchstart', (e) => {
+      if (e.target.closest('.semester-actions')) return;
+      touchStartY = e.touches[0].clientY;
+      touchStartX = e.touches[0].clientX;
+      isTouching = false;
+      isDragEnabled = false;
+      
+      // Activar arrastre después de 500ms
+      longPressTimer = setTimeout(() => {
+        isDragEnabled = true;
+        card.style.opacity = '0.8';
+        // Vibración háptica si está disponible
+        if (navigator.vibrate) {
+          navigator.vibrate(50);
+        }
+      }, 500);
+    }, { passive: true });
+
+    card.addEventListener('touchmove', (e) => {
+      if (e.target.closest('.semester-actions')) return;
+      
+      const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
+      const deltaX = Math.abs(e.touches[0].clientX - touchStartX);
+      
+      // Si se mueve mucho antes de activar el drag, cancelar el timer
+      if (!isDragEnabled && (deltaY > 10 || deltaX > 10)) {
+        clearTimeout(longPressTimer);
+        return;
+      }
+      
+      // Solo arrastrar si está habilitado
+      if (isDragEnabled && (deltaY > 10 || deltaX > 10)) {
+        isTouching = true;
+        e.preventDefault();
+        card.classList.add('dragging');
+        
+        const touch = e.touches[0];
+        const cards = [...semestersContainer.querySelectorAll('.semester-card:not(.dragging)')];
+        const afterElement = cards.find(c => {
+          const box = c.getBoundingClientRect();
+          return touch.clientY < box.top + box.height / 2;
+        });
+        
+        semestersContainer.insertBefore(card, afterElement || null);
+      }
+    }, { passive: false });
+
+    card.addEventListener('touchend', (e) => {
+      clearTimeout(longPressTimer);
+      card.style.opacity = '';
+      
+      if (isTouching) {
+        e.preventDefault();
+        card.classList.remove('dragging');
+        saveSemestersOrder();
+      }
+      
+      isDragEnabled = false;
+      isTouching = false;
+    }, { passive: false });
+
+    card.addEventListener('touchcancel', () => {
+      clearTimeout(longPressTimer);
+      card.style.opacity = '';
+      card.classList.remove('dragging');
+      isDragEnabled = false;
+      isTouching = false;
+    });
+
+    // Duplicar
+    card.querySelector('.btn-duplicate-semester').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openDuplicateSheet(sem);
+    });
+
+    // Archivar/Desarchivar
+    card.querySelector('.btn-archive-semester').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const cuatrimestres = obtenerCuatrimestres();
+      const idx = cuatrimestres.findIndex(c => c.id === sem.id);
+      if (idx !== -1) {
+        cuatrimestres[idx].archived = !cuatrimestres[idx].archived;
+        localStorage.setItem('cuatrimestres', JSON.stringify(cuatrimestres));
+        renderSemesters();
+      }
+    });
+
+    // Editar nombre
+    card.querySelector('.btn-edit-semester').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openEditSheet(sem);
+    });
+
+    // Eliminar (abrir bottom-sheet de confirmación)
+    card.querySelector('.btn-delete-semester').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openDeleteSheet(sem);
+    });
+
+    semestersContainer.appendChild(card);
+  });
+}
+
+// Guardar orden de cuatrimestres
+function saveSemestersOrder() {
+  const cards = semestersContainer.querySelectorAll('.semester-card');
+  const cuatrimestres = obtenerCuatrimestres();
+  const newOrder = [];
+  
+  cards.forEach(card => {
+    const id = parseInt(card.dataset.semesterId);
+    const semester = cuatrimestres.find(c => c.id === id);
+    if (semester) newOrder.push(semester);
+  });
+  
+  localStorage.setItem('cuatrimestres', JSON.stringify(newOrder));
+}
+
+// Dragover para el contenedor de cuatrimestres
+semestersContainer.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  const dragging = document.querySelector('.semester-card.dragging');
+  if (!dragging) return;
+  
+  const cards = [...semestersContainer.querySelectorAll('.semester-card:not(.dragging)')];
+  const afterElement = cards.find(card => {
+    const box = card.getBoundingClientRect();
+    return e.clientY < box.top + box.height / 2;
+  });
+  
+  semestersContainer.insertBefore(dragging, afterElement || null);
+});
+
+function editSemesterName(sem) {
+  // (Mantener por compatibilidad; ahora abrimos un bottom-sheet desde el UI.)
+  openEditSheet(sem);
+}
+
+function deleteSemester(semesterId) {
+  // Eliminación efectiva (la confirmación previa se realiza mediante el bottom-sheet).
+  let cuatrimestres = obtenerCuatrimestres();
+  cuatrimestres = cuatrimestres.filter(c => c.id !== semesterId);
+  localStorage.setItem('cuatrimestres', JSON.stringify(cuatrimestres));
+  renderSemesters();
+}
+
+addSemesterBtn.addEventListener('click', () => {
+  openCreateSheet();
+});
+
+/* -------------------------
+   Gestión de asignaturas
+   ------------------------- */
+function guardar() {
+  if (!currentSemester) return;
+  const cuatrimestres = obtenerCuatrimestres();
+  const idx = cuatrimestres.findIndex(c => c.id === currentSemester.id);
+  if (idx !== -1) {
+    const datos = [];
+    document.querySelectorAll('.card').forEach(c => {
+      datos.push({
+        nombre: c.querySelector('.titulo').textContent,
+        color: c.dataset.color,
+        tests: Array.isArray(c._tests) ? c._tests : []
+      });
+    });
+    cuatrimestres[idx].asignaturas = datos;
+    currentSemester.asignaturas = datos;
+    localStorage.setItem('cuatrimestres', JSON.stringify(cuatrimestres));
+    actualizarNotasCards();
+    actualizarEstadisticas();
+  }
+}
+
+function renderSubjects() {
+  container.innerHTML = '';
+  if (!currentSemester || !currentSemester.asignaturas) {
+    currentSemester.asignaturas = [];
+    return;
+  }
+  currentSemester.asignaturas.forEach(a => {
+    const c = crearTarjeta(a.nombre, a.color, false);
+    c._tests = Array.isArray(a.tests) ? a.tests : [];
+  });
+  actualizarNotasCards();
+  actualizarEstadisticas();
+}
+
+function calcularNotaAsignatura(card) {
+  if (!card._tests || card._tests.length === 0) return '-';
+  let suma = 0;
+  let totalPonderacion = 0;
+  card._tests.forEach(t => {
+    const nota = parseFloat(t.nota) || 0;
+    const ponderacion = parseFloat(t.ponderacion) || 0;
+    suma += nota * ponderacion;
+    totalPonderacion += ponderacion;
+  });
+  if (totalPonderacion === 0) return '-';
+  const notaFinal = suma / 100;
+  return notaFinal.toFixed(2);
+}
+
+function actualizarNotasCards() {
+  document.querySelectorAll('.card').forEach(card => {
+    const gradeDiv = card.querySelector('.subject-grade');
+    if (gradeDiv) {
+      const nota = calcularNotaAsignatura(card);
+      let emoji = '';
+      if (nota !== '-') {
+        const notaNum = parseFloat(nota);
+        if (notaNum < 3) {
+          emoji = '😰';
+        } else if (notaNum < 5) {
+          emoji = '😟';
+        } else if (notaNum < 7) {
+          emoji = '😊';
+        } else {
+          emoji = '🎉';
+        }
+      }
+      gradeDiv.textContent = nota + (emoji ? ' ' + emoji : '');
+    }
+    actualizarProgresoCard(card);
+  });
+  updateAIRecommendation();
+}
+
+function actualizarProgresoCard(card) {
+  if (!card._tests || card._tests.length === 0) {
+    const progressPercentage = card.querySelector('.progress-percentage');
+    const progressFill = card.querySelector('.progress-bar-fill');
+    if (progressPercentage) progressPercentage.textContent = '0%';
+    if (progressFill) progressFill.style.width = '0%';
+    return;
+  }
+  
+  let totalPonderacion = 0;
+  card._tests.forEach(t => {
+    const ponderacion = parseFloat(t.ponderacion) || 0;
+    totalPonderacion += ponderacion;
+  });
+  
+  const porcentaje = Math.min(100, totalPonderacion);
+  const progressPercentage = card.querySelector('.progress-percentage');
+  const progressFill = card.querySelector('.progress-bar-fill');
+  
+  if (progressPercentage) progressPercentage.textContent = `${porcentaje.toFixed(0)}%`;
+  if (progressFill) {
+    progressFill.style.width = `${porcentaje}%`;
+    // Color dinámico basado en porcentaje
+    if (porcentaje < 40) {
+      progressFill.style.background = '#ef4444';
+    } else if (porcentaje < 70) {
+      progressFill.style.background = '#f59e0b';
+    } else if (porcentaje < 100) {
+      progressFill.style.background = '#3b82f6';
+    } else {
+      progressFill.style.background = '#10b981';
+    }
+  }
+}
+
+function actualizarEstadisticas() {
+  if (!currentSemester) return;
+  
+  const statsDiv = document.getElementById('subjects-stats');
+  const cards = document.querySelectorAll('.card');
+  
+  if (cards.length === 0) {
+    statsDiv.style.display = 'none';
+    return;
+  }
+  
+  statsDiv.style.display = 'flex';
+  
+  // Calcular media
+  let sumaNotas = 0;
+  let countNotas = 0;
+  cards.forEach(card => {
+    const nota = calcularNotaAsignatura(card);
+    if (nota !== '-') {
+      sumaNotas += parseFloat(nota);
+      countNotas++;
+    }
+  });
+  
+  const mediaDiv = document.getElementById('stat-average');
+  if (countNotas > 0) {
+    const media = (sumaNotas / countNotas).toFixed(2);
+    let emoji = '';
+    const mediaNum = parseFloat(media);
+    if (mediaNum < 3) emoji = '😰';
+    else if (mediaNum < 5) emoji = '😟';
+    else if (mediaNum < 7) emoji = '😊';
+    else emoji = '🎉';
+    mediaDiv.textContent = `${media} ${emoji}`;
+  } else {
+    mediaDiv.textContent = '-';
+  }
+  
+  // Calcular ECTS totales (6 créditos por asignatura aprobada)
+  let totalEcts = 0;
+  let ectsAprobados = 0;
+  
+  cards.forEach(card => {
+    totalEcts += 6; // Cada asignatura vale 6 ECTS
+    const nota = calcularNotaAsignatura(card);
+    if (nota !== '-' && parseFloat(nota) >= 5) {
+      ectsAprobados += 6; // Solo contar si está aprobada (nota >= 5)
+    }
+  });
+  
+  const ectsDiv = document.getElementById('stat-ects');
+  ectsDiv.textContent = `${ectsAprobados}/${totalEcts}`;
+}
+
+/* -------------------------
+   Crear tarjeta
+   ------------------------- */
+function crearTarjeta(nombre = 'Nueva asignatura', color = '#ff4d4d', doGuardar = true, doScroll = false) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.draggable = true;
+  card.dataset.color = color;
+  card.style.background = color;
+  card._clickCount = 0;
+  card._lastClickTime = 0;
+  card._tests = [];
+
+  card.innerHTML = `
+    <div class="card-inner">
+      <div class="left">
+        <span class="titulo" contenteditable="true" aria-label="Nombre de la asignatura">${escapeHtml(nombre)}</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; margin-left:auto;">
+        <div style="display:flex; align-items:center; gap:6px; font-size:14px; color:#06243b;">
+          <span style="font-weight:600;">Nota:</span>
+          <div class="subject-grade" style="font-weight:600; min-width:40px; text-align:right;">-</div>
+        </div>
+        <button class="grab-handle" aria-label="Arrastrar tarjeta" title="Arrastrar">≡</button>
+      </div>
+    </div>
+    <div class="progress-container" style="display:none;">
+      <div class="progress-header">
+        <span class="progress-label">Evaluado: <strong class="progress-percentage">0%</strong></span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" style="width: 0%"></div>
+      </div>
+    </div>
+    <div class="controls" aria-hidden="true">
+      <label class="sr-only">Color</label>
+      <select class="color-select" aria-label="Seleccionar color">
+        ${COLOR_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join('')}
+      </select>
+      <button class="progress-toggle-btn" aria-label="Mostrar/ocultar progreso" title="Ver progreso">📊</button>
+      <button class="delete-btn" aria-label="Eliminar asignatura" title="Eliminar">✖</button>
+    </div>
+  `;
+
+  const select = card.querySelector('.color-select');
+  select.value = color;
+
+  select.addEventListener('change', (e) => {
+    card.style.background = e.target.value;
+    card.dataset.color = e.target.value;
+    guardar();
+  });
+
+  card.querySelector('.delete-btn').addEventListener('click', () => {
+    card.remove();
+    guardar();
+  });
+
+  // Toggle progreso
+  card.querySelector('.progress-toggle-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const progressContainer = card.querySelector('.progress-container');
+    const isVisible = progressContainer.style.display !== 'none';
+    progressContainer.style.display = isVisible ? 'none' : 'block';
+    actualizarProgresoCard(card);
+  });
+
+  const titulo = card.querySelector('.titulo');
+  let editTimeout = null;
+  titulo.addEventListener('input', () => {
+    clearTimeout(editTimeout);
+    editTimeout = setTimeout(guardar, 500);
+  });
+
+  card.addEventListener('dragstart', (ev) => {
+    card.classList.add('dragging');
+    try { ev.dataTransfer.setData('text/plain', 'drag'); } catch (e) {}
+  });
+  card.addEventListener('dragend', () => {
+    card.classList.remove('dragging');
+    guardar();
+  });
+
+  card.addEventListener('click', (ev) => {
+    const avoid = ev.target.closest('.grab-handle') || ev.target.closest('.controls') || ev.target.closest('.delete-btn') || ev.target.closest('.color-select') || ev.target.closest('.titulo');
+    if (avoid) return;
+
+    const now = Date.now();
+    if (now - card._lastClickTime > 1000) {
+      card._clickCount = 0;
+    }
+    card._lastClickTime = now;
+    card._clickCount++;
+
+    if (card._clickCount === 1) {
+      document.querySelectorAll('.card.show-controls').forEach(c => c.classList.remove('show-controls'));
+      card.classList.add('show-controls');
+    } else if (card._clickCount >= 2) {
+      openSubjectDetail(card);
+      card._clickCount = 0;
+    }
+  });
+
+  container.appendChild(card);
+  if (doGuardar) guardar();
+  if (doScroll) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }
+
+  return card;
+}
+
+/* Helper escape HTML */
+function escapeHtml(unsafe) {
+  return unsafe
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+/* -------------------------
+   Reordenación RATÓN (desktop)
+   ------------------------- */
+container.addEventListener('dragover', e => {
+  e.preventDefault();
+  const dragging = document.querySelector('.dragging');
+  if (!dragging) return;
+  const prevRects = new Map();
+  [...container.querySelectorAll('.card:not(.dragging)')].forEach(c => prevRects.set(c, c.getBoundingClientRect()));
+
+  const cards = [...container.querySelectorAll('.card:not(.dragging)')];
+  const next = cards.find(c => e.clientY <= c.getBoundingClientRect().top + c.offsetHeight / 2);
+  container.insertBefore(dragging, next || null);
+
+  requestAnimationFrame(() => runFLIP(prevRects));
+});
+
+/* -------------------------
+   Reordenación TOUCH (móvil)
+   ------------------------- */
+let touchCard = null;
+let startY = 0;
+let startX = 0;
+let moved = false;
+let isDraggingFromHandle = false;
+const MOVE_THRESHOLD = 10;
+
+container.addEventListener('touchstart', (e) => {
+  const handle = e.target.closest('.grab-handle');
+  const el = e.target.closest('.card');
+  
+  if (!el) return;
+  
+  isDraggingFromHandle = !!handle;
+  
+  if (!isDraggingFromHandle) {
+    return;
+  }
+  
+  touchCard = el;
+  startY = e.touches[0].clientY;
+  startX = e.touches[0].clientX;
+  moved = false;
+  touchCard.classList.add('dragging');
+}, { passive: true });
+
+container.addEventListener('touchmove', (e) => {
+  if (!touchCard || !isDraggingFromHandle) return;
+  
+  const y = e.touches[0].clientY;
+  const x = e.touches[0].clientX;
+  if (Math.abs(y - startY) > MOVE_THRESHOLD || Math.abs(x - startX) > MOVE_THRESHOLD) {
+    moved = true;
+  }
+
+  if (moved) {
+    e.preventDefault();
+    
+    const prevRects = new Map();
+    [...container.querySelectorAll('.card:not(.dragging)')].forEach(c => prevRects.set(c, c.getBoundingClientRect()));
+
+    const cards = [...container.querySelectorAll('.card:not(.dragging)')];
+    const next = cards.find(c => y <= c.getBoundingClientRect().top + c.offsetHeight / 2);
+    container.insertBefore(touchCard, next || null);
+
+    requestAnimationFrame(() => runFLIP(prevRects));
+  }
+}, { passive: false });
+
+container.addEventListener('touchend', (e) => {
+  if (!touchCard || !isDraggingFromHandle) return;
+
+  touchCard.classList.remove('dragging');
+
+  if (moved) {
+    guardar();
+  }
+
+  touchCard = null;
+  isDraggingFromHandle = false;
+  moved = false;
+}, { passive: true });
+
+document.addEventListener('touchstart', (e) => {
+  const c = e.target.closest('.card');
+  if (!c) {
+    document.querySelectorAll('.card.show-controls').forEach(card => card.classList.remove('show-controls'));
+  }
+}, { passive: true });
+
+document.addEventListener('click', (e) => {
+  const c = e.target.closest('.card');
+  if (!c) {
+    document.querySelectorAll('.card.show-controls').forEach(card => card.classList.remove('show-controls'));
+  }
+});
+
+/* -------------------------
+   Añadir tarjeta
+   ------------------------- */
+ADD_BTN.addEventListener('click', () => {
+  crearTarjeta('Nueva asignatura', '#ff4d4d', true, true);
+});
+
+/* -------------------------
+   Carga inicial
+   ------------------------- */
+initDarkMode();
+showMenuScreen();
+
+/* -------------------------
+   Modal / detalle de asignatura
+   ------------------------- */
+
+// construir estructura modal (insertada en body)
+const modalHtml = `
+  <div class="modal-overlay" id="subject-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-header" id="modal-header">
+        <div>
+          <h2 class="modal-title" id="modal-title"></h2>
+          <div style="display:flex; align-items:center; gap:6px; font-size:14px; color:rgba(255,255,255,0.8); margin-top:4px;">
+            <span>Nota:</span>
+            <span id="modal-grade" style="font-weight:600;">-</span>
+          </div>
+        </div>
+        <div>
+          <button class="btn btn-ghost" id="close-modal">Cerrar</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <strong>Pruebas evaluables</strong>
+          <button class="btn btn-primary" id="add-test-btn" style="padding: 6px 10px; font-size: 14px;">+ Añadir prueba</button>
+        </div>
+        <div class="tests-list" id="tests-list"></div>
+      </div>
+
+    </div>
+  </div>
+`;
+document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+// Bottom-sheets para crear/editar/eliminar cuatrimestres (inserción mínima)
+const sheetsHtml = `
+  <div class="sheet-overlay" id="create-sheet">
+    <div class="bottom-sheet">
+      <h3>Crear cuatrimestre</h3>
+      <label class="sheet-label">Introduce el curso (año)</label>
+      <input id="create-curso" class="sheet-input" type="text" placeholder="2025/26">
+      <label class="sheet-label">Introduce el cuatrimestre</label>
+      <input id="create-cuatri" class="sheet-input" type="text" placeholder="1">
+      <div class="sheet-actions">
+        <button id="create-cancel" class="btn btn-ghost">Cancelar</button>
+        <button id="create-confirm" class="btn btn-primary">Crear curso</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet-overlay" id="edit-sheet">
+    <div class="bottom-sheet">
+      <h3>Editar nombre del cuatrimestre</h3>
+      <label class="sheet-label">Nuevo nombre</label>
+      <input id="edit-name" class="sheet-input" type="text">
+      <div class="sheet-actions">
+        <button id="edit-cancel" class="btn btn-ghost">Cancelar</button>
+        <button id="edit-save" class="btn btn-primary">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet-overlay" id="delete-sheet">
+    <div class="bottom-sheet delete">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div class="warning-icon">!</div>
+        <div>
+          <h3>Eliminar cuatrimestre</h3>
+          <div id="delete-name" style="color:#475569;margin-top:6px;font-weight:600;"></div>
+        </div>
+      </div>
+      <p style="color:#64748b;margin-top:12px;">Esta acción no se puede deshacer.</p>
+      <div class="sheet-actions">
+        <button id="delete-cancel" class="btn btn-ghost">Cancelar</button>
+        <button id="delete-confirm" class="btn" style="background:#dc2626;color:white;">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet-overlay" id="duplicate-sheet">
+    <div class="bottom-sheet">
+      <h3>Duplicar cuatrimestre</h3>
+      <p style="color:#64748b;margin-bottom:12px;">Se copiarán las asignaturas sin las notas.</p>
+      <label class="sheet-label">Nombre del nuevo cuatrimestre</label>
+      <input id="duplicate-name" class="sheet-input" type="text" placeholder="Curso 2025/26 - Cuatrimestre 2">
+      <div class="sheet-actions">
+        <button id="duplicate-cancel" class="btn btn-ghost">Cancelar</button>
+        <button id="duplicate-confirm" class="btn btn-primary">Duplicar</button>
+      </div>
+    </div>
+  </div>
+`;
+document.body.insertAdjacentHTML('beforeend', sheetsHtml);
+
+// Referencias y lógica de los sheets
+const createSheet = document.getElementById('create-sheet');
+const createCurso = document.getElementById('create-curso');
+const createCuatri = document.getElementById('create-cuatri');
+const createCancel = document.getElementById('create-cancel');
+const createConfirm = document.getElementById('create-confirm');
+
+const editSheet = document.getElementById('edit-sheet');
+const editNameInput = document.getElementById('edit-name');
+const editCancel = document.getElementById('edit-cancel');
+const editSave = document.getElementById('edit-save');
+
+const deleteSheet = document.getElementById('delete-sheet');
+const deleteName = document.getElementById('delete-name');
+const deleteCancel = document.getElementById('delete-cancel');
+const deleteConfirm = document.getElementById('delete-confirm');
+
+const duplicateSheet = document.getElementById('duplicate-sheet');
+const duplicateNameInput = document.getElementById('duplicate-name');
+const duplicateCancel = document.getElementById('duplicate-cancel');
+const duplicateConfirm = document.getElementById('duplicate-confirm');
+
+let _editingSemester = null;
+let _deletingSemesterId = null;
+let _duplicatingSemester = null;
+
+function openCreateSheet() {
+  createCurso.value = '';
+  createCuatri.value = '';
+  createSheet.classList.add('show');
+  setTimeout(() => createCurso.focus(), 120);
+}
+function closeCreateSheet() { createSheet.classList.remove('show'); }
+
+createCancel.addEventListener('click', () => closeCreateSheet());
+createSheet.addEventListener('click', (e) => { if (e.target === createSheet) closeCreateSheet(); });
+
+createConfirm.addEventListener('click', () => {
+  const año = (createCurso.value || '').trim();
+  const cuatri = (createCuatri.value || '').trim();
+  if (!año || !cuatri) return; // simple guard
+  const nombre = `Curso ${año} - Cuatrimestre ${cuatri}`;
+  const cuatrimestres = obtenerCuatrimestres();
+  cuatrimestres.push({ id: Date.now(), nombre: nombre, asignaturas: [] });
+  localStorage.setItem('cuatrimestres', JSON.stringify(cuatrimestres));
+  closeCreateSheet();
+  renderSemesters();
+});
+
+// Edit sheet
+function openEditSheet(sem) {
+  _editingSemester = sem;
+  editNameInput.value = sem.nombre || '';
+  editSheet.classList.add('show');
+  setTimeout(() => editNameInput.focus(), 120);
+}
+function closeEditSheet() { editSheet.classList.remove('show'); _editingSemester = null; }
+editCancel.addEventListener('click', () => closeEditSheet());
+editSheet.addEventListener('click', (e) => { if (e.target === editSheet) closeEditSheet(); });
+
+editSave.addEventListener('click', () => {
+  if (!_editingSemester) return;
+  const newName = (editNameInput.value || '').trim();
+  if (!newName) return;
+  _editingSemester.nombre = newName;
+  const cuatrimestres = obtenerCuatrimestres();
+  const idx = cuatrimestres.findIndex(c => c.id === _editingSemester.id);
+  if (idx !== -1) {
+    cuatrimestres[idx] = _editingSemester;
+    localStorage.setItem('cuatrimestres', JSON.stringify(cuatrimestres));
+  }
+  closeEditSheet();
+  renderSemesters();
+});
+
+// Delete sheet
+function openDeleteSheet(sem) {
+  _deletingSemesterId = sem.id;
+  deleteName.textContent = sem.nombre || '';
+  deleteSheet.classList.add('show');
+}
+function closeDeleteSheet() { deleteSheet.classList.remove('show'); _deletingSemesterId = null; }
+deleteCancel.addEventListener('click', () => closeDeleteSheet());
+deleteSheet.addEventListener('click', (e) => { if (e.target === deleteSheet) closeDeleteSheet(); });
+
+deleteConfirm.addEventListener('click', () => {
+  if (_deletingSemesterId == null) return;
+  deleteSemester(_deletingSemesterId);
+  closeDeleteSheet();
+});
+
+// Duplicate sheet
+function openDuplicateSheet(sem) {
+  _duplicatingSemester = sem;
+  duplicateNameInput.value = sem.nombre + ' (copia)';
+  duplicateSheet.classList.add('show');
+  setTimeout(() => duplicateNameInput.focus(), 120);
+}
+function closeDuplicateSheet() { 
+  duplicateSheet.classList.remove('show'); 
+  _duplicatingSemester = null; 
+}
+duplicateCancel.addEventListener('click', () => closeDuplicateSheet());
+duplicateSheet.addEventListener('click', (e) => { if (e.target === duplicateSheet) closeDuplicateSheet(); });
+
+duplicateConfirm.addEventListener('click', () => {
+  if (!_duplicatingSemester) return;
+  const newName = (duplicateNameInput.value || '').trim();
+  if (!newName) return;
+  
+  const cuatrimestres = obtenerCuatrimestres();
+  const newSemester = {
+    id: Date.now(),
+    nombre: newName,
+    archived: false,
+    asignaturas: _duplicatingSemester.asignaturas.map(a => ({
+      nombre: a.nombre,
+      color: a.color,
+      tests: []
+    }))
+  };
+  
+  cuatrimestres.push(newSemester);
+  localStorage.setItem('cuatrimestres', JSON.stringify(cuatrimestres));
+  closeDuplicateSheet();
+  renderSemesters();
+});
+
+
+const subjectModal = document.getElementById('subject-modal');
+const modalTitle = document.getElementById('modal-title');
+const modalHeader = document.getElementById('modal-header');
+const testsList = document.getElementById('tests-list');
+const closeModal = document.getElementById('close-modal');
+const addTestBtn = document.getElementById('add-test-btn');
+
+let activeCard = null;
+
+function openSubjectDetail(card) {
+  activeCard = card;
+  modalTitle.textContent = card.querySelector('.titulo').textContent || 'Asignatura';
+  // header gradient suave usando color de la tarjeta (claro a oscuro)
+  const color = card.dataset.color || '#007bff';
+  const lightColor = getLighterColor(color);
+  const darkColor = getDarkerColor(color);
+  modalHeader.style.background = `linear-gradient(to right, ${lightColor}, ${darkColor})`;
+  // texto claro/oscuro segun contraste
+  modalTitle.style.color = getContrastingText(color);
+  // mostrar nota en el modal
+  const modalGrade = document.getElementById('modal-grade');
+  if (modalGrade) {
+    modalGrade.textContent = calcularNotaAsignatura(card);
+  }
+  // render tests
+  renderTests();
+  subjectModal.classList.add('show');
+}
+
+function closeSubjectDetail(save = true) {
+  if (!activeCard) return;
+  if (save) guardar();
+  subjectModal.classList.remove('show');
+  activeCard = null;
+}
+
+closeModal.addEventListener('click', () => closeSubjectDetail(false));
+
+// Cerrar modal al hacer clic fuera de ella (en el overlay)
+subjectModal.addEventListener('click', (e) => {
+  if (e.target === subjectModal) {
+    closeSubjectDetail(false);
+  }
+});
+
+addTestBtn.addEventListener('click', () => {
+  if (!activeCard) return;
+  activeCard._tests.push({ nombre: 'Nueva prueba', nota: '' });
+  renderTests();
+  guardar();
+});
+
+function renderTests() {
+  testsList.innerHTML = '';
+  if (!activeCard) return;
+  activeCard._tests = activeCard._tests || [];
+  activeCard._tests.forEach((t, idx) => {
+    const row = document.createElement('div');
+    row.className = 'test-row';
+    row.innerHTML = `
+      <input class="test-name" type="text" value="${escapeHtml(t.nombre)}" aria-label="Nombre prueba ${idx+1}">
+      <label style="display:flex; align-items:center; gap:6px; font-size:14px; color:#475569;">
+        Nota: <input class="test-grade" type="text" value="${escapeHtml(String(t.nota||''))}" aria-label="Nota prueba ${idx+1}">
+      </label>
+      <label style="display:flex; align-items:center; gap:6px; font-size:14px; color:#475569;">
+        Ponderación: <input class="test-weight" type="text" value="${escapeHtml(String(t.ponderacion||''))}" aria-label="Ponderación prueba ${idx+1}"><span style="margin-left: 4px; font-weight: 600;">%</span>
+      </label>
+      <div class="test-actions"><button class="btn btn-ghost delete-test">Eliminar</button></div>
+    `;
+    const nameInput = row.querySelector('.test-name');
+    const gradeInput = row.querySelector('.test-grade');
+    const weightInput = row.querySelector('.test-weight');
+    const delBtn = row.querySelector('.delete-test');
+
+    nameInput.addEventListener('input', (e) => {
+      activeCard._tests[idx].nombre = e.target.value;
+      guardar();
+    });
+    gradeInput.addEventListener('input', (e) => {
+      activeCard._tests[idx].nota = e.target.value;
+      guardar();
+    });
+    weightInput.addEventListener('input', (e) => {
+      activeCard._tests[idx].ponderacion = e.target.value;
+      guardar();
+    });
+    delBtn.addEventListener('click', () => {
+      activeCard._tests.splice(idx, 1);
+      renderTests();
+      guardar();
+    });
+
+    testsList.appendChild(row);
+  });
+  if (activeCard._tests.length === 0) {
+    testsList.innerHTML = '<div style="color:#475569">No hay pruebas. Pulsa "Añadir prueba" para crear una.</div>';
+  }
+  actualizarNotasCards();
+  // actualizar nota en el modal también
+  const modalGrade = document.getElementById('modal-grade');
+  if (modalGrade) {
+    modalGrade.textContent = calcularNotaAsignatura(activeCard);
+  }
+}
+
+// utilidad: contraste de texto sobre color de fondo
+function getContrastingText(hex) {
+  try {
+    const rgb = hexToRgb(hex);
+    const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+    return brightness > 150 ? '#0f172a' : '#ffffff';
+  } catch (e) { return '#ffffff'; }
+}
+function hexToRgb(hex) {
+  const h = hex.replace('#','');
+  if (h.length === 3) {
+    return { r: parseInt(h[0]+h[0],16), g: parseInt(h[1]+h[1],16), b: parseInt(h[2]+h[2],16) };
+  }
+  return { r: parseInt(h.slice(0,2),16), g: parseInt(h.slice(2,4),16), b: parseInt(h.slice(4,6),16) };
+}
+
+// Helpers para generar versiones claras y oscuras del color
+function getLighterColor(hex) {
+  const rgb = hexToRgb(hex);
+  // aumentar luminosidad: mezclar con blanco
+  const lighter = {
+    r: Math.min(255, Math.round(rgb.r * 0.6 + 255 * 0.4)),
+    g: Math.min(255, Math.round(rgb.g * 0.6 + 255 * 0.4)),
+    b: Math.min(255, Math.round(rgb.b * 0.6 + 255 * 0.4))
+  };
+  return `rgb(${lighter.r}, ${lighter.g}, ${lighter.b})`;
+}
+
+function getDarkerColor(hex) {
+  const rgb = hexToRgb(hex);
+  // disminuir luminosidad: mezclar con negro
+  const darker = {
+    r: Math.round(rgb.r * 0.5),
+    g: Math.round(rgb.g * 0.5),
+    b: Math.round(rgb.b * 0.5)
+  };
+  return `rgb(${darker.r}, ${darker.g}, ${darker.b})`;
+}
+
+// FLIP animation helper: calcula deltas y anima transform para movimiento suave
+function runFLIP(prevRects) {
+  // Animar sólo los elementos que estaban presente en prevRects (excluimos el elemento que se arrastra)
+  const els = Array.from(prevRects.keys());
+  els.forEach(card => {
+    // obtener nueva posición
+    const prev = prevRects.get(card);
+    if (!prev) return;
+    const next = card.getBoundingClientRect();
+    const dy = prev.top - next.top;
+    if (dy === 0) return;
+
+    // inicialmente aplicamos transform inversa sin transición
+    card.style.transition = 'none';
+    card.style.transform = `translateY(${dy}px)`;
+    // forzar reflow para asegurar que el browser registre el cambio
+    // eslint-disable-next-line no-unused-expressions
+    card.offsetHeight;
+
+    // en el siguiente frame animamos hacia 0
+    requestAnimationFrame(() => {
+      // suavizar: duración algo mayor y easing más suave
+      card.style.transition = 'transform .36s cubic-bezier(.2,.8,.2,1)';
+      card.style.transform = 'translateY(0)';
+    });
+
+    const cleanup = (ev) => {
+      if (ev && ev.propertyName !== 'transform') return;
+      card.style.transition = '';
+      card.style.transform = '';
+      card.removeEventListener('transitionend', cleanup);
+    };
+    card.addEventListener('transitionend', cleanup);
+  });
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.card.show-controls').forEach(card => card.classList.remove('show-controls'));
+  }
+});
+
+/* -------------------------
+   Firebase Integration (Cloud Sync)
+   ------------------------- */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCJHgBQwesEY2m8F76UKZy1003xHg_BGkY",
+  authDomain: "studyboard-262ae.firebaseapp.com",
+  projectId: "studyboard-262ae",
+  storageBucket: "studyboard-262ae.firebasestorage.app",
+  messagingSenderId: "48243887816",
+  appId: "1:48243887816:web:87ab54f94ca9be90851ffd",
+  measurementId: "G-Q12YH4ZL0P"
+};
+
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser = null;
+let isSyncing = false;
+let syncTimeout = null;
+let syncCode = null; // Código de 6 dígitos para sincronización
+
+const firebaseBtn = document.getElementById('firebase-btn');
+const syncIndicator = document.getElementById('sync-indicator');
+const syncCodeModal = document.getElementById('sync-code-modal');
+const syncCodeContent = document.getElementById('sync-code-content');
+
+// Mostrar indicador de sincronización
+function showSyncIndicator(text, type = 'syncing') {
+  const syncText = syncIndicator.querySelector('.sync-text');
+  syncText.textContent = text;
+  syncIndicator.className = 'sync-indicator show';
+  
+  if (type === 'success') {
+    syncIndicator.classList.add('success');
+    syncIndicator.querySelector('.sync-spinner').style.display = 'none';
+  } else if (type === 'error') {
+    syncIndicator.classList.add('error');
+    syncIndicator.querySelector('.sync-spinner').style.display = 'none';
+  } else {
+    syncIndicator.querySelector('.sync-spinner').style.display = 'block';
+  }
+  
+  syncIndicator.style.display = 'flex';
+  
+  if (type !== 'syncing') {
+    setTimeout(() => {
+      syncIndicator.classList.remove('show');
+      setTimeout(() => {
+        syncIndicator.style.display = 'none';
+      }, 400); // Esperar a que termine la animación
+    }, 3000);
+  }
+}
+
+// Actualizar estado visual del botón
+function updateFirebaseButtonState(connected) {
+  if (connected) {
+    firebaseBtn.classList.add('connected');
+    firebaseBtn.title = 'Conectado - Click para ver código';
+  } else {
+    firebaseBtn.classList.remove('connected');
+    firebaseBtn.title = 'Sincronizar con la nube';
+  }
+}
+
+// Generar código de 6 dígitos
+function generateSyncCode() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Mostrar modal con opciones de sincronización
+function showSyncModal() {
+  const savedCode = localStorage.getItem('syncCode');
+  
+  if (savedCode) {
+    // Ya tiene código, mostrar opciones
+    syncCodeContent.innerHTML = `
+      <div style="text-align: center; padding: 20px 0;">
+        <h3 style="margin: 0 0 10px 0; color: var(--text);">Tu código de sincronización</h3>
+        <div style="font-size: 48px; font-weight: 700; color: #4285f4; letter-spacing: 8px; margin: 20px 0;">
+          ${savedCode}
+        </div>
+        <p style="color: var(--text); opacity: 0.7; font-size: 14px; margin: 20px 0;">
+          Usa este código en otros dispositivos para sincronizar tus datos
+        </p>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
+          <button onclick="copySyncCode('${savedCode}')" style="background: #4285f4; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: transform 0.2s ease, box-shadow 0.2s ease; flex: 1; min-width: 140px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(66,133,244,0.3)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
+            📋 Copiar código
+          </button>
+          <button onclick="disconnectSync()" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: transform 0.2s ease, box-shadow 0.2s ease; flex: 1; min-width: 140px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(239,68,68,0.3)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
+            🔌 Desconectar
+          </button>
+        </div>
+        <button onclick="closeSyncModal()" style="background: var(--card-bg); color: var(--text); border: 1px solid rgba(0,0,0,0.1); padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; margin-top: 15px; display: block; width: 100%; transition: transform 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+          Cerrar
+        </button>
+      </div>
+    `;
+  } else {
+    // No tiene código, ofrecer crear o introducir
+    syncCodeContent.innerHTML = `
+      <div style="padding: 20px 0;">
+        <h3 style="margin: 0 0 10px 0; color: var(--text); text-align: center;">¿Cómo quieres sincronizar?</h3>
+        
+        <div style="background: var(--card-bg); border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 20px; margin: 20px 0;">
+          <h4 style="margin: 0 0 10px 0; color: var(--text); font-size: 16px;">📱 Primer dispositivo</h4>
+          <p style="color: var(--text); opacity: 0.7; font-size: 14px; margin: 0 0 15px 0;">
+            Crea un código nuevo para sincronizar tus datos
+          </p>
+          <button onclick="createNewSync()" style="background: #4285f4; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; width: 100%; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(66,133,244,0.3)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
+            ✨ Crear código nuevo
+          </button>
+        </div>
+        
+        <div style="background: var(--card-bg); border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 20px; margin: 20px 0;">
+          <h4 style="margin: 0 0 10px 0; color: var(--text); font-size: 16px;">🔗 Otro dispositivo</h4>
+          <p style="color: var(--text); opacity: 0.7; font-size: 14px; margin: 0 0 15px 0;">
+            Introduce el código de 6 dígitos de tu otro dispositivo
+          </p>
+          <input type="text" id="sync-code-input" placeholder="000000" maxlength="6" style="width: 100%; padding: 14px; border-radius: 8px; border: 2px solid var(--input-bg); background: var(--bg); color: var(--text); font-size: 24px; text-align: center; letter-spacing: 8px; font-weight: 700; margin-bottom: 15px; font-family: 'Poppins', sans-serif; box-sizing: border-box;" />
+          <button onclick="connectWithCode()" style="background: #34a853; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; width: 100%; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(52,168,83,0.3)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
+            🔄 Conectar
+          </button>
+        </div>
+        
+        <button onclick="closeSyncModal()" style="background: var(--card-bg); color: var(--text); border: 1px solid rgba(0,0,0,0.1); padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; margin-top: 10px; width: 100%; transition: transform 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+          Cancelar
+        </button>
+      </div>
+    `;
+  }
+  
+  syncCodeModal.style.display = 'flex';
+  setTimeout(() => {
+    syncCodeModal.classList.add('show');
+  }, 10);
+}
+
+// Cerrar modal
+function closeSyncModal() {
+  syncCodeModal.classList.remove('show');
+  setTimeout(() => {
+    syncCodeModal.style.display = 'none';
+  }, 300);
+}
+
+// Crear nueva sincronización
+async function createNewSync() {
+  const code = generateSyncCode();
+  syncCode = code;
+  localStorage.setItem('syncCode', code);
+  
+  try {
+    await signInAnonymously();
+    // Guardar datos locales actuales en Firebase
+    await saveToFirebase();
+    closeSyncModal();
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+// Conectar con código existente
+async function connectWithCode() {
+  const input = document.getElementById('sync-code-input');
+  const code = input.value.trim();
+  
+  if (code.length !== 6 || !/^\d+$/.test(code)) {
+    alert('Por favor, introduce un código de 6 dígitos válido');
+    return;
+  }
+  
+  syncCode = code;
+  localStorage.setItem('syncCode', code);
+  
+  try {
+    await signInAnonymously();
+    // Los datos se cargan automáticamente dentro de signInAnonymously
+    closeSyncModal();
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+// Copiar código
+function copySyncCode(code) {
+  navigator.clipboard.writeText(code).then(() => {
+    showSyncIndicator('Código copiado', 'success');
+  }).catch(() => {
+    // Fallback para navegadores antiguos
+    const textarea = document.createElement('textarea');
+    textarea.value = code;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    showSyncIndicator('Código copiado', 'success');
+  });
+}
+
+// Desconectar sincronización
+async function disconnectSync() {
+  if (confirm('¿Desconectar sincronización? Los datos locales se mantendrán, pero no se sincronizarán más.')) {
+    try {
+      await auth.signOut();
+      currentUser = null;
+      syncCode = null;
+      localStorage.removeItem('syncCode');
+      localStorage.removeItem('firebaseUserId');
+      updateFirebaseButtonState(false);
+      closeSyncModal();
+      showSyncIndicator('Desconectado', 'success');
+    } catch (error) {
+      console.error('Error al desconectar:', error);
+    }
+  }
+}
+
+// Autenticación anónima
+async function signInAnonymously() {
+  try {
+    showSyncIndicator('Conectando...');
+    
+    // Usar el código de sincronización como ID
+    if (!syncCode) {
+      syncCode = localStorage.getItem('syncCode') || generateSyncCode();
+      localStorage.setItem('syncCode', syncCode);
+    }
+    
+    const result = await auth.signInAnonymously();
+    currentUser = result.user;
+    updateFirebaseButtonState(true);
+    showSyncIndicator('Conectado correctamente', 'success');
+    await loadFromFirebase();
+    return true;
+  } catch (error) {
+    console.error('Error al conectar:', error);
+    
+    // Mensajes de error más específicos
+    if (error.code === 'auth/operation-not-allowed') {
+      showSyncIndicator('Habilita autenticación anónima en Firebase Console', 'error');
+      alert('ERROR: Debes habilitar la autenticación anónima en Firebase Console.\n\n1. Ve a: Authentication → Sign-in method\n2. Click en "Anonymous"\n3. Activa el toggle\n4. Guarda');
+    } else if (error.code === 'auth/network-request-failed') {
+      showSyncIndicator('Sin conexión a internet', 'error');
+    } else {
+      showSyncIndicator('Error: ' + (error.message || 'Desconocido'), 'error');
+    }
+    return false;
+  }
+}
+
+// Cerrar sesión
+async function signOut() {
+  if (confirm('¿Desconectar sincronización? Los datos locales se mantendrán.')) {
+    try {
+      await auth.signOut();
+      currentUser = null;
+      localStorage.removeItem('firebaseUserId');
+      updateFirebaseButtonState(false);
+      showSyncIndicator('Desconectado', 'success');
+    } catch (error) {
+      console.error('Error al desconectar:', error);
+    }
+  }
+}
+
+// Cargar datos desde Firebase
+async function loadFromFirebase() {
+  if (!currentUser || isSyncing || !syncCode) return;
+  
+  isSyncing = true;
+  showSyncIndicator('Cargando desde la nube...');
+  
+  try {
+    // Usar el código de sincronización como clave del documento
+    const doc = await db.collection('sync').doc(syncCode).get();
+    
+    if (doc.exists) {
+      const data = doc.data();
+      if (data.cuatrimestres) {
+        localStorage.setItem('cuatrimestres', JSON.stringify(data.cuatrimestres));
+        renderSemesters();
+        showSyncIndicator('Datos cargados ✓', 'success');
+      }
+    } else {
+      showSyncIndicator('No hay datos en la nube', 'success');
+    }
+  } catch (error) {
+    console.error('Error cargando desde Firebase:', error);
+    showSyncIndicator('Error al cargar datos', 'error');
+  } finally {
+    isSyncing = false;
+  }
+}
+
+// Guardar datos en Firebase
+async function saveToFirebase() {
+  if (!currentUser || isSyncing || !syncCode) return;
+  
+  isSyncing = true;
+  showSyncIndicator('Guardando en la nube...');
+  
+  try {
+    const data = {
+      cuatrimestres: obtenerCuatrimestres(),
+      lastSync: firebase.firestore.FieldValue.serverTimestamp(),
+      version: '1.0'
+    };
+    
+    // Usar el código de sincronización como clave del documento
+    await db.collection('sync').doc(syncCode).set(data);
+    showSyncIndicator('Guardado en la nube ✓', 'success');
+  } catch (error) {
+    console.error('Error guardando en Firebase:', error);
+    showSyncIndicator('Error al guardar', 'error');
+  } finally {
+    isSyncing = false;
+  }
+}
+
+// Sincronización automática con debounce
+function scheduleSyncToFirebase() {
+  if (!currentUser) return;
+  
+  clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(() => {
+    saveToFirebase();
+  }, 2000);
+}
+
+// Event listener del botón Firebase
+firebaseBtn.addEventListener('click', () => {
+  if (currentUser) {
+    showSyncModal();
+  } else {
+    showSyncModal();
+  }
+});
+
+// Modificar guardar() para sincronizar automáticamente
+const originalGuardar = guardar;
+guardar = function() {
+  originalGuardar();
+  scheduleSyncToFirebase();
+};
+
+// Modificar guardarCuatrimestres para sincronizar
+const originalGuardarCuatrimestres = guardarCuatrimestres;
+guardarCuatrimestres = function() {
+  originalGuardarCuatrimestres();
+  scheduleSyncToFirebase();
+};
+
+// Observador de estado de autenticación
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    currentUser = user;
+    updateFirebaseButtonState(true);
+  } else {
+    currentUser = null;
+    updateFirebaseButtonState(false);
+  }
+});
+
+// Cargar datos automáticamente al iniciar si hay código guardado
+window.addEventListener('load', async () => {
+  const savedCode = localStorage.getItem('syncCode');
+  if (savedCode && !currentUser) {
+    syncCode = savedCode;
+    await signInAnonymously();
+    // Los datos ya se cargan dentro de signInAnonymously
+  }
+});
+
+/* -------------------------
+   CALCULADORA DE NOTAS
+   ------------------------- */
+const calculatorModal = document.getElementById('calculator-modal');
+const calculatorBtn = document.getElementById('calculator-btn');
+const dashboardModal = document.getElementById('dashboard-modal');
+const dashboardBtn = document.getElementById('dashboard-btn');
+const toolsMenuToggle = document.getElementById('tools-menu-toggle');
+const toolsMenu = document.getElementById('tools-menu');
+const toolsMenuWrapper = document.querySelector('.tools-menu-wrapper');
+
+// Toggle menú FAB
+toolsMenuToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  toolsMenu.classList.toggle('show');
+  toolsMenuWrapper.classList.toggle('active');
+});
+
+// Cerrar menú al hacer click fuera
+document.addEventListener('click', (e) => {
+  if (!toolsMenuWrapper.contains(e.target)) {
+    toolsMenu.classList.remove('show');
+    toolsMenuWrapper.classList.remove('active');
+  }
+});
+
+// Cerrar menú al hacer click en un botón
+toolsMenu.querySelectorAll('.fab-option').forEach(btn => {
+  btn.addEventListener('click', () => {
+    toolsMenu.classList.remove('show');
+    toolsMenuWrapper.classList.remove('active');
+  });
+});
+
+// Abrir calculadora
+calculatorBtn.addEventListener('click', () => {
+  calculatorModal.style.display = 'flex';
+  setTimeout(() => calculatorModal.classList.add('show'), 10);
+});
+
+// Cerrar calculadora
+function closeCalculatorModal() {
+  calculatorModal.classList.remove('show');
+  setTimeout(() => {
+    calculatorModal.style.display = 'none';
+    document.getElementById('calc-result').style.display = 'none';
+    document.getElementById('calc-current-grade').value = '';
+    document.getElementById('calc-percentage-done').value = '';
+    document.getElementById('calc-target-grade').value = '5.0';
+  }, 300);
+}
+
+// Calcular nota necesaria
+function calculateNeededGrade() {
+  const currentGrade = parseFloat(document.getElementById('calc-current-grade').value) || 0;
+  const percentageDone = parseFloat(document.getElementById('calc-percentage-done').value) || 0;
+  const targetGrade = parseFloat(document.getElementById('calc-target-grade').value) || 5.0;
+  
+  const resultDiv = document.getElementById('calc-result');
+  
+  if (percentageDone <= 0 || percentageDone > 100) {
+    resultDiv.innerHTML = '<p class="calc-error">⚠️ El porcentaje debe estar entre 1 y 100</p>';
+    resultDiv.style.display = 'block';
+    return;
+  }
+  
+  if (percentageDone >= 100) {
+    resultDiv.innerHTML = `<p class="calc-info">✅ Ya completaste el 100% del curso con nota <strong>${currentGrade.toFixed(2)}</strong></p>`;
+    resultDiv.style.display = 'block';
+    return;
+  }
+  
+  const percentageRemaining = 100 - percentageDone;
+  const neededGrade = (targetGrade * 100 - currentGrade * percentageDone) / percentageRemaining;
+  
+  resultDiv.style.display = 'block';
+  
+  if (neededGrade > 10) {
+    resultDiv.innerHTML = `
+      <p class="calc-error">😰 ¡Imposible alcanzar ${targetGrade}!</p>
+      <p>Necesitarías un <strong>${neededGrade.toFixed(2)}</strong> en el ${percentageRemaining}% restante.</p>
+      <p class="calc-tip">💡 Ajusta tu objetivo o esfuérzate por subir la nota actual.</p>
+    `;
+  } else if (neededGrade < 0) {
+    resultDiv.innerHTML = `
+      <p class="calc-success">🎉 ¡Ya superaste tu objetivo!</p>
+      <p>Tu nota actual <strong>${currentGrade.toFixed(2)}</strong> ya es mayor que ${targetGrade}</p>
+    `;
+  } else {
+    let emoji = '📝';
+    let className = 'calc-info';
+    if (neededGrade >= 9) {
+      emoji = '🔥';
+      className = 'calc-warning';
+    } else if (neededGrade >= 7) {
+      emoji = '💪';
+      className = 'calc-warning';
+    } else if (neededGrade >= 5) {
+      emoji = '✅';
+      className = 'calc-success';
+    } else {
+      emoji = '😎';
+      className = 'calc-success';
+    }
+    
+    resultDiv.innerHTML = `
+      <p class="${className}">${emoji} Necesitas un <strong>${neededGrade.toFixed(2)}</strong></p>
+      <p>en el <strong>${percentageRemaining}%</strong> restante para alcanzar ${targetGrade}</p>
+    `;
+  }
+}
+
+/* -------------------------
+   DASHBOARD Y GRÁFICOS
+   ------------------------- */
+
+// Abrir dashboard
+dashboardBtn.addEventListener('click', () => {
+  dashboardModal.style.display = 'flex';
+  setTimeout(() => {
+    dashboardModal.classList.add('show');
+    updateDashboard();
+  }, 10);
+});
+
+// Tabs del dashboard
+document.querySelectorAll('.dashboard-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const targetTab = tab.dataset.tab;
+    
+    // Cambiar tab activo
+    document.querySelectorAll('.dashboard-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    
+    // Cambiar contenido activo
+    document.querySelectorAll('.dashboard-tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector(`[data-content="${targetTab}"]`).classList.add('active');
+  });
+});
+
+// Cerrar dashboard
+function closeDashboardModal() {
+  dashboardModal.classList.remove('show');
+  setTimeout(() => dashboardModal.style.display = 'none', 300);
+}
+
+// Actualizar dashboard
+function updateDashboard() {
+  if (!currentSemester) return;
+  
+  // Obtener datos desde las tarjetas del DOM
+  const cards = Array.from(document.querySelectorAll('.card'));
+  const subjects = cards.map(card => {
+    const name = card.querySelector('.titulo').textContent;
+    const color = card.style.background;
+    const gradeText = calcularNotaAsignatura(card);
+    const grade = gradeText !== '-' ? parseFloat(gradeText) : 0;
+    return { name, color, grade };
+  });
+  
+  const gradesOnly = subjects
+    .map(s => s.grade)
+    .filter(g => g > 0);
+  
+  // Estadísticas básicas
+  const average = gradesOnly.length > 0 
+    ? (gradesOnly.reduce((a, b) => a + b, 0) / gradesOnly.length).toFixed(2)
+    : '-';
+  const passed = subjects.filter(s => s.grade >= 5).length;
+  const failed = subjects.filter(s => s.grade > 0 && s.grade < 5).length;
+  const totalEcts = currentSemester.subjects 
+    ? currentSemester.subjects.reduce((sum, s) => sum + (parseFloat(s.ects) || 0), 0)
+    : 0;
+  
+  document.getElementById('dash-average').textContent = average;
+  document.getElementById('dash-passed').textContent = passed;
+  document.getElementById('dash-failed').textContent = failed;
+  document.getElementById('dash-ects').textContent = totalEcts;
+  
+  // Gráfico de distribución
+  drawGradesChart(gradesOnly);
+  
+  // Ranking de asignaturas
+  const ranking = subjects
+    .filter(s => s.grade > 0)
+    .sort((a, b) => b.grade - a.grade)
+    .map((s, i) => {
+      const grade = s.grade;
+      let emoji = '📕';
+      if (grade >= 9) emoji = '🏆';
+      else if (grade >= 7) emoji = '📗';
+      else if (grade >= 5) emoji = '📘';
+      
+      return `
+        <div class="ranking-item" style="background: ${s.color}; opacity: 0.9;">
+          <span class="ranking-pos">${i + 1}</span>
+          <span class="ranking-name">${s.name}</span>
+          <span class="ranking-grade">${emoji} ${grade.toFixed(2)}</span>
+        </div>
+      `;
+    }).join('');
+  
+  document.getElementById('subjects-ranking').innerHTML = ranking || '<p style="text-align:center; color:#94a3b8;">No hay notas registradas</p>';
+}
+
+// Dibujar gráfico con barras horizontales
+function drawGradesChart(grades) {
+  const container = document.getElementById('grades-chart-bars');
+  
+  if (grades.length === 0) {
+    container.innerHTML = '<p class="no-data">📄 No hay datos para mostrar</p>';
+    return;
+  }
+  
+  // Distribución por rangos
+  const ranges = [
+    { label: 'Suspensos', emoji: '📕', range: '0-5', min: 0, max: 5, color: '#ef4444', count: 0 },
+    { label: 'Aprobados', emoji: '📘', range: '5-7', min: 5, max: 7, color: '#f59e0b', count: 0 },
+    { label: 'Notables', emoji: '📗', range: '7-9', min: 7, max: 9, color: '#3b82f6', count: 0 },
+    { label: 'Sobresalientes', emoji: '🏆', range: '9-10', min: 9, max: 10, color: '#10b981', count: 0 }
+  ];
+  
+  grades.forEach(g => {
+    if (g < 5) ranges[0].count++;
+    else if (g < 7) ranges[1].count++;
+    else if (g < 9) ranges[2].count++;
+    else ranges[3].count++;
+  });
+  
+  const total = grades.length;
+  
+  container.innerHTML = ranges.map((range, i) => {
+    const percentage = total > 0 ? Math.round((range.count / total) * 100) : 0;
+    return `
+      <div class="chart-bar-item" style="animation-delay: ${i * 0.1}s">
+        <div class="chart-bar-header">
+          <span class="chart-bar-label">${range.emoji} ${range.label}</span>
+          <span class="chart-bar-value">${range.count} (${percentage}%)</span>
+        </div>
+        <div class="chart-bar-track">
+          <div class="chart-bar-fill" style="width: ${percentage}%; background: ${range.color};"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* -------------------------
+   RECOMENDACIONES IA
+   ------------------------- */
+
+function updateAIRecommendation() {
+  if (!currentSemester) return;
+  
+  const aiDiv = document.getElementById('ai-recommendation');
+  const aiText = document.getElementById('ai-recommendation-text');
+  const cards = Array.from(document.querySelectorAll('.card'));
+  
+  if (cards.length === 0) {
+    aiDiv.style.display = 'none';
+    return;
+  }
+  
+  // Analizar asignaturas desde las tarjetas con previsión
+  const subjects = cards.map(card => {
+    const name = card.querySelector('.titulo').textContent;
+    
+    // Obtener todas las notas de la asignatura
+    const tests = card._tests || [];
+    const testGrades = tests.map(t => parseFloat(t.nota)).filter(n => !isNaN(n) && n > 0);
+    
+    if (testGrades.length === 0) {
+      return { name, currentGrade: 0, predictedGrade: null, trend: 'sin-datos' };
+    }
+    
+    // Nota acumulada actual
+    const currentGradeText = calcularNotaAsignatura(card);
+    const currentGrade = currentGradeText !== '-' ? parseFloat(currentGradeText) : 0;
+    
+    // Calcular predicción más realista basada en consistencia
+    let trend = 'estable';
+    let predictedGrade = currentGrade;
+    
+    if (testGrades.length === 1) {
+      // Con solo 1 nota, asumimos que seguirá similar
+      predictedGrade = testGrades[0];
+    } else if (testGrades.length >= 2) {
+      // Calcular promedio (rendimiento base)
+      const average = testGrades.reduce((sum, g) => sum + g, 0) / testGrades.length;
+      
+      // Calcular desviación estándar (consistencia)
+      const variance = testGrades.reduce((sum, g) => sum + Math.pow(g - average, 2), 0) / testGrades.length;
+      const stdDev = Math.sqrt(variance);
+      
+      // Calcular tendencia (últimas notas vs primeras)
+      const firstHalf = testGrades.slice(0, Math.ceil(testGrades.length / 2));
+      const secondHalf = testGrades.slice(Math.ceil(testGrades.length / 2));
+      const avgFirst = firstHalf.reduce((sum, g) => sum + g, 0) / firstHalf.length;
+      const avgSecond = secondHalf.reduce((sum, g) => sum + g, 0) / secondHalf.length;
+      const trendDiff = avgSecond - avgFirst;
+      
+      // Predicción híbrida:
+      // - Si es consistente (stdDev bajo): predice cerca del promedio
+      // - Si tiene tendencia clara: ajusta según tendencia
+      // - Ponderación: 70% promedio + 30% tendencia
+      
+      if (stdDev < 0.5) {
+        // Muy consistente: predice el promedio
+        predictedGrade = average;
+      } else if (stdDev < 1.5) {
+        // Moderadamente consistente: promedio con leve ajuste de tendencia
+        predictedGrade = average * 0.7 + (average + trendDiff) * 0.3;
+      } else {
+        // Inconsistente: dar más peso a las últimas notas
+        const lastTwo = testGrades.slice(-2);
+        const recentAvg = lastTwo.reduce((sum, g) => sum + g, 0) / lastTwo.length;
+        predictedGrade = average * 0.5 + recentAvg * 0.5;
+      }
+      
+      // Limitar predicción a rango válido [0, 10]
+      predictedGrade = Math.max(0, Math.min(10, predictedGrade));
+      
+      // Determinar tendencia
+      if (trendDiff > 0.5) trend = 'subiendo';
+      else if (trendDiff < -0.5) trend = 'bajando';
+    }
+    
+    return { name, currentGrade, predictedGrade, trend, testCount: testGrades.length };
+  });
+  
+  // Filtrar asignaturas con datos
+  const withData = subjects.filter(s => s.predictedGrade !== null);
+  
+  if (withData.length === 0) {
+    aiText.textContent = '✨ Aún no hay notas registradas. ¡Empieza con buen pie este cuatrimestre!';
+    aiDiv.style.display = 'flex';
+    return;
+  }
+  
+  // Identificar asignaturas en riesgo según previsión
+  const atRisk = withData.filter(s => s.predictedGrade < 5);
+  const needAttention = withData.filter(s => s.predictedGrade >= 5 && s.predictedGrade < 7);
+  const declining = withData.filter(s => s.trend === 'bajando' && s.predictedGrade < 8);
+  const excellent = withData.filter(s => s.predictedGrade >= 9);
+  
+  let recommendation = '';
+  
+  // Lógica de recomendaciones basada en previsión
+  if (atRisk.length > 0) {
+    const riskNames = atRisk.map(s => `${s.name} (prev: ${s.predictedGrade.toFixed(1)})`).join(', ');
+    recommendation = `🚨 Atención urgente: ${riskNames}. ${atRisk.length > 1 ? 'Estas asignaturas podrían' : 'Esta asignatura podría'} suspender según la tendencia actual.`;
+  } else if (declining.length > 0) {
+    const decliningName = declining[0].name;
+    recommendation = `📉 Vigila ${decliningName} (prev: ${declining[0].predictedGrade.toFixed(1)}). Tendencia a la baja, refuerza antes del siguiente examen.`;
+  } else if (needAttention.length > 0) {
+    const attentionName = needAttention[0].name;
+    recommendation = `⚡ Impulsa ${attentionName} (prev: ${needAttention[0].predictedGrade.toFixed(1)}). Estás cerca de un notable, ¡puedes lograrlo!`;
+  } else if (excellent.length === withData.length) {
+    recommendation = `🏆 ¡Sobresaliente general! Todas tus asignaturas van hacia excelencia. ¡Mantén el ritmo!`;
+  } else {
+    const avgPredicted = withData.reduce((sum, s) => sum + s.predictedGrade, 0) / withData.length;
+    if (avgPredicted >= 8) {
+      recommendation = `🌟 Previsión muy positiva (${avgPredicted.toFixed(1)}). ¡Vas camino del notable alto!`;
+    } else if (avgPredicted >= 7) {
+      recommendation = `💪 Buen rumbo (prev: ${avgPredicted.toFixed(1)}). Con constancia alcanzarás la excelencia.`;
+    } else {
+      recommendation = `📚 Previsión: ${avgPredicted.toFixed(1)}. Todas las asignaturas aprobando, pero hay margen de mejora.`;
+    }
+  }
+  
+  aiText.textContent = recommendation;
+  aiDiv.style.display = 'flex';
+}
+
+</script>
+
+</body>
+</html>
