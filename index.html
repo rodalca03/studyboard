@@ -321,6 +321,78 @@ const showArchivedToggle = document.getElementById('show-archived-toggle');
 
 let currentSemester = null; // Semestre actualmente seleccionado
 
+// Sistema de historial para deshacer (Ctrl+Z)
+const undoHistory = [];
+const MAX_HISTORY_SIZE = 50;
+let isUndoing = false;
+
+function saveStateToHistory(actionType = 'cambio') {
+  if (isUndoing) return; // No guardar durante un undo
+  
+  const state = {
+    cuatrimestres: JSON.parse(JSON.stringify(obtenerCuatrimestres())),
+    exams: JSON.parse(localStorage.getItem('exams') || '[]'),
+    timestamp: Date.now(),
+    action: actionType
+  };
+  
+  undoHistory.push(state);
+  
+  // Limitar tamaño del historial
+  if (undoHistory.length > MAX_HISTORY_SIZE) {
+    undoHistory.shift();
+  }
+}
+
+function undo() {
+  if (undoHistory.length === 0) {
+    showSyncIndicator('No hay cambios para deshacer', 'error');
+    return;
+  }
+  
+  isUndoing = true;
+  
+  // Obtener el estado anterior (el último guardado)
+  const previousState = undoHistory.pop();
+  
+  // Restaurar el estado
+  localStorage.setItem('cuatrimestres', JSON.stringify(previousState.cuatrimestres));
+  localStorage.setItem('exams', JSON.stringify(previousState.exams));
+  
+  // Actualizar la interfaz
+  if (menuScreen.classList.contains('active')) {
+    renderSemesters();
+    checkUpcomingExams();
+  } else if (currentSemester) {
+    // Actualizar el semestre actual después de deshacer
+    const cuatrimestres = obtenerCuatrimestres();
+    const updatedSemester = cuatrimestres.find(c => c.id === currentSemester.id);
+    if (updatedSemester) {
+      currentSemester = updatedSemester;
+      render();
+    } else {
+      showMenuScreen();
+    }
+  }
+  
+  // Sincronizar con Firebase
+  scheduleSyncToFirebase();
+  
+  showSyncIndicator(`Cambio deshecho: ${previousState.action}`, 'success');
+  
+  setTimeout(() => {
+    isUndoing = false;
+  }, 100);
+}
+
+// Atajo de teclado Ctrl+Z
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+    e.preventDefault();
+    undo();
+  }
+});
+
 const COLOR_OPTIONS = [
   { value: '#ff4d4d', label: 'Rojo' },
   { value: '#ff954d', label: 'Naranja' },
@@ -697,6 +769,7 @@ function renderSemesters() {
     // Archivar/Desarchivar
     card.querySelector('.btn-archive-semester').addEventListener('click', (e) => {
       e.stopPropagation();
+      saveStateToHistory('archivar/desarchivar cuatrimestre');
       const cuatrimestres = obtenerCuatrimestres();
       const idx = cuatrimestres.findIndex(c => c.id === sem.id);
       if (idx !== -1) {
@@ -990,6 +1063,7 @@ function actualizarEstadisticas() {
    Crear tarjeta
    ------------------------- */
 function crearTarjeta(nombre = 'Nueva asignatura', color = '#ff4d4d', doGuardar = true, doScroll = false) {
+  if (doGuardar) saveStateToHistory('añadir asignatura');
   const card = document.createElement('div');
   card.className = 'card';
   card.draggable = true;
@@ -1041,6 +1115,7 @@ function crearTarjeta(nombre = 'Nueva asignatura', color = '#ff4d4d', doGuardar 
   });
 
   card.querySelector('.delete-btn').addEventListener('click', () => {
+    saveStateToHistory('eliminar asignatura');
     card.remove();
     guardar();
   });
@@ -1359,6 +1434,7 @@ createConfirm.addEventListener('click', () => {
   const año = (createCurso.value || '').trim();
   const cuatri = (createCuatri.value || '').trim();
   if (!año || !cuatri) return; // simple guard
+  saveStateToHistory('crear cuatrimestre');
   const nombre = `Curso ${año} - Cuatrimestre ${cuatri}`;
   const cuatrimestres = obtenerCuatrimestres();
   cuatrimestres.push({ id: Date.now(), nombre: nombre, asignaturas: [] });
@@ -1382,6 +1458,7 @@ editSave.addEventListener('click', () => {
   if (!_editingSemester) return;
   const newName = (editNameInput.value || '').trim();
   if (!newName) return;
+  saveStateToHistory('editar cuatrimestre');
   _editingSemester.nombre = newName;
   const cuatrimestres = obtenerCuatrimestres();
   const idx = cuatrimestres.findIndex(c => c.id === _editingSemester.id);
@@ -1405,6 +1482,7 @@ deleteSheet.addEventListener('click', (e) => { if (e.target === deleteSheet) clo
 
 deleteConfirm.addEventListener('click', () => {
   if (_deletingSemesterId == null) return;
+  saveStateToHistory('eliminar cuatrimestre');
   deleteSemester(_deletingSemesterId);
   closeDeleteSheet();
 });
@@ -1428,6 +1506,7 @@ duplicateConfirm.addEventListener('click', () => {
   const newName = (duplicateNameInput.value || '').trim();
   if (!newName) return;
   
+  saveStateToHistory('duplicar cuatrimestre');
   const cuatrimestres = obtenerCuatrimestres();
   const newSemester = {
     id: Date.now(),
@@ -2513,6 +2592,8 @@ function saveExam() {
     location: location || ''
   };
   
+  saveStateToHistory('añadir examen');
+  
   // Guardar en localStorage
   let exams = JSON.parse(localStorage.getItem('exams') || '[]');
   exams.push(exam);
@@ -2613,6 +2694,7 @@ function renderExams() {
 function deleteExam(examId) {
   if (!confirm('¿Eliminar este examen?')) return;
   
+  saveStateToHistory('eliminar examen');
   let exams = JSON.parse(localStorage.getItem('exams') || '[]');
   exams = exams.filter(e => e.id !== examId);
   localStorage.setItem('exams', JSON.stringify(exams));
