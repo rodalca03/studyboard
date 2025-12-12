@@ -594,6 +594,10 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   background: var(--card-bg);
 }
 
+#subject-modal .modal-body {
+  overflow: visible;
+}
+
 /* Versión de la aplicación */
 .app-version {
   position: absolute;
@@ -610,12 +614,25 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   color: rgba(255, 255, 255, 0.5);
 }
 
-.tests-list { display: flex; flex-direction: column; gap: 10px; }
+.tests-list { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 10px;
+  overflow-y: auto;
+  max-height: 450px;
+  padding-right: 4px;
+}
+
 .test-row {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; 
+  align-items: center; 
+  gap: 10px;
   background: #e8eaef;
-  padding: 10px; border-radius: 10px;
+  padding: 10px; 
+  border-radius: 10px;
   flex-wrap: wrap;
+  min-height: 52px;
+  box-sizing: border-box;
 }
 .test-row input[type="text"], .test-row input[type="number"] {
   border: none; background: transparent; outline: none; font-size: 14px; padding: 6px 8px; border-radius: 8px;
