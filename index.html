@@ -38,7 +38,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version">v1.4.2</div>
+        <div class="app-version">v1.5.0</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -202,42 +202,44 @@
       <h2 class="modal-title">📅 Exámenes Futuros</h2>
       <button class="close-modal-btn" onclick="closeExamsModal()" aria-label="Cerrar">✕</button>
     </div>
-    <div class="modal-body exams-modal-body">
-      <button class="btn-add-exam" onclick="openAddExamForm()">➕ Añadir Examen</button>
-      
-      <div id="add-exam-form" class="add-exam-form" style="display:none;">
-        <h3>Nuevo Examen</h3>
-        <div class="exam-form-group">
-          <label for="exam-subject-select">Asignatura:</label>
-          <select id="exam-subject-select" class="exam-select">
-            <option value="">Selecciona una asignatura...</option>
-          </select>
+    <div class="modal-body">
+      <div class="exams-wrapper">
+        <button class="btn-add-exam" onclick="openAddExamForm()">➕ Añadir Examen</button>
+        
+        <div id="add-exam-form" class="add-exam-form" style="display:none;">
+          <h3>Nuevo Examen</h3>
+          <div class="exam-form-group">
+            <label for="exam-subject-select">Asignatura:</label>
+            <select id="exam-subject-select" class="exam-select">
+              <option value="">Selecciona una asignatura...</option>
+            </select>
+          </div>
+          <div class="exam-form-group">
+            <label for="exam-date-input">Fecha del examen:</label>
+            <input type="date" id="exam-date-input" class="exam-input" />
+          </div>
+          <div class="exam-form-group">
+            <label for="exam-time-input">Hora (opcional):</label>
+            <input type="time" id="exam-time-input" class="exam-input" />
+          </div>
+          <div class="exam-form-group">
+            <label for="exam-location-input">Ubicación (opcional):</label>
+            <input type="text" id="exam-location-input" class="exam-input" placeholder="Ej: Aula 203" />
+          </div>
+          <div class="exam-form-actions">
+            <button class="btn btn-ghost" onclick="closeAddExamForm()">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveExam()">Guardar</button>
+          </div>
         </div>
-        <div class="exam-form-group">
-          <label for="exam-date-input">Fecha del examen:</label>
-          <input type="date" id="exam-date-input" class="exam-input" />
+        
+        <div id="exams-list" class="exams-list">
+          <!-- Los exámenes se renderizarán aquí -->
         </div>
-        <div class="exam-form-group">
-          <label for="exam-time-input">Hora (opcional):</label>
-          <input type="time" id="exam-time-input" class="exam-input" />
+        
+        <div id="no-exams-message" class="no-exams-message" style="display:none;">
+          <p>📚 No hay exámenes programados</p>
+          <p class="hint">Añade tu primer examen para llevar un seguimiento de tus fechas importantes.</p>
         </div>
-        <div class="exam-form-group">
-          <label for="exam-location-input">Ubicación (opcional):</label>
-          <input type="text" id="exam-location-input" class="exam-input" placeholder="Ej: Aula 203" />
-        </div>
-        <div class="exam-form-actions">
-          <button class="btn btn-ghost" onclick="closeAddExamForm()">Cancelar</button>
-          <button class="btn btn-primary" onclick="saveExam()">Guardar</button>
-        </div>
-      </div>
-      
-      <div id="exams-list" class="exams-list">
-        <!-- Los exámenes se renderizarán aquí -->
-      </div>
-      
-      <div id="no-exams-message" class="no-exams-message" style="display:none;">
-        <p>📚 No hay exámenes programados</p>
-        <p class="hint">Añade tu primer examen para llevar un seguimiento de tus fechas importantes.</p>
       </div>
     </div>
   </div>

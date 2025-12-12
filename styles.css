@@ -2057,25 +2057,23 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
    MODAL EXÁMENES
    ------------------------- */
 .exams-modal {
-  max-width: 600px !important;
-  height: 88vh !important;
-  max-height: 750px !important;
-  display: flex !important;
-  flex-direction: column !important;
+  max-width: 600px;
+  width: 90%;
+  height: 650px;
+  max-height: 85vh;
 }
 
-.exams-modal .modal-header {
-  flex-shrink: 0;
+.exams-modal .modal-body {
+  padding: 0;
+  overflow: hidden;
 }
 
-.exams-modal-body {
-  flex: 1 1 0%;
+.exams-wrapper {
+  height: 100%;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px;
-  overflow: hidden;
-  min-height: 0;
 }
 
 .btn-add-exam {
@@ -2091,7 +2089,6 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
   width: fit-content;
   align-self: flex-end;
-  flex-shrink: 0;
 }
 
 .btn-add-exam:hover {
@@ -2169,8 +2166,7 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 6px;
-  flex: 1;
-  min-height: 0;
+  height: calc(100% - 55px);
 }
 
 .exams-list::-webkit-scrollbar {
