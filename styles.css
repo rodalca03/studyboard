@@ -2323,12 +2323,46 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
 }
 
 @media (max-width: 640px) {
+  .modal {
+    width: 95%;
+    max-height: 90vh;
+  }
+
   .exams-modal {
     max-width: 100%;
-    max-height: 95vh;
+    height: 85vh;
+    max-height: 90vh;
+  }
+  
+  .exams-wrapper {
+    height: 100%;
+  }
+
+  .btn-add-exam {
+    padding: 10px 16px;
+    font-size: 13px;
+    margin: 12px 16px 0 16px;
+    align-self: stretch;
+    width: auto;
+  }
+
+  .add-exam-form {
+    top: 52px;
+    left: 12px;
+    right: 12px;
+    padding: 16px;
   }
   
   .exams-list {
-    max-height: 300px;
+    padding: 16px;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+    overflow-y: auto;
+  }
+
+  .exam-item {
+    padding: 14px;
+    margin-bottom: 10px;
   }
 }
