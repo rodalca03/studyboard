@@ -38,7 +38,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version">v1.5.1</div>
+        <div class="app-version">v1.5.2</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -2534,7 +2534,8 @@ examsBtn.addEventListener('click', () => {
   populateSubjectSelect();
   renderExams();
   examsModal.style.display = 'flex';
-  setTimeout(() => examsModal.classList.add('show'), 10);
+  requestAnimationFrame(() => examsModal.classList.add('show'));
+  document.body.style.overflow = 'hidden';
   // Agregar al historial para manejo del botón atrás
   history.pushState({ modal: 'exams' }, '', '#exams');
 });
@@ -2544,7 +2545,8 @@ function closeExamsModal() {
   setTimeout(() => {
     examsModal.style.display = 'none';
     closeAddExamForm();
-  }, 300);
+  }, 260);
+  document.body.style.overflow = '';
   // Limpiar historial si estamos en el modal (sin navegar)
   if (window.location.hash === '#exams') {
     // Usar replaceState en vez de back() para no activar navegación
