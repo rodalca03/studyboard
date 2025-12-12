@@ -2057,18 +2057,25 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
    MODAL EXÁMENES
    ------------------------- */
 .exams-modal {
-  max-width: 600px;
-  height: 90vh;
-  max-height: none;
+  max-width: 600px !important;
+  height: 88vh !important;
+  max-height: 750px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.exams-modal .modal-header {
+  flex-shrink: 0;
 }
 
 .exams-modal-body {
+  flex: 1 1 0%;
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  height: 100%;
   overflow: hidden;
+  min-height: 0;
 }
 
 .btn-add-exam {
