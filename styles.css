@@ -534,14 +534,14 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   bottom: 6px;
   right: 12px;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.65);
   font-weight: 500;
   pointer-events: none;
   user-select: none;
 }
 
 .dark-mode .app-version {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .tests-list { display: flex; flex-direction: column; gap: 10px; }
