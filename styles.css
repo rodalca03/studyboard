@@ -458,6 +458,7 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   .tests-list {
     max-height: 300px !important;
     overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
   
   .test-row { font-size: 12px; gap: 6px; padding: 8px; }
@@ -600,6 +601,10 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   background: var(--card-bg);
 }
 
+#subject-modal .modal-body {
+  overflow: visible;
+}
+
 /* Versión de la aplicación */
 .app-version {
   position: absolute;
@@ -622,6 +627,7 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   gap: 10px;
   overflow-y: auto;
   max-height: 400px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .test-row {
