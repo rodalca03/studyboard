@@ -500,7 +500,7 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
 }
 
 .modal {
-  background: var(--card-bg);
+  background: transparent;
   border-radius: 16px;
   width: 90%;
   max-width: 680px;
@@ -545,6 +545,8 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   overflow: hidden;
   padding: 0;
   box-sizing: border-box;
+  background: var(--card-bg);
+  border-radius: 0 0 16px 16px;
 }
 
 /* Versión de la aplicación */
