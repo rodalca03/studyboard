@@ -500,7 +500,7 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
 }
 
 .modal {
-  background: transparent;
+  background: var(--card-bg);
   border-radius: 16px;
   width: 90%;
   max-width: 680px;
@@ -530,9 +530,10 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   justify-content: space-between;
   gap: 12px;
   flex-shrink: 0;
-  border-radius: 16px 16px 0 0;
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   overflow: hidden;
+  margin: 0;
+  border: none;
 }
 
 .modal-title { font-size: 18px; font-weight: 500; color: white; margin: 0; }
@@ -546,7 +547,6 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   padding: 0;
   box-sizing: border-box;
   background: var(--card-bg);
-  border-radius: 0 0 16px 16px;
 }
 
 /* Versión de la aplicación */
