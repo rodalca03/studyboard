@@ -2061,12 +2061,19 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   max-height: 85vh;
 }
 
+.exams-modal .modal-body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .exams-content {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  height: 100%;
+  flex: 1;
   overflow: hidden;
+  min-height: 0;
 }
 
 .exams-header {
@@ -2149,10 +2156,30 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   display: flex;
   flex-direction: column;
   gap: 12px;
-  flex: 1;
+  flex: 1 1 auto;
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
+  padding-right: 4px;
+}
+
+/* Scrollbar para la lista de exámenes */
+.exams-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.exams-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.exams-list::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.3);
+  border-radius: 3px;
+}
+
+.exams-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.5);
 }
 
 .exam-item {
