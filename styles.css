@@ -2058,66 +2058,63 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
    ------------------------- */
 .exams-modal {
   max-width: 600px;
-  height: 85vh;
-  max-height: 700px;
+  max-height: 90vh;
 }
 
-.exams-modal .modal-body {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding: 12px 16px 16px 16px;
-}
-
-.exams-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  flex: 1;
-  overflow: hidden;
+.exams-modal-body {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 14px;
+  padding: 14px 18px 18px 18px;
   min-height: 0;
 }
 
-.exams-header {
-  display: flex;
-  justify-content: flex-end;
-  flex-shrink: 0;
-}
-
 .btn-add-exam {
-  padding: 10px 16px;
+  padding: 11px 18px;
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  width: fit-content;
+  justify-self: end;
 }
 
 .btn-add-exam:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.btn-add-exam:active {
+  transform: translateY(0);
 }
 
 .add-exam-form {
   background: var(--card-bg);
-  padding: 20px;
+  padding: 18px;
   border-radius: 10px;
   border: 2px solid rgba(16, 185, 129, 0.2);
   animation: slideDown 0.3s ease;
-  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .add-exam-form h3 {
-  margin: 0 0 16px 0;
+  margin: 0 0 14px 0;
   color: var(--text);
   font-size: 16px;
+  font-weight: 600;
 }
 
 .exam-form-group {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
+}
+
+.exam-form-group:last-of-type {
+  margin-bottom: 0;
 }
 
 .exam-form-group label {
@@ -2157,31 +2154,30 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
 .exams-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  flex: 1 1 auto;
+  gap: 10px;
   overflow-y: auto;
   overflow-x: hidden;
+  padding-right: 6px;
   min-height: 0;
-  padding-right: 4px;
 }
 
-/* Scrollbar para la lista de exámenes */
 .exams-list::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .exams-list::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
 }
 
 .exams-list::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.3);
-  border-radius: 3px;
+  background: rgba(16, 185, 129, 0.25);
+  border-radius: 4px;
+  transition: background 0.2s ease;
 }
 
 .exams-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.4);
 }
 
 .exam-item {
