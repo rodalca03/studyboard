@@ -532,6 +532,7 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   flex-shrink: 0;
   border-radius: 16px 16px 0 0;
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  overflow: hidden;
 }
 
 .modal-title { font-size: 18px; font-weight: 500; color: white; margin: 0; }
@@ -2111,6 +2112,7 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
   width: fit-content;
   align-self: flex-end;
+  margin: 16px 20px 0 0;
 }
 
 .btn-add-exam:hover {
