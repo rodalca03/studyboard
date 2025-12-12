@@ -531,8 +531,7 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   gap: 12px;
   flex-shrink: 0;
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  overflow: hidden;
-  margin: 0;
+  margin: -1px -1px 0 -1px;
   border: none;
 }
 
@@ -544,7 +543,7 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
-  padding: 0;
+  padding: 20px;
   box-sizing: border-box;
   background: var(--card-bg);
 }
