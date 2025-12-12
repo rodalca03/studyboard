@@ -454,21 +454,7 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   .titulo { font-size: 16px; }
   .card { padding: 14px; border-radius: 12px; }
   #add-btn { border-radius: 12px; width: 56px; height: 56px; }
-  
-  /* Pruebas evaluables mobile */
-  .tests-list {
-    max-height: 350px !important;
-    overflow-y: auto !important;
-  }
-  
-  .test-row { 
-    font-size: 12px; 
-    gap: 6px; 
-    padding: 8px;
-    min-height: 52px !important;
-    box-sizing: border-box !important;
-  }
-  
+  .test-row { font-size: 12px; gap: 6px; padding: 8px; }
   .test-name { flex: 1; min-width: 70px; }
   .test-grade { width: 50px; }
   .test-weight { width: 45px; }
@@ -608,10 +594,6 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   background: var(--card-bg);
 }
 
-#subject-modal .modal-body {
-  overflow: visible;
-}
-
 /* Versión de la aplicación */
 .app-version {
   position: absolute;
@@ -628,14 +610,7 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   color: rgba(255, 255, 255, 0.5);
 }
 
-.tests-list { 
-  display: flex; 
-  flex-direction: column; 
-  gap: 10px;
-  overflow-y: auto;
-  max-height: 450px;
-  padding-right: 4px;
-}
+.tests-list { display: flex; flex-direction: column; gap: 10px; }
 
 .test-row {
   display: flex; 
@@ -645,8 +620,6 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   padding: 10px; 
   border-radius: 10px;
   flex-wrap: wrap;
-  min-height: 52px;
-  box-sizing: border-box;
 }
 .test-row input[type="text"], .test-row input[type="number"] {
   border: none; background: transparent; outline: none; font-size: 14px; padding: 6px 8px; border-radius: 8px;
