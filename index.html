@@ -38,7 +38,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version">v1.8.7</div>
+        <div class="app-version">v1.8.4</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -1334,14 +1334,6 @@ ADD_BTN.addEventListener('click', () => {
 document.addEventListener('DOMContentLoaded', () => {
   initDarkMode();
   showMenuScreen();
-  
-  // Event delegation para los clicks en las tarjetas de avisos de exámenes
-  document.addEventListener('click', (e) => {
-    const examCard = e.target.closest('.exam-alert-item');
-    if (examCard && examCard.dataset.examId) {
-      openExamDetailModal(examCard.dataset.examId);
-    }
-  });
 });
 
 /* -------------------------
@@ -2820,7 +2812,7 @@ function checkUpcomingExams() {
     });
     
     alertHTML += `
-      <div class="exam-alert-item ${urgencyClass}" data-exam-id="${exam.id}">
+      <div class="exam-alert-item ${urgencyClass}" onclick="openExamDetailModal('${exam.id}')">
         <div class="exam-alert-subject">${exam.subjectName}</div>
         <div class="exam-alert-time">${timeText}</div>
         <div class="exam-alert-date">${formattedDate}</div>
@@ -2903,25 +2895,12 @@ function openExamDetailModal(examId) {
     </div>
   `;
   
-  const modal = document.getElementById('exam-detail-modal');
-  if (!modal) {
-    console.error('Modal no encontrado');
-    return;
-  }
-  modal.style.display = 'flex';
-  setTimeout(() => {
-    modal.classList.add('show');
-  }, 10);
+  document.getElementById('exam-detail-modal').style.display = 'flex';
 }
 
 // Cerrar modal de detalles del examen
 function closeExamDetailModal() {
-  const modal = document.getElementById('exam-detail-modal');
-  if (!modal) return;
-  modal.classList.remove('show');
-  setTimeout(() => {
-    modal.style.display = 'none';
-  }, 250);
+  document.getElementById('exam-detail-modal').style.display = 'none';
 }
 
 // Eliminar examen desde el modal de detalles
