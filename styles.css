@@ -858,6 +858,11 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   transition: none;
 }
 
+.card.swiping .card-inner {
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
 .card.swipe-removed {
   transform: translateX(150%) scale(0.8);
   opacity: 0;
