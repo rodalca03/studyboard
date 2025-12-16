@@ -23,6 +23,136 @@
 </head>
 <body>
 
+<!-- Modal de Onboarding/Tutorial -->
+<div id="onboarding-modal" class="onboarding-overlay" style="display:none;">
+  <div class="onboarding-container">
+    <button class="onboarding-close" id="skip-onboarding">✕</button>
+    
+    <div class="onboarding-slides">
+      <!-- Slide 1: Bienvenida -->
+      <div class="onboarding-slide active">
+        <div class="onboarding-image">
+          <svg width="200" height="160" viewBox="0 0 200 160" fill="none">
+            <rect x="20" y="20" width="160" height="120" rx="12" fill="#6366f1" opacity="0.1"/>
+            <rect x="30" y="30" width="140" height="100" rx="8" fill="#6366f1" opacity="0.2"/>
+            <text x="100" y="90" text-anchor="middle" font-size="64" fill="#6366f1">📚</text>
+          </svg>
+        </div>
+        <h2>¡Bienvenido a StudyBoard!</h2>
+        <p>Tu gestor completo de asignaturas, notas y exámenes universitarios. Descubre las funcionalidades principales.</p>
+      </div>
+      
+      <!-- Slide 2: Cuatrimestres y Asignaturas -->
+      <div class="onboarding-slide">
+        <div class="onboarding-image">
+          <svg width="200" height="160" viewBox="0 0 200 160" fill="none">
+            <rect x="15" y="15" width="70" height="50" rx="8" fill="#ff4d4d" opacity="0.8"/>
+            <rect x="95" y="15" width="70" height="50" rx="8" fill="#ff954d" opacity="0.8"/>
+            <rect x="15" y="75" width="70" height="50" rx="8" fill="#ffe14d" opacity="0.8"/>
+            <rect x="95" y="75" width="70" height="50" rx="8" fill="#9cff4d" opacity="0.8"/>
+            <text x="50" y="45" text-anchor="middle" font-size="20">📖</text>
+            <text x="130" y="45" text-anchor="middle" font-size="20">📝</text>
+            <text x="50" y="105" text-anchor="middle" font-size="20">📐</text>
+            <text x="130" y="105" text-anchor="middle" font-size="20">🔬</text>
+          </svg>
+        </div>
+        <h2>Organiza tus Cuatrimestres</h2>
+        <p>Crea cuatrimestres y añade todas tus asignaturas. Personaliza cada tarjeta con colores para identificarlas rápidamente.</p>
+      </div>
+      
+      <!-- Slide 3: Notas y Pruebas -->
+      <div class="onboarding-slide">
+        <div class="onboarding-image">
+          <svg width="200" height="160" viewBox="0 0 200 160" fill="none">
+            <rect x="40" y="20" width="120" height="120" rx="12" fill="#6366f1" opacity="0.1"/>
+            <line x1="60" y1="50" x2="140" y2="50" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/>
+            <line x1="60" y1="75" x2="140" y2="75" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/>
+            <line x1="60" y1="100" x2="140" y2="100" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="150" cy="35" r="15" fill="#10b981"/>
+            <text x="150" y="42" text-anchor="middle" font-size="18" fill="white" font-weight="bold">8.5</text>
+          </svg>
+        </div>
+        <h2>Gestiona tus Notas</h2>
+        <p>Añade pruebas evaluables con su ponderación. StudyBoard calculará automáticamente tu nota final y te mostrará qué necesitas para aprobar.</p>
+      </div>
+      
+      <!-- Slide 4: Gestos Swipe -->
+      <div class="onboarding-slide">
+        <div class="onboarding-image">
+          <svg width="200" height="160" viewBox="0 0 200 160" fill="none">
+            <rect x="40" y="40" width="80" height="60" rx="8" fill="#ff4d4d" opacity="0.3"/>
+            <path d="M 80 70 L 120 70" stroke="#dc2626" stroke-width="4" stroke-linecap="round" marker-end="url(#arrowred)"/>
+            <text x="140" y="75" font-size="12" fill="#dc2626" font-weight="bold">Eliminar</text>
+            
+            <rect x="40" y="110" width="80" height="60" rx="8" fill="#3b82f6" opacity="0.3" transform="translate(160, 280) scale(-1, 1)"/>
+            <path d="M 80 140 L 40 140" stroke="#2563eb" stroke-width="4" stroke-linecap="round" marker-end="url(#arrowblue)"/>
+            <text x="15" y="145" font-size="12" fill="#2563eb" font-weight="bold">Info</text>
+            
+            <defs>
+              <marker id="arrowred" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                <polygon points="0 0, 10 3, 0 6" fill="#dc2626"/>
+              </marker>
+              <marker id="arrowblue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                <polygon points="0 0, 10 3, 0 6" fill="#2563eb"/>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+        <h2>Gestos Rápidos</h2>
+        <p>Desliza a la izquierda para eliminar una asignatura o a la derecha para ver su información completa. ¡Rápido y fácil!</p>
+      </div>
+      
+      <!-- Slide 5: Sincronización -->
+      <div class="onboarding-slide">
+        <div class="onboarding-image">
+          <svg width="200" height="160" viewBox="0 0 200 160" fill="none">
+            <circle cx="100" cy="80" r="50" fill="#4285f4" opacity="0.1"/>
+            <circle cx="100" cy="80" r="35" fill="#4285f4" opacity="0.2"/>
+            <text x="100" y="95" text-anchor="middle" font-size="48" fill="#4285f4">☁️</text>
+            <circle cx="60" cy="130" r="12" fill="#34a853"/>
+            <circle cx="140" cy="130" r="12" fill="#34a853"/>
+            <text x="60" y="137" text-anchor="middle" font-size="14" fill="white">📱</text>
+            <text x="140" y="137" text-anchor="middle" font-size="14" fill="white">💻</text>
+          </svg>
+        </div>
+        <h2>Sincroniza en la Nube</h2>
+        <p>Crea un código de respaldo para sincronizar tus datos entre dispositivos. ¡Nunca pierdas tu información!</p>
+      </div>
+      
+      <!-- Slide 6: Estadísticas -->
+      <div class="onboarding-slide">
+        <div class="onboarding-image">
+          <svg width="200" height="160" viewBox="0 0 200 160" fill="none">
+            <rect x="40" y="100" width="30" height="40" rx="4" fill="#10b981"/>
+            <rect x="80" y="70" width="30" height="70" rx="4" fill="#3b82f6"/>
+            <rect x="120" y="50" width="30" height="90" rx="4" fill="#8b5cf6"/>
+            <line x1="30" y1="145" x2="170" y2="145" stroke="#64748b" stroke-width="2"/>
+            <line x1="30" y1="145" x2="30" y2="40" stroke="#64748b" stroke-width="2"/>
+            <text x="100" y="30" text-anchor="middle" font-size="24" fill="#6366f1">📊</text>
+          </svg>
+        </div>
+        <h2>Dashboard y Estadísticas</h2>
+        <p>Visualiza tu progreso con gráficos, estadísticas y un ranking de tus asignaturas. Exporta informes en PDF cuando lo necesites.</p>
+      </div>
+    </div>
+    
+    <div class="onboarding-dots">
+      <span class="dot active"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+    
+    <div class="onboarding-actions">
+      <button class="onboarding-btn-secondary" id="prev-slide">← Anterior</button>
+      <button class="onboarding-btn-primary" id="next-slide">Siguiente →</button>
+      <button class="onboarding-btn-primary" id="finish-onboarding" style="display:none;">¡Empezar!</button>
+    </div>
+  </div>
+</div>
+
 <!-- Pantalla de menú principal -->
 <div id="menu-screen" class="screen active">
   <button id="dark-mode-toggle" class="dark-mode-toggle" aria-label="Alternar modo oscuro" title="Modo oscuro">🌙</button>
@@ -38,7 +168,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version">v2.0.8</div>
+        <div class="app-version">v2.0.9</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -1985,6 +2115,134 @@ function getDarkerColor(hex) {
   };
   return `rgb(${darker.r}, ${darker.g}, ${darker.b})`;
 }
+
+/* -------------------------
+   Sistema de Onboarding/Tutorial
+   ------------------------- */
+let currentSlide = 0;
+let autoPlayInterval = null;
+const AUTOPLAY_DELAY = 5000; // 5 segundos por slide
+
+function showOnboarding() {
+  const modal = document.getElementById('onboarding-modal');
+  if (!modal) return;
+  
+  modal.style.display = 'flex';
+  currentSlide = 0;
+  updateSlide();
+  startAutoPlay();
+}
+
+function hideOnboarding() {
+  const modal = document.getElementById('onboarding-modal');
+  if (!modal) return;
+  
+  stopAutoPlay();
+  modal.style.display = 'none';
+  localStorage.setItem('onboardingCompleted', 'true');
+}
+
+function updateSlide() {
+  const slides = document.querySelectorAll('.onboarding-slide');
+  const dots = document.querySelectorAll('.onboarding-dots .dot');
+  const prevBtn = document.getElementById('prev-slide');
+  const nextBtn = document.getElementById('next-slide');
+  const finishBtn = document.getElementById('finish-onboarding');
+  
+  slides.forEach((slide, index) => {
+    slide.classList.toggle('active', index === currentSlide);
+  });
+  
+  dots.forEach((dot, index) => {
+    dot.classList.toggle('active', index === currentSlide);
+  });
+  
+  // Mostrar/ocultar botones
+  prevBtn.style.display = currentSlide === 0 ? 'none' : 'inline-block';
+  nextBtn.style.display = currentSlide === slides.length - 1 ? 'none' : 'inline-block';
+  finishBtn.style.display = currentSlide === slides.length - 1 ? 'inline-block' : 'none';
+}
+
+function nextSlide() {
+  const slides = document.querySelectorAll('.onboarding-slide');
+  if (currentSlide < slides.length - 1) {
+    currentSlide++;
+    updateSlide();
+    resetAutoPlay();
+  }
+}
+
+function prevSlide() {
+  if (currentSlide > 0) {
+    currentSlide--;
+    updateSlide();
+    resetAutoPlay();
+  }
+}
+
+function startAutoPlay() {
+  stopAutoPlay();
+  autoPlayInterval = setInterval(() => {
+    const slides = document.querySelectorAll('.onboarding-slide');
+    if (currentSlide < slides.length - 1) {
+      nextSlide();
+    } else {
+      stopAutoPlay();
+    }
+  }, AUTOPLAY_DELAY);
+}
+
+function stopAutoPlay() {
+  if (autoPlayInterval) {
+    clearInterval(autoPlayInterval);
+    autoPlayInterval = null;
+  }
+}
+
+function resetAutoPlay() {
+  stopAutoPlay();
+  startAutoPlay();
+}
+
+// Event listeners para onboarding
+document.addEventListener('DOMContentLoaded', () => {
+  const skipBtn = document.getElementById('skip-onboarding');
+  const prevBtn = document.getElementById('prev-slide');
+  const nextBtn = document.getElementById('next-slide');
+  const finishBtn = document.getElementById('finish-onboarding');
+  
+  if (skipBtn) skipBtn.addEventListener('click', hideOnboarding);
+  if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+  if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+  if (finishBtn) finishBtn.addEventListener('click', hideOnboarding);
+  
+  // Click en dots para navegar
+  document.querySelectorAll('.onboarding-dots .dot').forEach((dot, index) => {
+    dot.addEventListener('click', () => {
+      currentSlide = index;
+      updateSlide();
+      resetAutoPlay();
+    });
+  });
+  
+  // Pausar autoplay al hacer hover
+  const onboardingContainer = document.querySelector('.onboarding-container');
+  if (onboardingContainer) {
+    onboardingContainer.addEventListener('mouseenter', stopAutoPlay);
+    onboardingContainer.addEventListener('mouseleave', startAutoPlay);
+  }
+  
+  // Mostrar onboarding si no se ha completado Y no hay código de sincronización
+  const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+  const syncCode = localStorage.getItem('syncCode');
+  
+  if (!onboardingCompleted && !syncCode) {
+    // Esperar 500ms para que cargue la interfaz
+    setTimeout(() => {
+      showOnboarding();
+    }, 500);
+  }
+});
 
 // FLIP animation helper: calcula deltas y anima transform para movimiento suave
 function runFLIP(prevRects) {
