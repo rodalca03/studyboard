@@ -38,7 +38,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version">v2.0.5</div>
+        <div class="app-version">v2.0.6</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -1398,92 +1398,9 @@ let moved = false;
 let isDraggingFromHandle = false;
 let swipeDirection = null;
 let longPressTimer = null;
-let contextMenu = null;
 const MOVE_THRESHOLD = 10;
 const SWIPE_THRESHOLD = 80;
 const LONG_PRESS_DURATION = 500;
-
-// Crear menú contextual
-function createContextMenu(card, x, y) {
-  removeContextMenu();
-  
-  const menu = document.createElement('div');
-  menu.className = 'context-menu';
-  menu.style.left = x + 'px';
-  menu.style.top = y + 'px';
-  
-  const subjectName = card.querySelector('.titulo').textContent;
-  
-  menu.innerHTML = `
-    <div class="context-menu-item" data-action="edit">
-      <span>✏️</span> Editar nombre
-    </div>
-    <div class="context-menu-item" data-action="color">
-      <span>🎨</span> Cambiar color
-    </div>
-    <div class="context-menu-item" data-action="tests">
-      <span>📝</span> Ver pruebas
-    </div>
-    <div class="context-menu-item" data-action="progress">
-      <span>📊</span> Ver progreso
-    </div>
-    <div class="context-menu-item danger" data-action="delete">
-      <span>🗑️</span> Eliminar
-    </div>
-  `;
-  
-  menu.querySelectorAll('.context-menu-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const action = item.dataset.action;
-      handleContextMenuAction(card, action);
-      removeContextMenu();
-    });
-  });
-  
-  document.body.appendChild(menu);
-  contextMenu = menu;
-  
-  // Cerrar al tocar fuera
-  setTimeout(() => {
-    document.addEventListener('click', removeContextMenu, { once: true });
-    document.addEventListener('touchstart', removeContextMenu, { once: true });
-  }, 100);
-}
-
-function removeContextMenu() {
-  if (contextMenu && contextMenu.parentNode) {
-    contextMenu.remove();
-  }
-  contextMenu = null;
-}
-
-function handleContextMenuAction(card, action) {
-  switch(action) {
-    case 'edit':
-      card.querySelector('.titulo').focus();
-      break;
-    case 'color':
-      card.querySelector('.controls').style.display = 'flex';
-      card.classList.add('show-controls');
-      break;
-    case 'tests':
-      openSubjectDetail(card);
-      break;
-    case 'progress':
-      const progressContainer = card.querySelector('.progress-container');
-      progressContainer.style.display = progressContainer.style.display === 'none' ? 'block' : 'none';
-      actualizarProgresoCard(card);
-      break;
-    case 'delete':
-      const subjectName = card.querySelector('.titulo').textContent;
-      if (confirm(`¿Eliminar la asignatura "${subjectName}"?\n\nEsta acción no se puede deshacer.`)) {
-        saveStateToHistory('eliminar asignatura');
-        card.remove();
-        guardar();
-      }
-      break;
-  }
-}
 
 container.addEventListener('touchstart', (e) => {
   const handle = e.target.closest('.grab-handle');
@@ -1498,14 +1415,7 @@ container.addEventListener('touchstart', (e) => {
   moved = false;
   swipeDirection = null;
   
-  // Long press para menú contextual (solo si NO es desde el handle)
-  if (!isDraggingFromHandle) {
-    longPressTimer = setTimeout(() => {
-      const rect = el.getBoundingClientRect();
-      createContextMenu(el, e.touches[0].clientX, e.touches[0].clientY);
-      navigator.vibrate && navigator.vibrate(50); // Feedback háptico
-    }, LONG_PRESS_DURATION);
-  } else {
+  if (isDraggingFromHandle) {
     touchCard.classList.add('dragging');
   }
 }, { passive: true });
@@ -1644,7 +1554,6 @@ document.addEventListener('touchstart', (e) => {
   const c = e.target.closest('.card');
   if (!c) {
     document.querySelectorAll('.card.show-controls').forEach(card => card.classList.remove('show-controls'));
-    removeContextMenu();
   }
 }, { passive: true });
 
