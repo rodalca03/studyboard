@@ -38,7 +38,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version">v2.0.3</div>
+        <div class="app-version">v2.0.4</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -633,7 +633,7 @@ globalSearchInput.addEventListener('input', (e) => {
             showSubjectsScreen(semester);
             // Esperar a que se rendericen las tarjetas y abrir modal de pruebas
             setTimeout(() => {
-              const cards = document.querySelectorAll('.card');
+              const cards = document.querySelectorAll('.card:not(.drag-preview)');
               cards.forEach(c => {
                 if (c.querySelector('.titulo').textContent === subject.nombre) {
                   c.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -663,7 +663,7 @@ globalSearchInput.addEventListener('input', (e) => {
 
 // Toggle todos los progresos
 toggleAllProgressBtn.addEventListener('click', () => {
-  const allCards = document.querySelectorAll('.card');
+  const allCards = document.querySelectorAll('.card:not(.drag-preview)');
   if (allCards.length === 0) return;
   
   // Verificar si alguno está visible
@@ -971,7 +971,8 @@ function guardar() {
   const idx = cuatrimestres.findIndex(c => c.id === currentSemester.id);
   if (idx !== -1) {
     const datos = [];
-    document.querySelectorAll('.card').forEach(c => {
+    // Filtrar tarjetas que no sean drag-preview para evitar duplicados
+    document.querySelectorAll('.card:not(.drag-preview)').forEach(c => {
       datos.push({
         nombre: c.querySelector('.titulo').textContent,
         color: c.dataset.color,
@@ -1016,7 +1017,7 @@ function calcularNotaAsignatura(card) {
 }
 
 function actualizarNotasCards() {
-  document.querySelectorAll('.card').forEach(card => {
+  document.querySelectorAll('.card:not(.drag-preview)').forEach(card => {
     const gradeDiv = card.querySelector('.subject-grade');
     if (gradeDiv) {
       const nota = calcularNotaAsignatura(card);
@@ -1126,7 +1127,7 @@ function actualizarEstadisticas() {
   if (!currentSemester) return;
   
   const statsDiv = document.getElementById('subjects-stats');
-  const cards = document.querySelectorAll('.card');
+  const cards = document.querySelectorAll('.card:not(.drag-preview)');
   
   if (cards.length === 0) {
     statsDiv.style.display = 'none';
@@ -2635,7 +2636,7 @@ function updateDashboard() {
   if (!currentSemester) return;
   
   // Obtener datos desde las tarjetas del DOM
-  const cards = Array.from(document.querySelectorAll('.card'));
+  const cards = Array.from(document.querySelectorAll('.card:not(.drag-preview)'));
   const subjects = cards.map(card => {
     const name = card.querySelector('.titulo').textContent;
     const color = card.style.background;
@@ -2740,7 +2741,7 @@ function updateAIRecommendation() {
   
   const aiDiv = document.getElementById('ai-recommendation');
   const aiText = document.getElementById('ai-recommendation-text');
-  const cards = Array.from(document.querySelectorAll('.card'));
+  const cards = Array.from(document.querySelectorAll('.card:not(.drag-preview)'));
   
   if (cards.length === 0) {
     aiDiv.style.display = 'none';
@@ -3454,7 +3455,7 @@ async function generatePDF() {
       doc.text('Estadisticas Generales', margin, yPos);
       yPos += 10;
       
-      const cards = Array.from(document.querySelectorAll('.card'));
+      const cards = Array.from(document.querySelectorAll('.card:not(.drag-preview)'));
       const subjects = cards.map(card => {
         const gradeText = calcularNotaAsignatura(card);
         return gradeText !== '-' ? parseFloat(gradeText) : 0;
@@ -3498,7 +3499,7 @@ async function generatePDF() {
       doc.text('Distribucion de Notas', margin, yPos);
       yPos += 10;
       
-      const cards = Array.from(document.querySelectorAll('.card'));
+      const cards = Array.from(document.querySelectorAll('.card:not(.drag-preview)'));
       const grades = cards.map(card => {
         const gradeText = calcularNotaAsignatura(card);
         return gradeText !== '-' ? parseFloat(gradeText) : 0;
@@ -3535,7 +3536,7 @@ async function generatePDF() {
       doc.text('Detalle por Asignatura', margin, yPos);
       yPos += 10;
       
-      const cards = Array.from(document.querySelectorAll('.card'));
+      const cards = Array.from(document.querySelectorAll('.card:not(.drag-preview)'));
       
       cards.forEach((card, index) => {
         checkSpace(35);

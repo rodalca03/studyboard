@@ -1,4 +1,4 @@
-const CACHE_NAME = 'studyboard-v2.0.3';
+const CACHE_NAME = 'studyboard-v2.0.4';
 const urlsToCache = [
   '/studyboard/',
   '/studyboard/index.html',
