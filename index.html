@@ -206,7 +206,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.3.2</div>
+        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.3.3</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -1767,17 +1767,13 @@ container.addEventListener('touchend', (e) => {
           }
         }
         
-        // Eliminar del DOM con animación
-        touchCard.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-        touchCard.style.opacity = '0';
-        touchCard.style.transform = 'translateX(-100%)';
+        // Eliminar inmediatamente del DOM sin animación
+        touchCard.remove();
         
-        setTimeout(() => {
-          touchCard.remove();
-          actualizarNotasCards();
-          actualizarEstadisticas();
-          scheduleSyncToFirebase();
-        }, 300);
+        // Actualizar UI
+        actualizarNotasCards();
+        actualizarEstadisticas();
+        scheduleSyncToFirebase();
       } else {
         // Cancelar - resetear visual
         touchCard.style.transform = '';
