@@ -1602,18 +1602,18 @@ container.addEventListener('touchend', (e) => {
     if (swipeDirection === 'left') {
       // Swipe izquierda = ELIMINAR
       const subjectName = touchCard.querySelector('.titulo').textContent;
-      touchCard.classList.add('swipe-removed');
-      setTimeout(() => {
-        if (confirm(`¿Eliminar "${subjectName}"?`)) {
-          saveStateToHistory('eliminar asignatura');
+      if (confirm(`¿Eliminar "${subjectName}"?`)) {
+        saveStateToHistory('eliminar asignatura');
+        touchCard.classList.add('swipe-removed');
+        setTimeout(() => {
           touchCard.remove();
           guardar();
-        } else {
-          // Cancelar
-          touchCard.style.transform = '';
-          touchCard.classList.remove('swipe-removed', 'swiping');
-        }
-      }, 300);
+        }, 300);
+      } else {
+        // Cancelar - resetear visual
+        touchCard.style.transform = '';
+        touchCard.classList.remove('swiping');
+      }
     } else if (swipeDirection === 'right') {
       // Swipe derecha = MOSTRAR INFORMACIÓN (abrir modal)
       openSubjectDetail(touchCard);
@@ -1626,7 +1626,6 @@ container.addEventListener('touchend', (e) => {
     // Cancelar swipe incompleto
     touchCard.style.transform = '';
     touchCard.classList.remove('swiping');
-    touchCard.classList.remove('swiping-left', 'swiping-right');
   }
   
   touchCard.classList.remove('dragging');
