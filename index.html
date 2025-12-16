@@ -206,7 +206,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.1.9</div>
+        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.2.0</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -2120,7 +2120,7 @@ function renderTests() {
       <label style="display:flex; align-items:center; gap:6px; font-size:14px; color:#475569;">
         Ponderación: <input class="test-weight" type="text" value="${escapeHtml(String(t.ponderacion||''))}" aria-label="Ponderación prueba ${idx+1}"><span style="margin-left: 4px; font-weight: 600;">%</span>
       </label>
-      <div class="test-actions"><button class="btn btn-ghost delete-test">Eliminar</button></div>
+      <div class="test-actions"><button class="btn btn-delete delete-test">Eliminar</button></div>
     `;
     const nameInput = row.querySelector('.test-name');
     const gradeInput = row.querySelector('.test-grade');
