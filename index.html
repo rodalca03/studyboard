@@ -169,7 +169,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.1.1</div>
+        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.1.2</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -1599,23 +1599,30 @@ container.addEventListener('touchmove', (e) => {
     touchCard.classList.add('swiping');
     touchCard.style.transform = `translateX(${limitedDeltaX}px)`;
     
-    // Mostrar/ocultar fondos de acción
+    // Mostrar/ocultar fondos de acción con opacidad progresiva
     const leftBg = touchCard.querySelector('.swipe-action-bg.left');
     const rightBg = touchCard.querySelector('.swipe-action-bg.right');
     
+    // Calcular opacidad basada en el progreso del swipe (0 a 1)
+    const swipeProgress = Math.abs(limitedDeltaX) / maxSwipe;
+    
     if (deltaX < -20) {
-      // Swipe izquierda - mostrar "Eliminar"
+      // Swipe izquierda - mostrar "Eliminar" con opacidad progresiva
       leftBg.classList.add('visible');
+      leftBg.style.opacity = swipeProgress;
       rightBg.classList.remove('visible');
+      rightBg.style.opacity = '0';
       if (deltaX < -SWIPE_THRESHOLD) {
         swipeDirection = 'left';
       } else {
         swipeDirection = null;
       }
     } else if (deltaX > 20) {
-      // Swipe derecha - mostrar "Información"
+      // Swipe derecha - mostrar "Información" con opacidad progresiva
       rightBg.classList.add('visible');
+      rightBg.style.opacity = swipeProgress;
       leftBg.classList.remove('visible');
+      leftBg.style.opacity = '0';
       if (deltaX > SWIPE_THRESHOLD) {
         swipeDirection = 'right';
       } else {
@@ -1624,6 +1631,8 @@ container.addEventListener('touchmove', (e) => {
     } else {
       leftBg.classList.remove('visible');
       rightBg.classList.remove('visible');
+      leftBg.style.opacity = '0';
+      rightBg.style.opacity = '0';
       swipeDirection = null;
     }
     return;
@@ -1652,8 +1661,14 @@ container.addEventListener('touchend', (e) => {
   // Ocultar fondos de acción
   const leftBg = touchCard.querySelector('.swipe-action-bg.left');
   const rightBg = touchCard.querySelector('.swipe-action-bg.right');
-  if (leftBg) leftBg.classList.remove('visible');
-  if (rightBg) rightBg.classList.remove('visible');
+  if (leftBg) {
+    leftBg.classList.remove('visible');
+    leftBg.style.opacity = '0';
+  }
+  if (rightBg) {
+    rightBg.classList.remove('visible');
+    rightBg.style.opacity = '0';
+  }
   
   // Manejar swipe completado
   if (swipeDirection && Math.abs(deltaX) > SWIPE_THRESHOLD) {
