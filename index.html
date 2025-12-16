@@ -206,7 +206,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.3.1</div>
+        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.3.2</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -1754,10 +1754,29 @@ container.addEventListener('touchend', (e) => {
       const subjectName = touchCard.querySelector('.titulo').textContent;
       if (confirm(`¿Eliminar la asignatura "${subjectName}"?\n\nEsta acción no se puede deshacer.`)) {
         saveStateToHistory('eliminar asignatura');
-        touchCard.classList.add('swipe-removed');
+        
+        // Eliminar del array de datos primero
+        if (currentSemester && currentSemester.asignaturas) {
+          const cuatrimestres = obtenerCuatrimestres();
+          const idx = cuatrimestres.findIndex(c => c.id === currentSemester.id);
+          if (idx !== -1) {
+            // Filtrar la asignatura por nombre
+            cuatrimestres[idx].asignaturas = cuatrimestres[idx].asignaturas.filter(a => a.nombre !== subjectName);
+            currentSemester.asignaturas = cuatrimestres[idx].asignaturas;
+            localStorage.setItem('cuatrimestres', JSON.stringify(cuatrimestres));
+          }
+        }
+        
+        // Eliminar del DOM con animación
+        touchCard.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        touchCard.style.opacity = '0';
+        touchCard.style.transform = 'translateX(-100%)';
+        
         setTimeout(() => {
           touchCard.remove();
-          guardar();
+          actualizarNotasCards();
+          actualizarEstadisticas();
+          scheduleSyncToFirebase();
         }, 300);
       } else {
         // Cancelar - resetear visual
