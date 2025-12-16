@@ -38,7 +38,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version">v2.0.4</div>
+        <div class="app-version">v2.0.5</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -1532,9 +1532,14 @@ container.addEventListener('touchmove', (e) => {
   if (!isDraggingFromHandle && Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 20) {
     e.preventDefault();
     
-    // Aplicar transformación visual del swipe
+    // Limitar desplazamiento a la mitad del ancho de la tarjeta
+    const cardWidth = touchCard.offsetWidth;
+    const maxSwipe = cardWidth / 2;
+    const limitedDeltaX = Math.max(-maxSwipe, Math.min(maxSwipe, deltaX));
+    
+    // Aplicar transformación visual del swipe (solo horizontal, eje vertical fijo)
     touchCard.classList.add('swiping');
-    touchCard.style.transform = `translateX(${deltaX}px)`;
+    touchCard.style.transform = `translateX(${limitedDeltaX}px)`;
     
     // Mostrar/ocultar fondos de acción
     const leftBg = touchCard.querySelector('.swipe-action-bg.left');
