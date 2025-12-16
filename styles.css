@@ -79,6 +79,30 @@ body.glass-mode .context-menu {
   box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
 }
 
+/* Modo Liquid Glass: modal de exámenes y formulario de creación más oscuro */
+body.glass-mode .exams-modal {
+  background: rgba(20, 31, 83, 0.20);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+body.glass-mode .exams-modal .modal-body {
+  background: transparent;
+}
+body.glass-mode .add-exam-form {
+  background: rgba(17, 24, 39, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 12px;
+}
+body.glass-mode .add-exam-form .exam-input,
+body.glass-mode .add-exam-form .exam-select {
+  background: rgba(255, 255, 255, 0.85);
+  color: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
 body.glass-mode .test-row,
 body.glass-mode .sheet-input,
 body.glass-mode input,
@@ -237,7 +261,7 @@ body.glass-mode .exam-alerts-more {
     rgba(255,255,255,0.15) 55%,
     rgba(255,255,255,0) 100%);
   filter: blur(1px);
-  animation: lensGlareSweep 3.6s ease-in-out infinite;
+  animation: lensGlareSweep 2s ease-in-out infinite;
 }
 
 @keyframes lensGlareSweep {
