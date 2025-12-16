@@ -38,7 +38,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version">v1.9.2</div>
+        <div class="app-version">v2.0.0</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -452,6 +452,91 @@ function showSubjectsScreen(semester) {
 }
 
 backBtn.addEventListener('click', showMenuScreen);
+
+/* -------------------------
+   Pull to Refresh
+   ------------------------- */
+let pullStartY = 0;
+let pulling = false;
+let pullRefreshIndicator = null;
+
+function createPullRefreshIndicator() {
+  if (!pullRefreshIndicator) {
+    pullRefreshIndicator = document.createElement('div');
+    pullRefreshIndicator.className = 'pull-to-refresh';
+    pullRefreshIndicator.innerHTML = '↓';
+    document.body.appendChild(pullRefreshIndicator);
+  }
+  return pullRefreshIndicator;
+}
+
+menuScreen.addEventListener('touchstart', (e) => {
+  if (window.scrollY === 0) {
+    pullStartY = e.touches[0].clientY;
+    pulling = true;
+  }
+}, { passive: true });
+
+menuScreen.addEventListener('touchmove', (e) => {
+  if (!pulling) return;
+  
+  const pullDistance = e.touches[0].clientY - pullStartY;
+  
+  if (pullDistance > 0 && window.scrollY === 0) {
+    const indicator = createPullRefreshIndicator();
+    
+    if (pullDistance > 60) {
+      indicator.classList.add('visible');
+      indicator.innerHTML = pullDistance > 100 ? '⟳' : '↓';
+    } else {
+      indicator.classList.remove('visible');
+    }
+  }
+}, { passive: true });
+
+menuScreen.addEventListener('touchend', (e) => {
+  if (!pulling) return;
+  
+  const pullDistance = e.changedTouches[0].clientY - pullStartY;
+  const indicator = pullRefreshIndicator;
+  
+  if (pullDistance > 100 && indicator) {
+    // Trigger refresh
+    indicator.innerHTML = '⟳';
+    indicator.classList.add('loading');
+    
+    // Sincronizar con Firebase
+    if (typeof syncFromFirebase === 'function') {
+      syncFromFirebase().then(() => {
+        renderSemesters();
+        checkUpcomingExams();
+        showSyncIndicator('Datos actualizados', 'success');
+      }).catch(err => {
+        showSyncIndicator('Error al sincronizar', 'error');
+      }).finally(() => {
+        setTimeout(() => {
+          if (indicator) {
+            indicator.classList.remove('visible', 'loading');
+          }
+        }, 500);
+      });
+    } else {
+      // Sin Firebase, solo recargar vista
+      renderSemesters();
+      checkUpcomingExams();
+      showSyncIndicator('Vista actualizada', 'success');
+      setTimeout(() => {
+        if (indicator) {
+          indicator.classList.remove('visible', 'loading');
+        }
+      }, 500);
+    }
+  } else if (indicator) {
+    indicator.classList.remove('visible');
+  }
+  
+  pulling = false;
+}, { passive: true });
 
 // Soporte para gestos nativos de Android/iOS (botón atrás del navegador)
 window.addEventListener('popstate', (event) => {
@@ -1224,31 +1309,169 @@ function escapeHtml(unsafe) {
 }
 
 /* -------------------------
-   Reordenación RATÓN (desktop)
+   Reordenación RATÓN (desktop) - MEJORADO
    ------------------------- */
+let dragPreview = null;
+
+container.addEventListener('dragstart', e => {
+  const card = e.target.closest('.card');
+  if (!card) return;
+  
+  // Crear preview flotante
+  dragPreview = card.cloneNode(true);
+  dragPreview.classList.add('drag-preview');
+  dragPreview.style.position = 'fixed';
+  dragPreview.style.width = card.offsetWidth + 'px';
+  dragPreview.style.pointerEvents = 'none';
+  dragPreview.style.zIndex = '9999';
+  document.body.appendChild(dragPreview);
+  
+  // Actualizar posición del preview
+  const updatePreviewPosition = (ev) => {
+    if (dragPreview) {
+      dragPreview.style.left = (ev.clientX - card.offsetWidth / 2) + 'px';
+      dragPreview.style.top = (ev.clientY - 30) + 'px';
+    }
+  };
+  
+  document.addEventListener('dragover', updatePreviewPosition);
+  
+  // Limpiar al soltar
+  const cleanup = () => {
+    if (dragPreview && dragPreview.parentNode) {
+      dragPreview.remove();
+    }
+    dragPreview = null;
+    document.removeEventListener('dragover', updatePreviewPosition);
+    document.removeEventListener('dragend', cleanup);
+    document.querySelectorAll('.drop-zone-active').forEach(el => el.classList.remove('drop-zone-active'));
+  };
+  
+  document.addEventListener('dragend', cleanup, { once: true });
+});
+
 container.addEventListener('dragover', e => {
   e.preventDefault();
   const dragging = document.querySelector('.dragging');
   if (!dragging) return;
+  
   const prevRects = new Map();
   [...container.querySelectorAll('.card:not(.dragging)')].forEach(c => prevRects.set(c, c.getBoundingClientRect()));
 
   const cards = [...container.querySelectorAll('.card:not(.dragging)')];
+  
+  // Remover clase anterior
+  cards.forEach(c => c.classList.remove('drop-zone-active'));
+  
+  // Encontrar siguiente tarjeta y marcar drop zone
   const next = cards.find(c => e.clientY <= c.getBoundingClientRect().top + c.offsetHeight / 2);
+  if (next) {
+    next.classList.add('drop-zone-active');
+  } else if (cards.length > 0) {
+    cards[cards.length - 1].classList.add('drop-zone-active');
+  }
+  
   container.insertBefore(dragging, next || null);
 
   requestAnimationFrame(() => runFLIP(prevRects));
 });
 
 /* -------------------------
-   Reordenación TOUCH (móvil)
+   Reordenación TOUCH (móvil) - MEJORADO CON GESTOS
    ------------------------- */
 let touchCard = null;
 let startY = 0;
 let startX = 0;
 let moved = false;
 let isDraggingFromHandle = false;
+let swipeDirection = null;
+let longPressTimer = null;
+let contextMenu = null;
 const MOVE_THRESHOLD = 10;
+const SWIPE_THRESHOLD = 80;
+const LONG_PRESS_DURATION = 500;
+
+// Crear menú contextual
+function createContextMenu(card, x, y) {
+  removeContextMenu();
+  
+  const menu = document.createElement('div');
+  menu.className = 'context-menu';
+  menu.style.left = x + 'px';
+  menu.style.top = y + 'px';
+  
+  const subjectName = card.querySelector('.titulo').textContent;
+  
+  menu.innerHTML = `
+    <div class="context-menu-item" data-action="edit">
+      <span>✏️</span> Editar nombre
+    </div>
+    <div class="context-menu-item" data-action="color">
+      <span>🎨</span> Cambiar color
+    </div>
+    <div class="context-menu-item" data-action="tests">
+      <span>📝</span> Ver pruebas
+    </div>
+    <div class="context-menu-item" data-action="progress">
+      <span>📊</span> Ver progreso
+    </div>
+    <div class="context-menu-item danger" data-action="delete">
+      <span>🗑️</span> Eliminar
+    </div>
+  `;
+  
+  menu.querySelectorAll('.context-menu-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const action = item.dataset.action;
+      handleContextMenuAction(card, action);
+      removeContextMenu();
+    });
+  });
+  
+  document.body.appendChild(menu);
+  contextMenu = menu;
+  
+  // Cerrar al tocar fuera
+  setTimeout(() => {
+    document.addEventListener('click', removeContextMenu, { once: true });
+    document.addEventListener('touchstart', removeContextMenu, { once: true });
+  }, 100);
+}
+
+function removeContextMenu() {
+  if (contextMenu && contextMenu.parentNode) {
+    contextMenu.remove();
+  }
+  contextMenu = null;
+}
+
+function handleContextMenuAction(card, action) {
+  switch(action) {
+    case 'edit':
+      card.querySelector('.titulo').focus();
+      break;
+    case 'color':
+      card.querySelector('.controls').style.display = 'flex';
+      card.classList.add('show-controls');
+      break;
+    case 'tests':
+      openSubjectDetail(card);
+      break;
+    case 'progress':
+      const progressContainer = card.querySelector('.progress-container');
+      progressContainer.style.display = progressContainer.style.display === 'none' ? 'block' : 'none';
+      actualizarProgresoCard(card);
+      break;
+    case 'delete':
+      const subjectName = card.querySelector('.titulo').textContent;
+      if (confirm(`¿Eliminar la asignatura "${subjectName}"?\n\nEsta acción no se puede deshacer.`)) {
+        saveStateToHistory('eliminar asignatura');
+        card.remove();
+        guardar();
+      }
+      break;
+  }
+}
 
 container.addEventListener('touchstart', (e) => {
   const handle = e.target.closest('.grab-handle');
@@ -1258,7 +1481,13 @@ container.addEventListener('touchstart', (e) => {
   
   isDraggingFromHandle = !!handle;
   
+  // Long press para menú contextual (solo si NO es desde el handle)
   if (!isDraggingFromHandle) {
+    longPressTimer = setTimeout(() => {
+      const rect = el.getBoundingClientRect();
+      createContextMenu(el, e.touches[0].clientX, e.touches[0].clientY);
+      navigator.vibrate && navigator.vibrate(50); // Feedback háptico
+    }, LONG_PRESS_DURATION);
     return;
   }
   
@@ -1266,17 +1495,58 @@ container.addEventListener('touchstart', (e) => {
   startY = e.touches[0].clientY;
   startX = e.touches[0].clientX;
   moved = false;
+  swipeDirection = null;
   touchCard.classList.add('dragging');
 }, { passive: true });
 
 container.addEventListener('touchmove', (e) => {
-  if (!touchCard || !isDraggingFromHandle) return;
+  // Cancelar long press si se mueve
+  if (longPressTimer) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
+  
+  if (!touchCard) return;
   
   const y = e.touches[0].clientY;
   const x = e.touches[0].clientX;
-  if (Math.abs(y - startY) > MOVE_THRESHOLD || Math.abs(x - startX) > MOVE_THRESHOLD) {
+  const deltaX = x - startX;
+  const deltaY = y - startY;
+  
+  if (Math.abs(deltaY) > MOVE_THRESHOLD || Math.abs(deltaX) > MOVE_THRESHOLD) {
     moved = true;
   }
+  
+  // Detectar swipe horizontal (solo si no es drag desde handle)
+  if (!isDraggingFromHandle && Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 20) {
+    e.preventDefault();
+    
+    // Aplicar transformación visual del swipe
+    touchCard.style.transform = `translateX(${deltaX}px)`;
+    
+    if (deltaX < -SWIPE_THRESHOLD) {
+      touchCard.classList.add('swiping-left');
+      touchCard.classList.remove('swiping-right');
+      swipeDirection = 'left';
+    } else if (deltaX > SWIPE_THRESHOLD) {
+      touchCard.classList.add('swiping-right');
+      touchCard.classList.remove('swiping-left');
+      swipeDirection = 'right';
+    } else {
+      touchCard.classList.remove('swiping-left', 'swiping-right');
+      swipeDirection = null;
+    }
+    return;
+  }
+  
+  // Drag vertical para reordenar (solo desde handle)
+  if (isDraggingFromHandle && moved) {
+    e.preventDefault();
+    const cards = [...container.querySelectorAll('.card:not(.dragging)')];
+    const next = cards.find(c => y <= c.getBoundingClientRect().top + c.offsetHeight / 2);
+    container.insertBefore(touchCard, next || null);
+  }
+}, { passive: false });
 
   if (moved) {
     e.preventDefault();
@@ -1293,23 +1563,68 @@ container.addEventListener('touchmove', (e) => {
 }, { passive: false });
 
 container.addEventListener('touchend', (e) => {
-  if (!touchCard || !isDraggingFromHandle) return;
-
+  // Cancelar long press
+  if (longPressTimer) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
+  
+  if (!touchCard) return;
+  
+  const deltaX = e.changedTouches[0].clientX - startX;
+  
+  // Manejar swipe completado
+  if (swipeDirection && Math.abs(deltaX) > SWIPE_THRESHOLD) {
+    if (swipeDirection === 'left') {
+      // Swipe izquierda = ELIMINAR
+      const subjectName = touchCard.querySelector('.titulo').textContent;
+      touchCard.classList.add('swipe-removed');
+      setTimeout(() => {
+        if (confirm(`¿Eliminar "${subjectName}"?`)) {
+          saveStateToHistory('eliminar asignatura');
+          touchCard.remove();
+          guardar();
+        } else {
+          // Cancelar
+          touchCard.style.transform = '';
+          touchCard.classList.remove('swipe-removed', 'swiping-left');
+        }
+      }, 300);
+    } else if (swipeDirection === 'right') {
+      // Swipe derecha = ARCHIVAR/DESTACAR
+      const progressContainer = touchCard.querySelector('.progress-container');
+      progressContainer.style.display = progressContainer.style.display === 'none' ? 'block' : 'none';
+      actualizarProgresoCard(touchCard);
+      
+      // Resetear visual
+      touchCard.style.transform = '';
+      touchCard.classList.remove('swiping-right');
+      
+      showSyncIndicator('Progreso actualizado', 'success');
+    }
+  } else {
+    // Cancelar swipe incompleto
+    touchCard.style.transform = '';
+    touchCard.classList.remove('swiping-left', 'swiping-right');
+  }
+  
   touchCard.classList.remove('dragging');
 
-  if (moved) {
+  if (moved && isDraggingFromHandle) {
     guardar();
   }
 
   touchCard = null;
   isDraggingFromHandle = false;
   moved = false;
+  swipeDirection = null;
 }, { passive: true });
 
 document.addEventListener('touchstart', (e) => {
   const c = e.target.closest('.card');
   if (!c) {
     document.querySelectorAll('.card.show-controls').forEach(card => card.classList.remove('show-controls'));
+    removeContextMenu();
   }
 }, { passive: true });
 
@@ -2438,71 +2753,158 @@ function updateAIRecommendation() {
     return;
   }
   
-  // Analizar asignaturas desde las tarjetas con previsión
+  // Analizar asignaturas con predicciones MEJORADAS
   const subjects = cards.map(card => {
     const name = card.querySelector('.titulo').textContent;
-    
-    // Obtener todas las notas de la asignatura
     const tests = card._tests || [];
     const testGrades = tests.map(t => parseFloat(t.nota)).filter(n => !isNaN(n) && n > 0);
+    const testWeights = tests.map(t => parseFloat(t.ponderacion)).filter(n => !isNaN(n) && n > 0);
     
     if (testGrades.length === 0) {
-      return { name, currentGrade: 0, predictedGrade: null, trend: 'sin-datos' };
+      return { 
+        name, 
+        currentGrade: 0, 
+        predictedGrade: null, 
+        trend: 'sin-datos',
+        confidence: 0,
+        analysis: 'Sin datos suficientes'
+      };
     }
     
-    // Nota acumulada actual
+    // Nota acumulada actual y porcentaje evaluado
     const currentGradeText = calcularNotaAsignatura(card);
     const currentGrade = currentGradeText !== '-' ? parseFloat(currentGradeText) : 0;
     
-    // Calcular predicción más realista basada en consistencia
-    let trend = 'estable';
+    let totalWeight = 0;
+    let weightedSum = 0;
+    tests.forEach((t, i) => {
+      if (!isNaN(t.nota) && !isNaN(t.ponderacion) && t.nota > 0) {
+        totalWeight += parseFloat(t.ponderacion);
+        weightedSum += parseFloat(t.nota) * parseFloat(t.ponderacion) / 100;
+      }
+    });
+    
+    const evaluatedPercent = Math.min(100, totalWeight);
+    const remainingPercent = 100 - evaluatedPercent;
+    
+    // ============ PREDICCIÓN AVANZADA ============
+    
     let predictedGrade = currentGrade;
+    let confidence = 0;
+    let trend = 'estable';
+    let analysis = '';
     
     if (testGrades.length === 1) {
-      // Con solo 1 nota, asumimos que seguirá similar
+      // Solo 1 nota: predecir que se mantendrá similar
       predictedGrade = testGrades[0];
-    } else if (testGrades.length >= 2) {
-      // Calcular promedio (rendimiento base)
-      const average = testGrades.reduce((sum, g) => sum + g, 0) / testGrades.length;
+      confidence = 40; // Baja confianza con 1 sola nota
+      analysis = `Con 1 sola nota (${testGrades[0].toFixed(1)}), se asume rendimiento constante.`;
       
-      // Calcular desviación estándar (consistencia)
+    } else if (testGrades.length >= 2) {
+      // PASO 1: Análisis estadístico
+      const average = testGrades.reduce((sum, g) => sum + g, 0) / testGrades.length;
       const variance = testGrades.reduce((sum, g) => sum + Math.pow(g - average, 2), 0) / testGrades.length;
       const stdDev = Math.sqrt(variance);
       
-      // Calcular tendencia (últimas notas vs primeras)
+      // PASO 2: Análisis de tendencia temporal
       const firstHalf = testGrades.slice(0, Math.ceil(testGrades.length / 2));
       const secondHalf = testGrades.slice(Math.ceil(testGrades.length / 2));
       const avgFirst = firstHalf.reduce((sum, g) => sum + g, 0) / firstHalf.length;
       const avgSecond = secondHalf.reduce((sum, g) => sum + g, 0) / secondHalf.length;
       const trendDiff = avgSecond - avgFirst;
       
-      // Predicción híbrida:
-      // - Si es consistente (stdDev bajo): predice cerca del promedio
-      // - Si tiene tendencia clara: ajusta según tendencia
-      // - Ponderación: 70% promedio + 30% tendencia
+      // PASO 3: Análisis de momentum (últimas 2 notas)
+      const lastTwo = testGrades.slice(-2);
+      const recentAvg = lastTwo.reduce((sum, g) => sum + g, 0) / lastTwo.length;
+      const momentum = lastTwo[1] - lastTwo[0];
       
-      if (stdDev < 0.5) {
-        // Muy consistente: predice el promedio
-        predictedGrade = average;
-      } else if (stdDev < 1.5) {
-        // Moderadamente consistente: promedio con leve ajuste de tendencia
-        predictedGrade = average * 0.7 + (average + trendDiff) * 0.3;
+      // PASO 4: Determinar tendencia
+      if (trendDiff > 0.8) {
+        trend = 'subiendo-fuerte';
+        analysis = `📈 Mejora clara: +${trendDiff.toFixed(1)} puntos entre primera y segunda mitad.`;
+      } else if (trendDiff > 0.3) {
+        trend = 'subiendo';
+        analysis = `↗️ Tendencia positiva: +${trendDiff.toFixed(1)} puntos de mejora.`;
+      } else if (trendDiff < -0.8) {
+        trend = 'bajando-fuerte';
+        analysis = `📉 Caída preocupante: ${trendDiff.toFixed(1)} puntos de descenso.`;
+      } else if (trendDiff < -0.3) {
+        trend = 'bajando';
+        analysis = `↘️ Tendencia negativa: ${trendDiff.toFixed(1)} puntos de descenso.`;
       } else {
-        // Inconsistente: dar más peso a las últimas notas
-        const lastTwo = testGrades.slice(-2);
-        const recentAvg = lastTwo.reduce((sum, g) => sum + g, 0) / lastTwo.length;
-        predictedGrade = average * 0.5 + recentAvg * 0.5;
+        trend = 'estable';
+        analysis = `➡️ Rendimiento estable (variación: ${trendDiff.toFixed(1)}).`;
       }
       
-      // Limitar predicción a rango válido [0, 10]
-      predictedGrade = Math.max(0, Math.min(10, predictedGrade));
+      // PASO 5: Calcular confianza
+      // Factores:
+      // - Más notas = más confianza (máx 40%)
+      // - Menor desviación estándar = más confianza (máx 30%)
+      // - Más % evaluado = más confianza (máx 30%)
       
-      // Determinar tendencia
-      if (trendDiff > 0.5) trend = 'subiendo';
-      else if (trendDiff < -0.5) trend = 'bajando';
+      const dataConfidence = Math.min(40, testGrades.length * 8); // 8% por cada nota
+      const consistencyConfidence = Math.min(30, 30 * (1 - Math.min(1, stdDev / 3))); // Penalizar alta variabilidad
+      const coverageConfidence = Math.min(30, evaluatedPercent * 0.3); // 0.3% por cada 1% evaluado
+      
+      confidence = Math.round(dataConfidence + consistencyConfidence + coverageConfidence);
+      
+      // PASO 6: Predicción según escenario
+      if (evaluatedPercent >= 100) {
+        // Todo evaluado: nota final es la actual
+        predictedGrade = currentGrade;
+        analysis += ` Evaluación completa (100%).`;
+      } else if (evaluatedPercent >= 70) {
+        // >70% evaluado: alta certeza, leve ajuste por tendencia
+        if (trend.includes('subiendo')) {
+          predictedGrade = currentGrade + Math.min(0.5, trendDiff * 0.3);
+        } else if (trend.includes('bajando')) {
+          predictedGrade = currentGrade + Math.max(-0.5, trendDiff * 0.3);
+        } else {
+          predictedGrade = currentGrade;
+        }
+        analysis += ` ${evaluatedPercent.toFixed(0)}% evaluado, predicción ajustada por tendencia.`;
+      } else if (evaluatedPercent >= 40) {
+        // 40-70% evaluado: balance entre promedio histórico y tendencia
+        const baselinePrediction = average;
+        const trendAdjustment = trendDiff * 0.4;
+        predictedGrade = baselinePrediction + trendAdjustment;
+        analysis += ` ${evaluatedPercent.toFixed(0)}% evaluado. Predicción: promedio + ajuste tendencial.`;
+      } else {
+        // <40% evaluado: dar más peso a últimas notas (momentum)
+        predictedGrade = recentAvg + momentum * 0.3;
+        confidence -= 15; // Penalizar confianza por poca cobertura
+        analysis += ` Solo ${evaluatedPercent.toFixed(0)}% evaluado. Alta incertidumbre, se usa momentum reciente.`;
+      }
+      
+      // PASO 7: Calcular lo que necesita en lo que falta para aprobar/notable
+      if (remainingPercent > 0) {
+        const neededFor5 = (5.0 - weightedSum) * 100 / remainingPercent;
+        const neededFor7 = (7.0 - weightedSum) * 100 / remainingPercent;
+        
+        if (neededFor5 > 10) {
+          analysis += ` ⚠️ Imposible aprobar (necesitaría >${neededFor5.toFixed(1)}).`;
+          predictedGrade = Math.max(0, weightedSum + (remainingPercent / 100) * 5); // Asumir 5 en resto
+        } else if (neededFor5 > 7) {
+          analysis += ` 🔥 Difícil aprobar (necesita ${neededFor5.toFixed(1)} en lo que falta).`;
+        } else if (neededFor5 <= 5) {
+          analysis += ` ✅ Aprobado casi asegurado (solo necesita ${neededFor5.toFixed(1)}).`;
+        }
+      }
     }
     
-    return { name, currentGrade, predictedGrade, trend, testCount: testGrades.length };
+    // Limitar a rango válido
+    predictedGrade = Math.max(0, Math.min(10, predictedGrade));
+    
+    return { 
+      name, 
+      currentGrade, 
+      predictedGrade, 
+      trend, 
+      confidence,
+      testCount: testGrades.length,
+      evaluatedPercent,
+      analysis
+    };
   });
   
   // Filtrar asignaturas con datos
@@ -2514,38 +2916,64 @@ function updateAIRecommendation() {
     return;
   }
   
-  // Identificar asignaturas en riesgo según previsión
-  const atRisk = withData.filter(s => s.predictedGrade < 5);
-  const needAttention = withData.filter(s => s.predictedGrade >= 5 && s.predictedGrade < 7);
-  const declining = withData.filter(s => s.trend === 'bajando' && s.predictedGrade < 8);
+  // ============ GENERACIÓN DE RECOMENDACIÓN ============
+  
+  // Identificar casos críticos
+  const criticalRisk = withData.filter(s => s.predictedGrade < 4.5);
+  const atRisk = withData.filter(s => s.predictedGrade >= 4.5 && s.predictedGrade < 5);
+  const needBoost = withData.filter(s => s.predictedGrade >= 5 && s.predictedGrade < 7 && s.trend.includes('bajando'));
+  const declining = withData.filter(s => s.trend.includes('bajando-fuerte'));
+  const improving = withData.filter(s => s.trend.includes('subiendo-fuerte'));
   const excellent = withData.filter(s => s.predictedGrade >= 9);
   
   let recommendation = '';
+  let emoji = '🤖';
   
-  // Lógica de recomendaciones basada en previsión
-  if (atRisk.length > 0) {
-    const riskNames = atRisk.map(s => `${s.name} (prev: ${s.predictedGrade.toFixed(1)})`).join(', ');
-    recommendation = `🚨 Atención urgente: ${riskNames}. ${atRisk.length > 1 ? 'Estas asignaturas podrían' : 'Esta asignatura podría'} suspender según la tendencia actual.`;
+  // Prioridad: crítico > riesgo > mejora > excelencia
+  if (criticalRisk.length > 0) {
+    const crit = criticalRisk[0];
+    emoji = '🚨';
+    recommendation = `URGENTE: ${crit.name} (prev: ${crit.predictedGrade.toFixed(1)}, conf: ${crit.confidence}%). ${crit.analysis}`;
+  } else if (atRisk.length > 0) {
+    const risk = atRisk[0];
+    emoji = '⚠️';
+    recommendation = `Riesgo de suspenso: ${risk.name} (prev: ${risk.predictedGrade.toFixed(1)}, conf: ${risk.confidence}%). ${risk.analysis}`;
   } else if (declining.length > 0) {
-    const decliningName = declining[0].name;
-    recommendation = `📉 Vigila ${decliningName} (prev: ${declining[0].predictedGrade.toFixed(1)}). Tendencia a la baja, refuerza antes del siguiente examen.`;
-  } else if (needAttention.length > 0) {
-    const attentionName = needAttention[0].name;
-    recommendation = `⚡ Impulsa ${attentionName} (prev: ${needAttention[0].predictedGrade.toFixed(1)}). Estás cerca de un notable, ¡puedes lograrlo!`;
+    const dec = declining[0];
+    emoji = '📉';
+    recommendation = `Alerta de caída: ${dec.name} (prev: ${dec.predictedGrade.toFixed(1)}, conf: ${dec.confidence}%). ${dec.analysis}`;
+  } else if (needBoost.length > 0) {
+    const boost = needBoost[0];
+    emoji = '⚡';
+    recommendation = `Refuerza ${boost.name} (prev: ${boost.predictedGrade.toFixed(1)}, conf: ${boost.confidence}%). ${boost.analysis}`;
+  } else if (improving.length > 0) {
+    const imp = improving[0];
+    emoji = '🚀';
+    recommendation = `¡Gran progreso! ${imp.name} (prev: ${imp.predictedGrade.toFixed(1)}, conf: ${imp.confidence}%). ${imp.analysis}`;
   } else if (excellent.length === withData.length) {
-    recommendation = `🏆 ¡Sobresaliente general! Todas tus asignaturas van hacia excelencia. ¡Mantén el ritmo!`;
+    emoji = '🏆';
+    const avgConf = Math.round(excellent.reduce((sum, s) => sum + s.confidence, 0) / excellent.length);
+    recommendation = `Sobresaliente total (conf promedio: ${avgConf}%). ¡Todas hacia la excelencia!`;
   } else {
     const avgPredicted = withData.reduce((sum, s) => sum + s.predictedGrade, 0) / withData.length;
+    const avgConf = Math.round(withData.reduce((sum, s) => sum + s.confidence, 0) / withData.length);
+    
     if (avgPredicted >= 8) {
-      recommendation = `🌟 Previsión muy positiva (${avgPredicted.toFixed(1)}). ¡Vas camino del notable alto!`;
+      emoji = '🌟';
+      recommendation = `Previsión muy positiva: ${avgPredicted.toFixed(1)} (conf: ${avgConf}%). ¡Vas camino del notable alto!`;
     } else if (avgPredicted >= 7) {
-      recommendation = `💪 Buen rumbo (prev: ${avgPredicted.toFixed(1)}). Con constancia alcanzarás la excelencia.`;
+      emoji = '💪';
+      recommendation = `Buen rumbo: ${avgPredicted.toFixed(1)} (conf: ${avgConf}%). Con constancia alcanzarás la excelencia.`;
+    } else if (avgPredicted >= 6) {
+      emoji = '📚';
+      recommendation = `Aprobando todo: ${avgPredicted.toFixed(1)} (conf: ${avgConf}%). Margen de mejora detectado.`;
     } else {
-      recommendation = `📚 Previsión: ${avgPredicted.toFixed(1)}. Todas las asignaturas aprobando, pero hay margen de mejora.`;
+      emoji = '🔍';
+      recommendation = `Previsión: ${avgPredicted.toFixed(1)} (conf: ${avgConf}%). Revisa estrategia de estudio.`;
     }
   }
   
-  aiText.textContent = recommendation;
+  aiText.textContent = `${emoji} ${recommendation}`;
   aiDiv.style.display = 'flex';
 }
 
@@ -3251,10 +3679,117 @@ if ('serviceWorker' in navigator) {
       });
   });
   
+  // Escuchar peticiones de widget data desde el Service Worker
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'GET_WIDGET_DATA') {
+      const widgetData = generateWidgetDataForSW();
+      event.ports[0].postMessage(widgetData);
+    }
+  });
+  
   // Recargar cuando el SW tome control
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     window.location.reload();
   });
+}
+
+// Generar datos para el widget
+function generateWidgetDataForSW() {
+  try {
+    const cuatrimestres = JSON.parse(localStorage.getItem('cuatrimestres')) || [];
+    const exams = JSON.parse(localStorage.getItem('exams')) || [];
+    
+    // Obtener cuatrimestre actual (último no archivado)
+    const currentSemester = cuatrimestres.find(c => !c.archived) || cuatrimestres[0];
+    
+    if (!currentSemester || !currentSemester.asignaturas) {
+      return {
+        average: "-",
+        subjects: 0,
+        ects: 0,
+        nextExam: null,
+        timestamp: new Date().toISOString()
+      };
+    }
+    
+    // Calcular media
+    const subjects = currentSemester.asignaturas;
+    const gradesOnly = subjects
+      .map(s => {
+        const tests = s.tests || [];
+        if (tests.length === 0) return 0;
+        
+        let suma = 0;
+        let totalPonderacion = 0;
+        tests.forEach(t => {
+          const nota = parseFloat(t.nota) || 0;
+          const ponderacion = parseFloat(t.ponderacion) || 0;
+          suma += nota * ponderacion;
+          totalPonderacion += ponderacion;
+        });
+        
+        return totalPonderacion > 0 ? suma / 100 : 0;
+      })
+      .filter(g => g > 0);
+    
+    const average = gradesOnly.length > 0
+      ? (gradesOnly.reduce((a, b) => a + b, 0) / gradesOnly.length).toFixed(1)
+      : "-";
+    
+    // ECTS aprobados
+    const passed = subjects.filter(s => {
+      const tests = s.tests || [];
+      if (tests.length === 0) return false;
+      
+      let suma = 0;
+      let totalPonderacion = 0;
+      tests.forEach(t => {
+        const nota = parseFloat(t.nota) || 0;
+        const ponderacion = parseFloat(t.ponderacion) || 0;
+        suma += nota * ponderacion;
+        totalPonderacion += ponderacion;
+      });
+      
+      const notaFinal = totalPonderacion > 0 ? suma / 100 : 0;
+      return notaFinal >= 5;
+    }).length;
+    
+    const ects = passed * 6;
+    
+    // Próximo examen
+    const now = new Date();
+    const upcomingExams = exams
+      .map(exam => {
+        const examDate = new Date(exam.fecha + 'T' + (exam.hora || '00:00'));
+        const daysLeft = Math.ceil((examDate - now) / (1000 * 60 * 60 * 24));
+        return { ...exam, examDate, daysLeft };
+      })
+      .filter(e => e.daysLeft >= 0)
+      .sort((a, b) => a.examDate - b.examDate);
+    
+    const nextExam = upcomingExams.length > 0 ? {
+      subject: upcomingExams[0].asignatura,
+      date: new Date(upcomingExams[0].fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }),
+      daysLeft: upcomingExams[0].daysLeft
+    } : null;
+    
+    return {
+      average,
+      subjects: subjects.length,
+      ects,
+      nextExam,
+      timestamp: new Date().toISOString()
+    };
+  } catch (err) {
+    console.error('Error generando widget data:', err);
+    return {
+      average: "-",
+      subjects: 0,
+      ects: 0,
+      nextExam: null,
+      timestamp: new Date().toISOString()
+    };
+  }
 }
 
 // Detectar instalación de PWA

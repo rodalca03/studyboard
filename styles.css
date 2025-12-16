@@ -440,10 +440,53 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
 
 /* Efecto drag */
 .card.dragging {
-  opacity: 0.9;
-  transform: scale(1.02);
-  box-shadow: 0 12px 30px rgba(2,6,23,0.12);
+  opacity: 0.5;
+  transform: scale(1.05) rotate(2deg);
+  box-shadow: 0 20px 40px rgba(2,6,23,0.3);
   z-index: 50;
+  cursor: grabbing;
+  transition: all 0.2s ease;
+}
+
+/* Preview flotante mientras se arrastra */
+.drag-preview {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.95;
+  transform: rotate(-3deg);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+  border: 2px solid rgba(255,255,255,0.8);
+}
+
+/* Drop zone activa */
+.drop-zone-active {
+  position: relative;
+}
+
+.drop-zone-active::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  border-radius: 2px;
+  animation: pulse-drop-zone 1s ease infinite;
+}
+
+@keyframes pulse-drop-zone {
+  0%, 100% { opacity: 0.6; transform: scaleX(0.95); }
+  50% { opacity: 1; transform: scaleX(1); }
+}
+
+/* Indicador de zona válida para soltar */
+.can-drop {
+  background: rgba(99, 102, 241, 0.05);
+  border: 2px dashed #6366f1;
+  border-radius: 12px;
+  transition: all 0.3s ease;
 }
 
 
@@ -759,10 +802,126 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
 }
 
 .semester-card.dragging {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: grabbing;
-  transform: scale(1.05);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transform: scale(1.08) rotate(1deg);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid rgba(99, 102, 241, 0.5);
+}
+
+/* Efecto de swipe en tarjetas */
+.card.swiping-left {
+  transform: translateX(-100px);
+  background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
+  transition: all 0.3s ease;
+}
+
+.card.swiping-right {
+  transform: translateX(100px);
+  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%) !important;
+  transition: all 0.3s ease;
+}
+
+.card.swipe-removed {
+  transform: translateX(150%) scale(0.8);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* Menú contextual long-press */
+.context-menu {
+  position: fixed;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  padding: 8px;
+  z-index: 9999;
+  min-width: 200px;
+  animation: contextMenuAppear 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes contextMenuAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.context-menu-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #1f2937;
+  transition: background 0.15s ease;
+}
+
+.context-menu-item:hover {
+  background: #f3f4f6;
+}
+
+.context-menu-item.danger {
+  color: #ef4444;
+}
+
+.context-menu-item.danger:hover {
+  background: #fee2e2;
+}
+
+.dark-mode .context-menu {
+  background: #1f2937;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.dark-mode .context-menu-item {
+  color: #f3f4f6;
+}
+
+.dark-mode .context-menu-item:hover {
+  background: #374151;
+}
+
+.dark-mode .context-menu-item.danger:hover {
+  background: #7f1d1d;
+}
+
+/* Pull to refresh indicator */
+.pull-to-refresh {
+  position: fixed;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 9998;
+}
+
+.pull-to-refresh.visible {
+  top: 20px;
+}
+
+.pull-to-refresh.loading {
+  animation: spin 1s linear infinite;
+}
+
+.dark-mode .pull-to-refresh {
+  background: #1f2937;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 .dark-mode .semester-card {
