@@ -235,8 +235,6 @@ body.glass-mode .exam-alerts-more {
   content: '';
   position: absolute;
   inset: 0;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.5);
 }
 .glass-suggestion-text {
@@ -281,6 +279,10 @@ body.glass-mode .exam-alerts-more {
   align-items: center;
   height: auto;
   background: transparent;
+}
+.glass-suggestion-modal .glass-preview::after {
+  content: none;
+  display: none;
 }
 .glass-suggestion-modal .preview-card {
   width: 100%;
