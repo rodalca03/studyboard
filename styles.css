@@ -249,6 +249,64 @@ body.glass-mode .exam-alerts-more {
   justify-content: flex-end;
 }
 
+/* Variantes más marcadas de lens glare para la sugerencia */
+.lens-glare-strong { position: relative; overflow: hidden; }
+.lens-glare-strong::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -45%; width: 45%; height: 100%; pointer-events: none;
+  background: linear-gradient(110deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.25) 35%,
+    rgba(255,255,255,0.6) 50%,
+    rgba(255,255,255,0.25) 65%,
+    rgba(255,255,255,0) 100%),
+    radial-gradient(ellipse at 18% 12%, rgba(255,255,255,0.35), rgba(255,255,255,0) 60%);
+  filter: blur(0.8px);
+  animation: lensGlareStrongSweep 2.6s ease-in-out infinite;
+  border-radius: 18px;
+}
+@keyframes lensGlareStrongSweep {
+  0% { transform: translateX(0); opacity: 0.0; }
+  12% { opacity: 0.35; }
+  50% { transform: translateX(260%); opacity: 0.55; }
+  88% { opacity: 0.3; }
+  100% { transform: translateX(260%); opacity: 0.0; }
+}
+
+/* Contenedor y tarjeta de preview en el modal de sugerencia */
+.glass-suggestion-modal .glass-preview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: auto;
+  background: transparent;
+}
+.glass-suggestion-modal .preview-card {
+  width: 100%;
+  max-width: 520px;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(59,130,246,0.25);
+  border: 1px solid rgba(255,255,255,0.45);
+}
+.glass-suggestion-modal .preview-card img { width: 100%; height: auto; display: block; }
+
+/* Botones modernos centrados */
+.modal-actions.center { display: flex; justify-content: center; gap: 12px; margin-top: 4px; }
+.cta { padding: 12px 18px; border-radius: 999px; font-weight: 600; border: none; cursor: pointer; transition: transform .12s ease, box-shadow .2s ease, background-color .2s ease, color .2s ease; }
+.cta:active { transform: translateY(1px); }
+.cta-primary { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: #fff; box-shadow: 0 8px 24px rgba(99,102,241,0.35); }
+.cta-primary:hover { box-shadow: 0 10px 28px rgba(99,102,241,0.45); }
+.cta-secondary { background: rgba(255,255,255,0.7); color: #0f172a; border: 1px solid rgba(15,23,42,0.12); backdrop-filter: blur(4px); }
+.cta-secondary:hover { background: rgba(255,255,255,0.85); }
+
+/* Integración temática */
+body.dark-mode .cta-secondary { background: rgba(255,255,255,0.14); color: #e2e8f0; border-color: rgba(226,232,240,0.18); }
+body.dark-mode .cta-secondary:hover { background: rgba(255,255,255,0.2); }
+body.glass-mode .cta-secondary { background: rgba(255,255,255,0.4); color: #0f172a; border-color: rgba(15,23,42,0.12); }
+body.glass-mode .cta-secondary:hover { background: rgba(255,255,255,0.5); }
+
 /* Efecto lens glare sutil para la imagen del tutorial Liquid Glass */
 .lens-glare {
   position: relative;
