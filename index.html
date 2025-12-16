@@ -206,7 +206,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.3.3</div>
+        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.3.4</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -2476,6 +2476,24 @@ function showOnboarding() {
   currentSlide = 0;
   updateSlide();
   startAutoPlay();
+
+  // Aviso si no hay código de sincronización activo
+  try {
+    const syncCode = localStorage.getItem('syncCode');
+    const container = modal.querySelector('.onboarding-container');
+    let warning = container.querySelector('.onboarding-warning');
+    if (!syncCode) {
+      if (!warning) {
+        warning = document.createElement('div');
+        warning.className = 'onboarding-warning';
+        warning.innerHTML = 'Si no quiere ver más esta ventana, cree un código de sincronización en la nube.';
+        container.appendChild(warning);
+      }
+      warning.style.display = 'block';
+    } else if (warning) {
+      warning.style.display = 'none';
+    }
+  } catch (e) {}
 }
 
 function hideOnboarding() {
@@ -2484,7 +2502,8 @@ function hideOnboarding() {
   
   stopAutoPlay();
   modal.style.display = 'none';
-  localStorage.setItem('onboardingCompleted', 'true');
+  // Marcar que el usuario ya vio el tutorial al menos una vez
+  localStorage.setItem('onboardingSeenOnce', 'true');
 }
 
 function updateSlide() {
@@ -2578,14 +2597,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   // Mostrar onboarding si no se ha completado Y no hay código de sincronización
-  const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+  const seenOnce = localStorage.getItem('onboardingSeenOnce') === 'true';
   const syncCode = localStorage.getItem('syncCode');
-  
-  if (!onboardingCompleted && !syncCode) {
-    // Esperar 500ms para que cargue la interfaz
-    setTimeout(() => {
-      showOnboarding();
-    }, 500);
+  // Regla: mostrar al menos una vez; después, seguir mostrando si NO hay código de sincronización
+  const shouldShow = !seenOnce || !syncCode;
+  if (shouldShow) {
+    setTimeout(() => { showOnboarding(); }, 500);
   }
 });
 

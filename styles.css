@@ -2977,6 +2977,16 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   padding: 40px;
   position: relative;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+
+.onboarding-warning {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fff7ed; /* naranja muy claro */
+  border-left: 4px solid #f59e0b;
+  color: #7c2d12;
+  font-size: 13px;
+}
   animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -3174,6 +3184,9 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   .onboarding-container {
     padding: 30px 20px;
     max-width: 100%;
+  }
+  .onboarding-warning {
+    font-size: 12px;
   }
   
   .onboarding-slide h2 {
