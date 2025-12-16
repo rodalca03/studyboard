@@ -1547,7 +1547,8 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
 /* Botones menu principal */
 .dark-mode-toggle,
 .show-archived-toggle,
-.firebase-toggle {
+.firebase-toggle,
+.changelog-toggle {
   position: fixed;
   top: 12px;
   width: 40px;
@@ -1562,7 +1563,7 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, opacity 0.3s ease;
 }
 
 .dark-mode-toggle {
@@ -1577,15 +1578,27 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   left: 12px;
 }
 
+.changelog-toggle {
+  left: 60px;
+  opacity: 0.05; /* Muy discreto */
+  font-size: 16px;
+}
+
 .dark-mode-toggle:hover,
 .show-archived-toggle:hover,
-.firebase-toggle:hover {
+.firebase-toggle:hover,
+.changelog-toggle:hover {
   transform: scale(1.05);
+}
+
+.changelog-toggle:hover {
+  opacity: 0.3; /* Más visible al pasar el ratón */
 }
 
 .dark-mode .dark-mode-toggle,
 .dark-mode .show-archived-toggle,
-.dark-mode .firebase-toggle {
+.dark-mode .firebase-toggle,
+.dark-mode .changelog-toggle {
   background: var(--card-bg);
 }
 
@@ -2499,8 +2512,6 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   width: 90%;
   height: 650px !important;
   max-height: 85vh !important;
-}
-  max-height: 85vh;
 }
 
 .exams-modal .modal-body {
