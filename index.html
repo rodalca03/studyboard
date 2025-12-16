@@ -1192,6 +1192,8 @@ function crearTarjeta(nombre = 'Nueva asignatura', color = '#ff4d4d', doGuardar 
   card._tests = [];
 
   card.innerHTML = `
+    <div class="swipe-action-bg left"><span>Eliminar</span></div>
+    <div class="swipe-action-bg right"><span>Información</span></div>
     <div class="card-inner">
       <div class="left">
         <span class="titulo" contenteditable="true" aria-label="Nombre de la asignatura">${escapeHtml(nombre)}</span>
@@ -1531,18 +1533,34 @@ container.addEventListener('touchmove', (e) => {
     e.preventDefault();
     
     // Aplicar transformación visual del swipe
+    touchCard.classList.add('swiping');
     touchCard.style.transform = `translateX(${deltaX}px)`;
     
-    if (deltaX < -SWIPE_THRESHOLD) {
-      touchCard.classList.add('swiping-left');
-      touchCard.classList.remove('swiping-right');
-      swipeDirection = 'left';
-    } else if (deltaX > SWIPE_THRESHOLD) {
-      touchCard.classList.add('swiping-right');
-      touchCard.classList.remove('swiping-left');
-      swipeDirection = 'right';
+    // Mostrar/ocultar fondos de acción
+    const leftBg = touchCard.querySelector('.swipe-action-bg.left');
+    const rightBg = touchCard.querySelector('.swipe-action-bg.right');
+    
+    if (deltaX < -20) {
+      // Swipe izquierda - mostrar "Eliminar"
+      leftBg.classList.add('visible');
+      rightBg.classList.remove('visible');
+      if (deltaX < -SWIPE_THRESHOLD) {
+        swipeDirection = 'left';
+      } else {
+        swipeDirection = null;
+      }
+    } else if (deltaX > 20) {
+      // Swipe derecha - mostrar "Información"
+      rightBg.classList.add('visible');
+      leftBg.classList.remove('visible');
+      if (deltaX > SWIPE_THRESHOLD) {
+        swipeDirection = 'right';
+      } else {
+        swipeDirection = null;
+      }
     } else {
-      touchCard.classList.remove('swiping-left', 'swiping-right');
+      leftBg.classList.remove('visible');
+      rightBg.classList.remove('visible');
       swipeDirection = null;
     }
     return;
@@ -1568,6 +1586,12 @@ container.addEventListener('touchend', (e) => {
   
   const deltaX = e.changedTouches[0].clientX - startX;
   
+  // Ocultar fondos de acción
+  const leftBg = touchCard.querySelector('.swipe-action-bg.left');
+  const rightBg = touchCard.querySelector('.swipe-action-bg.right');
+  if (leftBg) leftBg.classList.remove('visible');
+  if (rightBg) rightBg.classList.remove('visible');
+  
   // Manejar swipe completado
   if (swipeDirection && Math.abs(deltaX) > SWIPE_THRESHOLD) {
     if (swipeDirection === 'left') {
@@ -1582,24 +1606,21 @@ container.addEventListener('touchend', (e) => {
         } else {
           // Cancelar
           touchCard.style.transform = '';
-          touchCard.classList.remove('swipe-removed', 'swiping-left');
+          touchCard.classList.remove('swipe-removed', 'swiping');
         }
       }, 300);
     } else if (swipeDirection === 'right') {
-      // Swipe derecha = ARCHIVAR/DESTACAR
-      const progressContainer = touchCard.querySelector('.progress-container');
-      progressContainer.style.display = progressContainer.style.display === 'none' ? 'block' : 'none';
-      actualizarProgresoCard(touchCard);
+      // Swipe derecha = MOSTRAR INFORMACIÓN (abrir modal)
+      openSubjectDetail(touchCard);
       
       // Resetear visual
       touchCard.style.transform = '';
-      touchCard.classList.remove('swiping-right');
-      
-      showSyncIndicator('Progreso actualizado', 'success');
+      touchCard.classList.remove('swiping');
     }
   } else {
     // Cancelar swipe incompleto
     touchCard.style.transform = '';
+    touchCard.classList.remove('swiping');
     touchCard.classList.remove('swiping-left', 'swiping-right');
   }
   

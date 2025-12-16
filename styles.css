@@ -811,16 +811,51 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
 }
 
 /* Efecto de swipe en tarjetas */
-.card.swiping-left {
-  transform: translateX(-100px);
-  background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
-  transition: all 0.3s ease;
+.card {
+  position: relative;
+  transition: transform 0.3s ease;
 }
 
-.card.swiping-right {
-  transform: translateX(100px);
-  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%) !important;
-  transition: all 0.3s ease;
+/* Fondos de swipe */
+.swipe-action-bg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  z-index: -1;
+  border-radius: 14px;
+  transition: opacity 0.2s ease;
+  opacity: 0;
+}
+
+.swipe-action-bg.left {
+  background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);
+  color: white;
+  justify-content: flex-end;
+  padding-right: 24px;
+  left: 0;
+}
+
+.swipe-action-bg.right {
+  background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+  color: white;
+  justify-content: flex-start;
+  padding-left: 24px;
+  right: 0;
+}
+
+.swipe-action-bg.visible {
+  opacity: 1;
+}
+
+.card.swiping {
+  transition: none;
 }
 
 .card.swipe-removed {
