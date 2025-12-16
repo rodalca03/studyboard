@@ -2295,14 +2295,38 @@ function getCommitIcon(message) {
 }
 
 // Event listeners para changelog
-document.addEventListener('DOMContentLoaded', () => {
+function initChangelogListeners() {
   const versionBadge = document.getElementById('version-badge');
   const closeBtn = document.getElementById('close-changelog');
   const showTutorialBtn = document.getElementById('show-tutorial-btn');
   const changelogModal = document.getElementById('changelog-modal');
   
   if (versionBadge) {
-    versionBadge.addEventListener('dblclick', () => {
+    // Detectar doble click manualmente
+    let clickCount = 0;
+    let clickTimer = null;
+    
+    versionBadge.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      clickCount++;
+      
+      if (clickCount === 1) {
+        clickTimer = setTimeout(() => {
+          clickCount = 0;
+        }, 400);
+      } else if (clickCount === 2) {
+        clearTimeout(clickTimer);
+        clickCount = 0;
+        openChangelog();
+      }
+    });
+    
+    // También escuchar dblclick por si acaso
+    versionBadge.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       openChangelog();
     });
   }
@@ -2323,7 +2347,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.target === changelogModal) closeChangelog();
     });
   }
-});
+}
+
+// Ejecutar inmediatamente y también en DOMContentLoaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initChangelogListeners);
+} else {
+  initChangelogListeners();
+}
 
 /* -------------------------
    Sistema de Onboarding/Tutorial
