@@ -41,11 +41,11 @@ html,body {
   font-family: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow: hidden;
 }
 
 body {
   transition: background-color 0.3s ease;
+  background: var(--bg);
 }
 
 body.glass-mode {
@@ -348,7 +348,7 @@ body.glass-mode .cta-secondary:hover { background: rgba(255,255,255,0.5); }
   flex-direction: column;
   align-items: center;
   width: 100%;
-  height: 100vh;
+  min-height: 100dvh;
   background: var(--bg);
   opacity: 0;
   top: 6vh;
