@@ -217,6 +217,37 @@ body.glass-mode .exam-alerts-more {
   justify-content: flex-end;
 }
 
+/* Efecto lens glare sutil para la imagen del tutorial Liquid Glass */
+.lens-glare {
+  position: relative;
+  overflow: hidden;
+}
+.lens-glare::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(120deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.15) 45%,
+    rgba(255,255,255,0.35) 50%,
+    rgba(255,255,255,0.15) 55%,
+    rgba(255,255,255,0) 100%);
+  filter: blur(1px);
+  animation: lensGlareSweep 3.6s ease-in-out infinite;
+}
+
+@keyframes lensGlareSweep {
+  0% { transform: translateX(0); opacity: 0.0; }
+  10% { opacity: 0.25; }
+  50% { transform: translateX(250%); opacity: 0.35; }
+  90% { opacity: 0.2; }
+  100% { transform: translateX(250%); opacity: 0.0; }
+}
+
 /* Pantallas: animadas (fade + slide) */
 .screen {
   position: absolute;
