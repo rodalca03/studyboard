@@ -228,7 +228,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, rgba(66,133,244,0.25) 0%, rgba(52,168,83,0.25) 100%); position: relative; border-bottom: 1px solid rgba(0,0,0,0.06);">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.3.7</div>
+        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.3.8</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -248,6 +248,11 @@
           <button id="show-tutorial-btn" class="tutorial-launcher-btn">
             ✨ Ver Tutorial de Funcionalidades
           </button>
+            <div style="margin-top: 10px;">
+              <button id="test-ios-btn" class="tutorial-launcher-btn" title="Probar sugerencia Liquid Glass en iOS">
+                🍎 Test iOS: Prueba Liquid Glass
+              </button>
+            </div>
         </div>
         <div id="changelog-content" style="color: #1e293b;">
           <div style="text-align: center; padding: 40px; color: #94a3b8;">
@@ -2523,6 +2528,16 @@ function initChangelogListeners() {
     showTutorialBtn.addEventListener('click', () => {
       closeChangelog();
       setTimeout(() => showOnboarding(), 300);
+    });
+  }
+  const testIosBtn = document.getElementById('test-ios-btn');
+  if (testIosBtn) {
+    testIosBtn.addEventListener('click', () => {
+      if (isIOS()) {
+        openGlassSuggestion();
+      } else {
+        openGlassSuggestion(); // Permitir probar también en otros dispositivos
+      }
     });
   }
   
