@@ -206,7 +206,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.2.0</div>
+        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.2.1</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -1323,10 +1323,11 @@ function actualizarProgresoCard(card) {
       progressFill.style.background = '#ef4444';
     } else if (porcentaje < 70) {
       progressFill.style.background = '#f59e0b';
-    } else if (porcentaje < 100) {
-      progressFill.style.background = '#3b82f6';
-    } else {
+    } else if (porcentaje >= 99.5) {
+      // Si el porcentaje redondeado es 100%, mostrar verde
       progressFill.style.background = '#10b981';
+    } else {
+      progressFill.style.background = '#3b82f6';
     }
   }
 }
