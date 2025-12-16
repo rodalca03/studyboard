@@ -2598,6 +2598,41 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   background: rgba(99, 102, 241, 0.1);
 }
 
+/* Liquid Glass más oscuro para modal de detalles de examen */
+body.glass-mode .exam-detail-modal {
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+body.glass-mode .exam-detail-item {
+  background: rgba(15, 23, 42, 0.25); /* azul oscuro translúcido */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-left: 3px solid rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+}
+
+body.glass-mode .exam-detail-label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+body.glass-mode .exam-detail-value {
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+body.glass-mode .exam-detail-actions .btn {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+body.glass-mode .exam-detail-actions .btn:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
 .dark-mode .exam-detail-actions .btn-close {
   background: #374151;
   color: #e5e7eb;
