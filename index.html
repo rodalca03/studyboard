@@ -872,6 +872,12 @@ function isIOS() {
   return isIpadIphoneIpod || isTouchMac;
 }
 
+// Detección de Android
+function isAndroid() {
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+  return /Android/i.test(ua);
+}
+
 // Sugerencia de Liquid Glass
 function openGlassSuggestion() {
   const modal = document.getElementById('glass-suggestion-modal');
@@ -2662,6 +2668,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isIOS()) {
       setTimeout(() => { openGlassSuggestion(); }, 600);
     }
+    // Para Android: mostrar sugerencia cada 100 aperturas si no se usa glass
+    try {
+      const theme = localStorage.getItem('themeMode') || 'light';
+      let launchCount = parseInt(localStorage.getItem('launchCount') || '0', 10) || 0;
+      launchCount += 1;
+      localStorage.setItem('launchCount', String(launchCount));
+      if (isAndroid() && theme !== 'glass' && launchCount % 100 === 0) {
+        setTimeout(() => { openGlassSuggestion(); }, 700);
+      }
+    } catch (e) {}
   }
 });
 
