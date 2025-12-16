@@ -38,7 +38,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version">v2.0.2</div>
+        <div class="app-version">v2.0.3</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -631,14 +631,16 @@ globalSearchInput.addEventListener('input', (e) => {
           subjectCard.querySelector('.view-subject-btn').addEventListener('click', (e) => {
             e.stopPropagation();
             showSubjectsScreen(semester);
-            // Esperar a que se rendericen las tarjetas
+            // Esperar a que se rendericen las tarjetas y abrir modal de pruebas
             setTimeout(() => {
               const cards = document.querySelectorAll('.card');
               cards.forEach(c => {
                 if (c.querySelector('.titulo').textContent === subject.nombre) {
                   c.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  c.style.transform = 'scale(1.05)';
-                  setTimeout(() => c.style.transform = '', 300);
+                  // Abrir directamente el modal de pruebas evaluables
+                  setTimeout(() => {
+                    openSubjectDetail(c);
+                  }, 150);
                 }
               });
             }, 100);
