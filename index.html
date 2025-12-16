@@ -206,7 +206,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.1.4</div>
+        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.1.5</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -3805,7 +3805,9 @@ function checkUpcomingExams() {
 
 // Abrir modal de detalles del examen
 function openExamDetailModal(examId) {
-  const exam = exams.find(e => e.id === examId);
+  // Obtener exámenes de localStorage
+  const allExams = JSON.parse(localStorage.getItem('exams') || '[]');
+  const exam = allExams.find(e => e.id == examId);
   if (!exam) return;
   
   const today = new Date();
@@ -3872,23 +3874,29 @@ function openExamDetailModal(examId) {
     </div>
   `;
   
-  document.getElementById('exam-detail-modal').style.display = 'flex';
+  const modal = document.getElementById('exam-detail-modal');
+  modal.style.display = 'flex';
+  setTimeout(() => modal.classList.add('show'), 10);
 }
 
 // Cerrar modal de detalles del examen
 function closeExamDetailModal() {
-  document.getElementById('exam-detail-modal').style.display = 'none';
+  const modal = document.getElementById('exam-detail-modal');
+  modal.classList.remove('show');
+  setTimeout(() => modal.style.display = 'none', 250);
 }
 
 // Eliminar examen desde el modal de detalles
 function deleteExamFromDetail(examId) {
   if (confirm('¿Estás seguro de que quieres eliminar este examen?')) {
-    exams = exams.filter(e => e.id !== examId);
-    saveExams();
+    saveStateToHistory('eliminar examen');
+    let allExams = JSON.parse(localStorage.getItem('exams') || '[]');
+    allExams = allExams.filter(e => e.id != examId);
+    localStorage.setItem('exams', JSON.stringify(allExams));
     closeExamDetailModal();
-    renderExams();
-    renderUpcomingExams();
-    showNotification('Examen eliminado correctamente');
+    checkUpcomingExams();
+    showSyncIndicator('Examen eliminado correctamente', 'success');
+    scheduleSyncToFirebase();
   }
 }
 
