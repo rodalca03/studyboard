@@ -38,7 +38,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version">v1.9.0</div>
+        <div class="app-version">v1.9.1</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -1669,8 +1669,19 @@ function renderTests() {
     nameInput.addEventListener('input', (e) => {
       activeCard._tests[originalIdx].nombre = e.target.value;
       guardar();
-      renderTests(); // Re-renderizar para reordenar
     });
+    
+    // Re-renderizar solo cuando termine de editar para aplicar ordenamiento
+    nameInput.addEventListener('blur', () => {
+      renderTests();
+    });
+    
+    nameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.target.blur();
+      }
+    });
+    
     gradeInput.addEventListener('input', (e) => {
       activeCard._tests[originalIdx].nota = e.target.value;
       guardar();
