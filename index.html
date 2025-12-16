@@ -38,7 +38,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version">v2.0.1</div>
+        <div class="app-version">v2.0.2</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -399,7 +399,7 @@ function undo() {
     const updatedSemester = cuatrimestres.find(c => c.id === currentSemester.id);
     if (updatedSemester) {
       currentSemester = updatedSemester;
-      render();
+      renderSubjects();
     } else {
       showMenuScreen();
     }
@@ -1480,6 +1480,11 @@ container.addEventListener('touchstart', (e) => {
   if (!el) return;
   
   isDraggingFromHandle = !!handle;
+  touchCard = el;
+  startY = e.touches[0].clientY;
+  startX = e.touches[0].clientX;
+  moved = false;
+  swipeDirection = null;
   
   // Long press para menú contextual (solo si NO es desde el handle)
   if (!isDraggingFromHandle) {
@@ -1488,15 +1493,9 @@ container.addEventListener('touchstart', (e) => {
       createContextMenu(el, e.touches[0].clientX, e.touches[0].clientY);
       navigator.vibrate && navigator.vibrate(50); // Feedback háptico
     }, LONG_PRESS_DURATION);
-    return;
+  } else {
+    touchCard.classList.add('dragging');
   }
-  
-  touchCard = el;
-  startY = e.touches[0].clientY;
-  startX = e.touches[0].clientX;
-  moved = false;
-  swipeDirection = null;
-  touchCard.classList.add('dragging');
 }, { passive: true });
 
 container.addEventListener('touchmove', (e) => {
