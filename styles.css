@@ -1486,7 +1486,7 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
 .warning-icon { width:48px; height:48px; border-radius:999px; background:#ffedd5; color:#b45309; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:20px; }
 
 @media (max-width:640px) {
-  .bottom-sheet { max-width: 100%; border-radius: 12px 12px 6px 6px; }
+  .bottom-sheet { max-width: 100%; border-radius: 14px; }
 }
 
 /* activar animación: scale cuando el overlay tiene clase .show */
