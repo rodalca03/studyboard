@@ -521,6 +521,30 @@
   </div>
 </div>
 
+<!-- Modal sugerencia Liquid Glass para iOS -->
+<div id="glass-suggestion-modal" class="modal-overlay" style="display:none;">
+  <div class="modal glass-suggestion-modal">
+    <div class="modal-header" style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);">
+      <h2 class="modal-title">💧 Modo Liquid Glass</h2>
+      <button class="close-modal-btn" onclick="closeGlassSuggestion()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="glass-suggestion-content">
+        <div class="glass-preview" aria-hidden="true"></div>
+        <p class="glass-suggestion-text">
+          En iOS, el modo Liquid Glass mejora el contraste con un efecto elegante y suave.
+          ¿Quieres activarlo ahora?
+        </p>
+        <div class="glass-suggestion-actions">
+          <button class="btn btn-primary" onclick="activateGlassModeFromSuggestion()">Activar ahora</button>
+          <button class="btn btn-ghost" onclick="closeGlassSuggestion()">Más tarde</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
 <script>
 /* -------------------------
    Configuración y utilidades
@@ -839,6 +863,32 @@ darkModeToggle.addEventListener('click', () => {
   
   applyTheme(nextTheme);
 });
+
+// Detección de iOS
+function isIOS() {
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+  const isIpadIphoneIpod = /iPad|iPhone|iPod/.test(ua);
+  const isTouchMac = (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  return isIpadIphoneIpod || isTouchMac;
+}
+
+// Sugerencia de Liquid Glass
+function openGlassSuggestion() {
+  const modal = document.getElementById('glass-suggestion-modal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  requestAnimationFrame(() => modal.classList.add('show'));
+}
+function closeGlassSuggestion() {
+  const modal = document.getElementById('glass-suggestion-modal');
+  if (!modal) return;
+  modal.classList.remove('show');
+  setTimeout(() => { modal.style.display = 'none'; }, 250);
+}
+function activateGlassModeFromSuggestion() {
+  applyTheme('glass');
+  closeGlassSuggestion();
+}
 
 // Mostrar/ocultar archivados
 showArchivedToggle.addEventListener('click', () => {
@@ -2504,6 +2554,10 @@ function hideOnboarding() {
   modal.style.display = 'none';
   // Marcar que el usuario ya vio el tutorial al menos una vez
   localStorage.setItem('onboardingSeenOnce', 'true');
+  // Tras cerrar tutorial, sugerir Liquid Glass si es iOS
+  if (isIOS()) {
+    openGlassSuggestion();
+  }
 }
 
 function updateSlide() {
@@ -2603,6 +2657,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const shouldShow = !seenOnce || !syncCode;
   if (shouldShow) {
     setTimeout(() => { showOnboarding(); }, 500);
+  } else {
+    // Si no se debe mostrar el tutorial y es iOS, mostrar sugerencia directamente
+    if (isIOS()) {
+      setTimeout(() => { openGlassSuggestion(); }, 600);
+    }
   }
 });
 

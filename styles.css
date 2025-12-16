@@ -182,6 +182,41 @@ body.glass-mode .exam-alerts-more {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
+/* Modal sugerencia Liquid Glass */
+.glass-suggestion-modal .modal-body {
+  padding: 20px;
+}
+.glass-suggestion-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.glass-preview {
+  width: 100%;
+  height: 120px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(240,249,255,0.9) 0%, rgba(147,197,253,0.7) 50%, rgba(59,130,246,0.6) 100%);
+  position: relative;
+  overflow: hidden;
+}
+.glass-preview::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.5);
+}
+.glass-suggestion-text {
+  color: var(--text);
+  font-size: 14px;
+}
+.glass-suggestion-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
 /* Pantallas: animadas (fade + slide) */
 .screen {
   position: absolute;
