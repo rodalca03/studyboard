@@ -38,7 +38,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version">v2.0.7</div>
+        <div class="app-version">v2.0.8</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -1204,7 +1204,6 @@ function crearTarjeta(nombre = 'Nueva asignatura', color = '#ff4d4d', doGuardar 
           <div class="subject-grade" style="font-weight:600; min-width:40px; text-align:right;">-</div>
         </div>
         <button class="open-tests-btn" aria-label="Ver pruebas evaluables" title="Ver pruebas" style="background:rgba(255,255,255,0.12); border:none; padding:6px 8px; border-radius:8px; cursor:pointer; font-size:16px; line-height:1; transition: transform 0.2s ease;">📝</button>
-        <button class="grab-handle" aria-label="Arrastrar tarjeta" title="Arrastrar">≡</button>
       </div>
     </div>
     <div class="progress-container" style="display:none;">
@@ -1275,7 +1274,7 @@ function crearTarjeta(nombre = 'Nueva asignatura', color = '#ff4d4d', doGuardar 
   });
 
   card.addEventListener('click', (ev) => {
-    const avoid = ev.target.closest('.grab-handle') || ev.target.closest('.controls') || ev.target.closest('.delete-btn') || ev.target.closest('.color-select') || ev.target.closest('.titulo') || ev.target.closest('.open-tests-btn');
+    const avoid = ev.target.closest('.controls') || ev.target.closest('.delete-btn') || ev.target.closest('.color-select') || ev.target.closest('.titulo') || ev.target.closest('.open-tests-btn');
     if (avoid) return;
 
     const now = Date.now();
@@ -1403,21 +1402,16 @@ const SWIPE_THRESHOLD = 80;
 const LONG_PRESS_DURATION = 500;
 
 container.addEventListener('touchstart', (e) => {
-  const handle = e.target.closest('.grab-handle');
   const el = e.target.closest('.card');
   
   if (!el) return;
   
-  isDraggingFromHandle = !!handle;
+  isDraggingFromHandle = false;
   touchCard = el;
   startY = e.touches[0].clientY;
   startX = e.touches[0].clientX;
   moved = false;
   swipeDirection = null;
-  
-  if (isDraggingFromHandle) {
-    touchCard.classList.add('dragging');
-  }
 }, { passive: true });
 
 container.addEventListener('touchmove', (e) => {
