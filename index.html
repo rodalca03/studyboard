@@ -38,7 +38,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version">v2.0.0</div>
+        <div class="app-version">v2.0.1</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -1545,20 +1545,6 @@ container.addEventListener('touchmove', (e) => {
     const cards = [...container.querySelectorAll('.card:not(.dragging)')];
     const next = cards.find(c => y <= c.getBoundingClientRect().top + c.offsetHeight / 2);
     container.insertBefore(touchCard, next || null);
-  }
-}, { passive: false });
-
-  if (moved) {
-    e.preventDefault();
-    
-    const prevRects = new Map();
-    [...container.querySelectorAll('.card:not(.dragging)')].forEach(c => prevRects.set(c, c.getBoundingClientRect()));
-
-    const cards = [...container.querySelectorAll('.card:not(.dragging)')];
-    const next = cards.find(c => y <= c.getBoundingClientRect().top + c.offsetHeight / 2);
-    container.insertBefore(touchCard, next || null);
-
-    requestAnimationFrame(() => runFLIP(prevRects));
   }
 }, { passive: false });
 
