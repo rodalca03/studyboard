@@ -933,37 +933,6 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   background: #7f1d1d;
 }
 
-/* Pull to refresh indicator */
-.pull-to-refresh {
-  position: fixed;
-  top: -60px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40px;
-  height: 40px;
-  background: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 9998;
-}
-
-.pull-to-refresh.visible {
-  top: 20px;
-}
-
-.pull-to-refresh.loading {
-  animation: spin 1s linear infinite;
-}
-
-.dark-mode .pull-to-refresh {
-  background: #1f2937;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-
 .dark-mode .semester-card {
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }

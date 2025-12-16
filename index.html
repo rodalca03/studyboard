@@ -206,7 +206,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.1.5</div>
+        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.1.6</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -643,91 +643,6 @@ function showSubjectsScreen(semester) {
 }
 
 backBtn.addEventListener('click', showMenuScreen);
-
-/* -------------------------
-   Pull to Refresh
-   ------------------------- */
-let pullStartY = 0;
-let pulling = false;
-let pullRefreshIndicator = null;
-
-function createPullRefreshIndicator() {
-  if (!pullRefreshIndicator) {
-    pullRefreshIndicator = document.createElement('div');
-    pullRefreshIndicator.className = 'pull-to-refresh';
-    pullRefreshIndicator.innerHTML = '↓';
-    document.body.appendChild(pullRefreshIndicator);
-  }
-  return pullRefreshIndicator;
-}
-
-menuScreen.addEventListener('touchstart', (e) => {
-  if (window.scrollY === 0) {
-    pullStartY = e.touches[0].clientY;
-    pulling = true;
-  }
-}, { passive: true });
-
-menuScreen.addEventListener('touchmove', (e) => {
-  if (!pulling) return;
-  
-  const pullDistance = e.touches[0].clientY - pullStartY;
-  
-  if (pullDistance > 0 && window.scrollY === 0) {
-    const indicator = createPullRefreshIndicator();
-    
-    if (pullDistance > 60) {
-      indicator.classList.add('visible');
-      indicator.innerHTML = pullDistance > 100 ? '⟳' : '↓';
-    } else {
-      indicator.classList.remove('visible');
-    }
-  }
-}, { passive: true });
-
-menuScreen.addEventListener('touchend', (e) => {
-  if (!pulling) return;
-  
-  const pullDistance = e.changedTouches[0].clientY - pullStartY;
-  const indicator = pullRefreshIndicator;
-  
-  if (pullDistance > 100 && indicator) {
-    // Trigger refresh
-    indicator.innerHTML = '⟳';
-    indicator.classList.add('loading');
-    
-    // Sincronizar con Firebase
-    if (typeof syncFromFirebase === 'function') {
-      syncFromFirebase().then(() => {
-        renderSemesters();
-        checkUpcomingExams();
-        showSyncIndicator('Datos actualizados', 'success');
-      }).catch(err => {
-        showSyncIndicator('Error al sincronizar', 'error');
-      }).finally(() => {
-        setTimeout(() => {
-          if (indicator) {
-            indicator.classList.remove('visible', 'loading');
-          }
-        }, 500);
-      });
-    } else {
-      // Sin Firebase, solo recargar vista
-      renderSemesters();
-      checkUpcomingExams();
-      showSyncIndicator('Vista actualizada', 'success');
-      setTimeout(() => {
-        if (indicator) {
-          indicator.classList.remove('visible', 'loading');
-        }
-      }, 500);
-    }
-  } else if (indicator) {
-    indicator.classList.remove('visible');
-  }
-  
-  pulling = false;
-}, { passive: true });
 
 // Soporte para gestos nativos de Android/iOS (botón atrás del navegador)
 window.addEventListener('popstate', (event) => {
