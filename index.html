@@ -1911,6 +1911,7 @@ ADD_BTN.addEventListener('click', () => {
 document.addEventListener('DOMContentLoaded', () => {
   initThemeMode();
   showMenuScreen();
+  initScrollHideUI();
 });
 
 /* -------------------------
@@ -2737,6 +2738,46 @@ function runFLIP(prevRects) {
     };
     card.addEventListener('transitionend', cleanup);
   });
+}
+
+/* Ocultar botones al hacer scroll: menú y asignaturas */
+function initScrollHideUI() {
+  const menu = document.getElementById('menu-screen');
+  const subjects = document.getElementById('subjects-screen');
+  const addSemester = document.getElementById('add-semester-btn');
+  const addSubject = document.getElementById('add-btn');
+  const toolsWrapper = document.querySelector('.tools-menu-wrapper');
+
+  let lastMenuScroll = 0;
+  let lastSubjectsScroll = 0;
+
+  if (menu) {
+    menu.addEventListener('scroll', () => {
+      const y = menu.scrollTop;
+      const scrollingDown = y > lastMenuScroll + 3;
+      lastMenuScroll = y;
+      if (scrollingDown) {
+        addSemester && addSemester.classList.add('hide');
+      } else {
+        addSemester && addSemester.classList.remove('hide');
+      }
+    }, { passive: true });
+  }
+
+  if (subjects) {
+    subjects.addEventListener('scroll', () => {
+      const y = subjects.scrollTop;
+      const scrollingDown = y > lastSubjectsScroll + 3;
+      lastSubjectsScroll = y;
+      if (scrollingDown) {
+        addSubject && addSubject.classList.add('hide');
+        toolsWrapper && toolsWrapper.classList.add('hide');
+      } else {
+        addSubject && addSubject.classList.remove('hide');
+        toolsWrapper && toolsWrapper.classList.remove('hide');
+      }
+    }, { passive: true });
+  }
 }
 
 document.addEventListener('keydown', (e) => {

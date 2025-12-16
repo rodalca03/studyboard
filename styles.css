@@ -1942,6 +1942,15 @@ body.glass-mode #global-search-input::placeholder {
   color: rgba(15, 23, 42, 0.6);
 }
 
+/* Ocultar FABs/menus al hacer scroll */
+.fab-btn.hide,
+#add-semester-btn.hide,
+.tools-menu-wrapper.hide {
+  transform: translateY(120%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
 .dark-mode #global-search-input {
   background: var(--input-bg);
   border-color: var(--input-border);
