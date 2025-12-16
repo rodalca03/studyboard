@@ -168,7 +168,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Doble clic para ver changelog">v2.1.0</div>
+        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.1.0</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -2302,29 +2302,8 @@ function initChangelogListeners() {
   const changelogModal = document.getElementById('changelog-modal');
   
   if (versionBadge) {
-    // Detectar doble click manualmente
-    let clickCount = 0;
-    let clickTimer = null;
-    
+    // Click simple para abrir changelog
     versionBadge.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      clickCount++;
-      
-      if (clickCount === 1) {
-        clickTimer = setTimeout(() => {
-          clickCount = 0;
-        }, 400);
-      } else if (clickCount === 2) {
-        clearTimeout(clickTimer);
-        clickCount = 0;
-        openChangelog();
-      }
-    });
-    
-    // También escuchar dblclick por si acaso
-    versionBadge.addEventListener('dblclick', (e) => {
       e.preventDefault();
       e.stopPropagation();
       openChangelog();
@@ -2608,11 +2587,12 @@ function showSyncModal() {
     syncCodeContent.innerHTML = `
       <div style="text-align: center; padding: 20px 0;">
         <h3 style="margin: 0 0 10px 0; color: var(--text);">Tu código de sincronización</h3>
-        <div style="font-size: 48px; font-weight: 700; color: #4285f4; letter-spacing: 8px; margin: 20px 0;">
+        <div id="sync-code-display" style="font-size: 48px; font-weight: 700; color: #4285f4; letter-spacing: 8px; margin: 20px 0; cursor: pointer; user-select: none; transition: transform 0.2s ease;" title="Doble click para copiar">
           ${savedCode}
         </div>
         <p style="color: var(--text); opacity: 0.7; font-size: 14px; margin: 20px 0;">
-          Usa este código en otros dispositivos para sincronizar tus datos
+          Usa este código en otros dispositivos para sincronizar tus datos<br>
+          <small style="opacity: 0.6;">(Doble click en el código para copiar)</small>
         </p>
         <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
           <button onclick="copySyncCode('${savedCode}')" style="background: #4285f4; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: transform 0.2s ease, box-shadow 0.2s ease; flex: 1; min-width: 140px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(66,133,244,0.3)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
@@ -2627,6 +2607,45 @@ function showSyncModal() {
         </button>
       </div>
     `;
+    
+    // Agregar event listener para doble click en el código
+    setTimeout(() => {
+      const codeDisplay = document.getElementById('sync-code-display');
+      if (codeDisplay) {
+        let clickCount = 0;
+        let clickTimer = null;
+        
+        codeDisplay.addEventListener('click', (e) => {
+          e.preventDefault();
+          clickCount++;
+          
+          if (clickCount === 1) {
+            clickTimer = setTimeout(() => {
+              clickCount = 0;
+            }, 400);
+          } else if (clickCount === 2) {
+            clearTimeout(clickTimer);
+            clickCount = 0;
+            copySyncCode(savedCode);
+            // Efecto visual
+            codeDisplay.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+              codeDisplay.style.transform = '';
+            }, 200);
+          }
+        });
+        
+        // También soportar dblclick nativo
+        codeDisplay.addEventListener('dblclick', (e) => {
+          e.preventDefault();
+          copySyncCode(savedCode);
+          codeDisplay.style.transform = 'scale(1.1)';
+          setTimeout(() => {
+            codeDisplay.style.transform = '';
+          }, 200);
+        });
+      }
+    }, 100);
   } else {
     // No tiene código, ofrecer crear o introducir
     syncCodeContent.innerHTML = `
