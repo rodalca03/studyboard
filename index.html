@@ -206,7 +206,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.3.0</div>
+        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.3.1</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -3762,7 +3762,10 @@ function renderExams() {
     examItem.innerHTML = `
       <div class="exam-item-header">
         <div class="exam-subject-name">${exam.subjectName}</div>
-        <button class="exam-delete-btn" onclick="deleteExam(${exam.id})">Eliminar</button>
+        <div class="exam-item-actions">
+          <button class="exam-edit-btn" onclick="openEditExamForm(${exam.id})">Editar</button>
+          <button class="exam-delete-btn" onclick="deleteExam(${exam.id})">Eliminar</button>
+        </div>
       </div>
       <div class="exam-details">
         <div class="exam-detail-item">
@@ -3870,13 +3873,10 @@ function checkUpcomingExams() {
     });
     
     alertHTML += `
-      <div class="exam-alert-item ${urgencyClass}">
-        <div class="exam-alert-content" onclick="openExamDetailModal('${exam.id}')">
-          <div class="exam-alert-subject">${exam.subjectName}</div>
-          <div class="exam-alert-time">${timeText}</div>
-          <div class="exam-alert-date">${formattedDate}</div>
-        </div>
-        <button class="exam-alert-edit-btn" onclick="event.stopPropagation(); openEditExamForm('${exam.id}')" title="Editar examen">✏️</button>
+      <div class="exam-alert-item ${urgencyClass}" onclick="openExamDetailModal('${exam.id}')">
+        <div class="exam-alert-subject">${exam.subjectName}</div>
+        <div class="exam-alert-time">${timeText}</div>
+        <div class="exam-alert-date">${formattedDate}</div>
       </div>
     `;
   });
