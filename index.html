@@ -206,7 +206,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.2.9</div>
+        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.3.0</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -1752,25 +1752,12 @@ container.addEventListener('touchend', (e) => {
     if (swipeDirection === 'left') {
       // Swipe izquierda = ELIMINAR
       const subjectName = touchCard.querySelector('.titulo').textContent;
-      if (confirm(`¿Eliminar "${subjectName}"?`)) {
+      if (confirm(`¿Eliminar la asignatura "${subjectName}"?\n\nEsta acción no se puede deshacer.`)) {
         saveStateToHistory('eliminar asignatura');
-        
-        // Eliminar del array de datos
-        if (currentSemester && currentSemester.asignaturas) {
-          currentSemester.asignaturas = currentSemester.asignaturas.filter(a => a.nombre !== subjectName);
-          const cuatrimestres = obtenerCuatrimestres();
-          const idx = cuatrimestres.findIndex(c => c.id === currentSemester.id);
-          if (idx !== -1) {
-            cuatrimestres[idx].asignaturas = currentSemester.asignaturas;
-            localStorage.setItem('cuatrimestres', JSON.stringify(cuatrimestres));
-          }
-        }
-        
         touchCard.classList.add('swipe-removed');
         setTimeout(() => {
           touchCard.remove();
-          actualizarEstadisticas();
-          scheduleSyncToFirebase();
+          guardar();
         }, 300);
       } else {
         // Cancelar - resetear visual
