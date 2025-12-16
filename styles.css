@@ -22,6 +22,17 @@ body.dark-mode {
   --shadow: 0 6px 18px rgba(0,0,0,0.4);
 }
 
+body.glass-mode {
+  --bg: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+  --text: #ffffff;
+  --card-bg: rgba(255, 255, 255, 0.15);
+  --modal-bg: rgba(255, 255, 255, 0.15);
+  --input-bg: rgba(255, 255, 255, 0.1);
+  --input-border: rgba(255, 255, 255, 0.3);
+  --sheet-bg: rgba(255, 255, 255, 0.15);
+  --shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+}
+
 * { box-sizing: border-box; }
 html,body { 
   height: 100%; 
@@ -35,6 +46,95 @@ html,body {
 
 body {
   transition: background-color 0.3s ease;
+}
+
+body.glass-mode {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+body.glass-mode .card,
+body.glass-mode .modal,
+body.glass-mode .bottom-sheet,
+body.glass-mode .semester-card,
+body.glass-mode .btn-back,
+body.glass-mode .dark-mode-toggle,
+body.glass-mode .show-archived-toggle,
+body.glass-mode .firebase-toggle,
+body.glass-mode .changelog-toggle,
+body.glass-mode .fab-btn,
+body.glass-mode .fab-option,
+body.glass-mode .context-menu {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+}
+
+body.glass-mode .test-row,
+body.glass-mode .sheet-input,
+body.glass-mode input,
+body.glass-mode select {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+body.glass-mode .hint,
+body.glass-mode .sheet-label,
+body.glass-mode .empty-state {
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+body.glass-mode .modal-overlay.show {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+body.glass-mode .sheet-overlay.show {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+body.glass-mode .progress-bar {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+body.glass-mode .btn-primary,
+body.glass-mode .btn-ghost,
+body.glass-mode .btn-delete {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+body.glass-mode .btn-primary:hover,
+body.glass-mode .btn-ghost:hover,
+body.glass-mode .btn-delete:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px);
+}
+
+body.glass-mode .upcoming-exams-alert {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-left: 4px solid rgba(255, 255, 255, 0.5);
 }
 
 /* Pantallas: animadas (fade + slide) */

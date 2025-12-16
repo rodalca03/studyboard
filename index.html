@@ -206,7 +206,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.2.4</div>
+        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.2.5</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -803,19 +803,41 @@ toggleAllProgressBtn.addEventListener('click', () => {
   toggleAllProgressBtn.textContent = '📊';
 });
 
-// Modo oscuro
-function initDarkMode() {
-  const isDark = localStorage.getItem('darkMode') === 'true';
-  if (isDark) {
+// Modo de visualización (claro, oscuro, glass)
+function initThemeMode() {
+  const theme = localStorage.getItem('themeMode') || 'light';
+  applyTheme(theme);
+}
+
+function applyTheme(theme) {
+  document.body.classList.remove('dark-mode', 'glass-mode');
+  
+  if (theme === 'dark') {
     document.body.classList.add('dark-mode');
+    darkModeToggle.textContent = '💧';
+  } else if (theme === 'glass') {
+    document.body.classList.add('glass-mode');
     darkModeToggle.textContent = '☀️';
+  } else {
+    darkModeToggle.textContent = '🌙';
   }
+  
+  localStorage.setItem('themeMode', theme);
 }
 
 darkModeToggle.addEventListener('click', () => {
-  const isDark = document.body.classList.toggle('dark-mode');
-  localStorage.setItem('darkMode', isDark);
-  darkModeToggle.textContent = isDark ? '☀️' : '🌙';
+  const currentTheme = localStorage.getItem('themeMode') || 'light';
+  let nextTheme;
+  
+  if (currentTheme === 'light') {
+    nextTheme = 'dark';
+  } else if (currentTheme === 'dark') {
+    nextTheme = 'glass';
+  } else {
+    nextTheme = 'light';
+  }
+  
+  applyTheme(nextTheme);
 });
 
 // Mostrar/ocultar archivados
@@ -1794,7 +1816,7 @@ ADD_BTN.addEventListener('click', () => {
    ------------------------- */
 // Esperar a que el DOM esté completamente cargado
 document.addEventListener('DOMContentLoaded', () => {
-  initDarkMode();
+  initThemeMode();
   showMenuScreen();
 });
 
