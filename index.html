@@ -206,7 +206,7 @@
     <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
       <div class="modal-header" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative;">
         <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
-        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.2.8</div>
+        <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;" title="Ver historial de cambios">v2.2.9</div>
       </div>
       <div class="modal-body">
         <div id="sync-code-content"></div>
@@ -3642,6 +3642,7 @@ function saveExam() {
   const date = document.getElementById('exam-date-input').value;
   const time = document.getElementById('exam-time-input').value;
   const location = document.getElementById('exam-location-input').value;
+  const editingExamId = document.getElementById('exam-date-input').dataset.editingId;
   
   if (!subjectIndex || !date) {
     alert('Por favor, selecciona una asignatura y una fecha');
@@ -3650,29 +3651,71 @@ function saveExam() {
   
   const subjectName = currentSemester.asignaturas[subjectIndex].nombre;
   
-  const exam = {
-    id: Date.now(),
-    semesterId: currentSemester.id,
-    subjectIndex: parseInt(subjectIndex),
-    subjectName: subjectName,
-    date: date,
-    time: time || '',
-    location: location || ''
-  };
-  
-  saveStateToHistory('añadir examen');
-  
-  // Guardar en localStorage
   let exams = JSON.parse(localStorage.getItem('exams') || '[]');
-  exams.push(exam);
+  
+  if (editingExamId) {
+    // Modo edición
+    saveStateToHistory('editar examen');
+    const examIndex = exams.findIndex(e => e.id == editingExamId);
+    if (examIndex !== -1) {
+      exams[examIndex] = {
+        ...exams[examIndex],
+        subjectIndex: parseInt(subjectIndex),
+        subjectName: subjectName,
+        date: date,
+        time: time || '',
+        location: location || ''
+      };
+    }
+    delete document.getElementById('exam-date-input').dataset.editingId;
+    showSyncIndicator('Examen actualizado correctamente', 'success');
+  } else {
+    // Modo creación
+    const exam = {
+      id: Date.now(),
+      semesterId: currentSemester.id,
+      subjectIndex: parseInt(subjectIndex),
+      subjectName: subjectName,
+      date: date,
+      time: time || '',
+      location: location || ''
+    };
+    
+    saveStateToHistory('añadir examen');
+    exams.push(exam);
+    showSyncIndicator('Examen añadido correctamente', 'success');
+  }
+  
   localStorage.setItem('exams', JSON.stringify(exams));
   
   closeAddExamForm();
   renderExams();
-  scheduleSyncToFirebase(); // Sincronizar con la nube
-  showSyncIndicator('Examen añadido correctamente', 'success');
-  // Actualizar avisos en menú principal
+  scheduleSyncToFirebase();
   checkUpcomingExams();
+}
+
+// Abrir formulario para editar examen
+function openEditExamForm(examId) {
+  const allExams = JSON.parse(localStorage.getItem('exams') || '[]');
+  const exam = allExams.find(e => e.id == examId);
+  if (!exam) return;
+  
+  // Abrir modal de exámenes si no está abierto
+  if (!examsModal.classList.contains('show')) {
+    openExamsModal();
+  }
+  
+  // Abrir formulario
+  openAddExamForm();
+  
+  // Rellenar campos
+  document.getElementById('exam-subject-select').value = exam.subjectIndex;
+  document.getElementById('exam-date-input').value = exam.date;
+  document.getElementById('exam-time-input').value = exam.time || '';
+  document.getElementById('exam-location-input').value = exam.location || '';
+  
+  // Marcar que estamos editando
+  document.getElementById('exam-date-input').dataset.editingId = examId;
 }
 
 function renderExams() {
@@ -3840,10 +3883,13 @@ function checkUpcomingExams() {
     });
     
     alertHTML += `
-      <div class="exam-alert-item ${urgencyClass}" onclick="openExamDetailModal('${exam.id}')">
-        <div class="exam-alert-subject">${exam.subjectName}</div>
-        <div class="exam-alert-time">${timeText}</div>
-        <div class="exam-alert-date">${formattedDate}</div>
+      <div class="exam-alert-item ${urgencyClass}">
+        <div class="exam-alert-content" onclick="openExamDetailModal('${exam.id}')">
+          <div class="exam-alert-subject">${exam.subjectName}</div>
+          <div class="exam-alert-time">${timeText}</div>
+          <div class="exam-alert-date">${formattedDate}</div>
+        </div>
+        <button class="exam-alert-edit-btn" onclick="event.stopPropagation(); openEditExamForm('${exam.id}')" title="Editar examen">✏️</button>
       </div>
     `;
   });
