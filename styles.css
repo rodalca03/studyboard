@@ -370,6 +370,11 @@ body.glass-mode .cta-secondary:hover { background: rgba(255,255,255,0.5); }
   z-index: 2;
 }
 
+/* Ajustes mínimos por orientación */
+body.landscape header { max-width: 1024px; }
+body.landscape .semesters-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+body.landscape .subjects-stats { max-width: 1024px; }
+
 /* Encabezado */
 header {
   width: 100%;
