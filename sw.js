@@ -1,4 +1,4 @@
-const CACHE_NAME = 'studyboard-v2.0.4';
+const CACHE_NAME = 'studyboard-v2.3.17';
 const urlsToCache = [
   '/studyboard/',
   '/studyboard/index.html',
@@ -54,7 +54,7 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
-  
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
@@ -87,7 +87,7 @@ async function generateWidgetData() {
   try {
     // Intentar leer desde IndexedDB/localStorage
     const clients = await self.clients.matchAll();
-    
+
     if (clients.length > 0) {
       // Solicitar datos al cliente activo
       const client = clients[0];
@@ -97,18 +97,18 @@ async function generateWidgetData() {
           resolve(event.data);
         };
         client.postMessage({ type: 'GET_WIDGET_DATA' }, [channel.port2]);
-        
+
         // Timeout si no responde en 2s
         setTimeout(() => resolve(null), 2000);
       });
-      
+
       if (data) {
         return new Response(JSON.stringify(data), {
           headers: { 'Content-Type': 'application/json' }
         });
       }
     }
-    
+
     // Fallback: datos por defecto
     const defaultData = {
       average: "-",
@@ -117,7 +117,7 @@ async function generateWidgetData() {
       nextExam: null,
       timestamp: new Date().toISOString()
     };
-    
+
     return new Response(JSON.stringify(defaultData), {
       headers: { 'Content-Type': 'application/json' }
     });
