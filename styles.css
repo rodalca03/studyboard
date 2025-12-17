@@ -42,6 +42,7 @@ html,body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+html { background: var(--bg); }
 
 body {
   transition: background-color 0.3s ease;
@@ -52,6 +53,7 @@ body.glass-mode {
   background: linear-gradient(135deg, #f0f9ff 0%, #bfdbfe 25%, #93c5fd 50%, #60a5fa 75%, #3b82f6 100%);
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
+  background-attachment: fixed;
 }
 
 @keyframes gradientShift {
@@ -358,6 +360,9 @@ body.glass-mode .cta-secondary:hover { background: rgba(255,255,255,0.5); }
   z-index: 1;
   padding-top: 60px;
   padding-bottom: 20px;
+}
+@supports not (height: 100dvh) {
+  .screen { min-height: 100vh; }
 }
 
 .screen.active {
