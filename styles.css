@@ -41,12 +41,11 @@ html,body {
   font-family: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
 }
-html { background: var(--bg); }
 
 body {
   transition: background-color 0.3s ease;
-  background: var(--bg);
 }
 
 body.glass-mode {
@@ -350,7 +349,7 @@ body.glass-mode .cta-secondary:hover { background: rgba(255,255,255,0.5); }
   flex-direction: column;
   align-items: center;
   width: 100%;
-  min-height: 100dvh;
+  height: 100vh;
   background: var(--bg);
   opacity: 0;
   top: 6vh;
@@ -360,9 +359,6 @@ body.glass-mode .cta-secondary:hover { background: rgba(255,255,255,0.5); }
   z-index: 1;
   padding-top: 60px;
   padding-bottom: 20px;
-}
-@supports not (height: 100dvh) {
-  .screen { min-height: 100vh; }
 }
 
 .screen.active {
