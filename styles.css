@@ -394,7 +394,7 @@ h1 { margin: 6px 0 4px; font-weight: 500; font-size: 20px; color: var(--text); }
 
 /* Modal de pruebas evaluables (desktop): tamaño fijo */
 #subject-modal .modal {
-  height: 600px;
+  height: 80vh;
 }
 /* Modal detalles de examen: cuerpo scrollable si excede */
 #exam-detail-modal .modal {
@@ -836,7 +836,7 @@ main { width: 100%; max-width: 520px; padding: 0 12px; }
   }
   
   #subject-modal .modal {
-    height: 500px !important;
+    height: 80vh !important;
     max-height: 80vh !important;
   }
   
