@@ -95,16 +95,17 @@ body.glass-mode .context-menu {
   box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
 }
 
-/* Estilo específico para tarjetas de asignatura en Liquid Glass (Sutil) */
+/* Estilo específico para tarjetas de asignatura en Liquid Glass (Tintado) */
 body.glass-mode .card {
-  background: rgba(255, 255, 255, 0.45);
-  /* Más opacidad para mantener color */
+  /* Fondo base blanco pero tintado con el color de la tarjeta */
+  background: color-mix(in srgb, var(--card-color, #ffffff) 25%, rgba(255, 255, 255, 0.45));
   backdrop-filter: blur(12px) saturate(110%);
   -webkit-backdrop-filter: blur(12px) saturate(110%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.15), inset 0 0 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.15), inset 0 0 20px rgba(255, 255, 255, 0.2);
   position: relative;
   overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
 }
 
 body.glass-mode .card::before {
