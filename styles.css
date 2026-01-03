@@ -3295,24 +3295,6 @@ body.glass-mode .exam-detail-actions .btn:hover {
   position: relative;
 }
 
-/* Orden de elementos en exams-wrapper */
-.exams-actions-container {
-  order: 1;
-}
-
-#exams-list {
-  order: 2;
-}
-
-#no-exams-message {
-  order: 3;
-}
-
-#past-exams-section {
-  order: 4;
-  /* Siempre al final */
-}
-
 /* Contenedor de acciones de exámenes */
 .exams-actions-container {
   display: flex;
@@ -3507,54 +3489,6 @@ body.glass-mode .exam-detail-actions .btn:hover {
   color: #e2e8f0;
 }
 
-/* Sección de exámenes pasados */
-#past-exams-section {
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 2px dashed var(--input-border);
-}
-
-.btn-toggle-past-exams {
-  width: 100%;
-  padding: 14px 20px;
-  background: transparent;
-  border: 2px dashed #cbd5e1;
-  border-radius: 12px;
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  opacity: 0.7;
-  margin-bottom: 16px;
-}
-
-.btn-toggle-past-exams:hover {
-  opacity: 1;
-  border-color: #6366f1;
-  background: rgba(99, 102, 241, 0.05);
-  transform: translateY(-1px);
-}
-
-.btn-toggle-past-exams .icon {
-  font-size: 16px;
-  transition: transform 0.2s ease;
-}
-
-.btn-toggle-past-exams.expanded .icon {
-  transform: rotate(180deg);
-}
-
-#past-exams-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  opacity: 0.7;
-}
 
 .exam-item {
   background: var(--card-bg);

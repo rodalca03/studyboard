@@ -512,15 +512,6 @@
             <p>📚 No hay exámenes programados</p>
             <p class="hint">Añade tu primer examen para llevar un seguimiento de tus fechas importantes.</p>
           </div>
-
-          <div id="past-exams-section" style="display:none;">
-            <button id="toggle-past-exams" class="btn-toggle-past-exams">
-              <span class="icon">📥</span> Ver Exámenes Pasados
-            </button>
-            <div id="past-exams-list" class="exams-list" style="display:none;">
-              <!-- Los exámenes pasados se renderizarán aquí -->
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -4969,30 +4960,6 @@
       console.log('✅ App instalada correctamente');
       deferredPrompt = null;
     });
-
-    // Toggle para exámenes pasados
-    const togglePastExamsBtn = document.getElementById('toggle-past-exams');
-    if (togglePastExamsBtn) {
-      togglePastExamsBtn.addEventListener('click', function () {
-        const pastExamsList = document.getElementById('past-exams-list');
-
-        // Verificar el estado actual basándose en display y visibilidad
-        const currentDisplay = window.getComputedStyle(pastExamsList).display;
-        const isCurrentlyHidden = currentDisplay === 'none';
-
-        if (isCurrentlyHidden) {
-          // Mostrar exámenes pasados
-          pastExamsList.style.display = 'flex';
-          this.classList.add('expanded');
-          this.innerHTML = '<span class="icon">📥</span> Ocultar Exámenes Pasados';
-        } else {
-          // Ocultar exámenes pasados
-          pastExamsList.style.display = 'none';
-          this.classList.remove('expanded');
-          this.innerHTML = '<span class="icon">📥</span> Ver Exámenes Pasados';
-        }
-      });
-    }
 
   </script>
 
