@@ -3295,6 +3295,24 @@ body.glass-mode .exam-detail-actions .btn:hover {
   position: relative;
 }
 
+/* Orden de elementos en exams-wrapper */
+.exams-actions-container {
+  order: 1;
+}
+
+#exams-list {
+  order: 2;
+}
+
+#no-exams-message {
+  order: 3;
+}
+
+#past-exams-section {
+  order: 4;
+  /* Siempre al final */
+}
+
 /* Contenedor de acciones de exámenes */
 .exams-actions-container {
   display: flex;
