@@ -249,7 +249,7 @@
     <div id="sync-code-modal" class="modal-overlay" style="display:none;">
       <div class="modal" style="max-width: 480px; height: auto; max-height: none;">
         <div class="modal-header"
-          style="background: linear-gradient(135deg, rgba(66,133,244,0.25) 0%, rgba(52,168,83,0.25) 100%); position: relative; border-bottom: 1px solid rgba(0,0,0,0.06);">
+          style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative; border-bottom: 1px solid rgba(0,0,0,0.06);">
           <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
           <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;"
             title="Ver historial de cambios">v2.3.22</div>
@@ -311,9 +311,11 @@
         aria-label="Buscar cuatrimestre o asignatura">
     </div>
     <main>
-      <div id="semesters-container" class="semesters-grid" aria-label="Lista de cuatrimestres"></div>
+      <div id="semesters-container" class="semesters-grid" aria-label="Lista de cuatrimestres">
+        <!-- El botón de añadir cuatrimestre se inyectará dinámicamente aquí dentro -->
+      </div>
     </main>
-    <button id="add-semester-btn" aria-label="Añadir cuatrimestre" class="fab-btn">+</button>
+    <!-- Botón FAB antiguo eliminado: <button id="add-semester-btn" ... -->
   </div>
 
   <!-- Pantalla de gestión de asignaturas -->
@@ -345,25 +347,35 @@
       </div>
     </div>
 
-    <header>
-      <h1 id="subjects-title">Asignaturas</h1>
-      <div id="ai-recommendation" class="ai-recommendation" style="display:none;">
-        <span id="ai-recommendation-text"></span>
-      </div>
-    </header>
-    <div class="subjects-stats" id="subjects-stats" style="display:none;">
-      <div class="stat-item">
-        <span class="stat-label">Media:</span>
-        <span class="stat-value" id="stat-average">-</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">ECTS:</span>
-        <span class="stat-value" id="stat-ects">0</span>
+    <div id="desktop-placeholder" class="desktop-placeholder" style="display:none;">
+      <div class="placeholder-content">
+        <span style="font-size: 48px;">👈</span>
+        <h2>Selecciona un cuatrimestre</h2>
+        <p>Elige un curso del menú lateral para ver sus asignaturas o crea uno nuevo.</p>
       </div>
     </div>
-    <main>
-      <div id="container" aria-label="Lista de asignaturas"></div>
-    </main>
+
+    <div id="subjects-content-wrapper">
+      <header>
+        <h1 id="subjects-title">Asignaturas</h1>
+        <div id="ai-recommendation" class="ai-recommendation" style="display:none;">
+          <span id="ai-recommendation-text"></span>
+        </div>
+      </header>
+      <div class="subjects-stats" id="subjects-stats" style="display:none;">
+        <div class="stat-item">
+          <span class="stat-label">Media:</span>
+          <span class="stat-value" id="stat-average">-</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">ECTS:</span>
+          <span class="stat-value" id="stat-ects">0</span>
+        </div>
+      </div>
+      <main>
+        <div id="container" aria-label="Lista de asignaturas"></div>
+      </main>
+    </div>
     <button id="add-btn" aria-label="Añadir asignatura" class="fab-btn">+</button>
   </div>
 
@@ -461,7 +473,13 @@
       </div>
       <div class="modal-body">
         <div class="exams-wrapper">
-          <button class="btn-add-exam" onclick="openAddExamForm()">➕ Añadir Examen</button>
+          <div class="exams-actions-container"
+            style="display:flex; justify-content:center; gap:12px; margin-bottom:24px; padding: 0 10px;">
+            <button class="btn-add-exam" onclick="openAddExamForm()"
+              style="flex:0 1 auto; min-width:160px; max-width:240px;">➕ Añadir Examen</button>
+            <button class="btn-add-exam" onclick="generateAndDownloadICS()"
+              style="flex:0 1 auto; min-width:160px; max-width:240px; background: #6366f1;">📅 Exportar</button>
+          </div>
 
           <div id="add-exam-form" class="add-exam-form" style="display:none;">
             <h3>Nuevo Examen</h3>
@@ -490,7 +508,16 @@
           </div>
 
           <div id="exams-list" class="exams-list">
-            <!-- Los exámenes se renderizarán aquí -->
+            <!-- Los exámenes futuros se renderizarán aquí -->
+          </div>
+
+          <div id="past-exams-section"
+            style="margin-top: 30px; display:none; border-top: 1px solid var(--input-border); padding-top: 20px;">
+            <button id="toggle-past-exams" class="btn btn-ghost" style="width:100%; margin-bottom:15px;">⬇️ Ver Exámenes
+              Pasados</button>
+            <div id="past-exams-list" class="exams-list" style="display:none; opacity: 0.7;">
+              <!-- Los exámenes pasados se renderizarán aquí -->
+            </div>
           </div>
 
           <div id="no-exams-message" class="no-exams-message" style="display:none;">
@@ -625,7 +652,7 @@
     const menuScreen = document.getElementById('menu-screen');
     const subjectsScreen = document.getElementById('subjects-screen');
     const backBtn = document.getElementById('back-btn');
-    const addSemesterBtn = document.getElementById('add-semester-btn');
+    const addSemesterBtn = document.getElementById('add-semester-btn'); // may be null
     const semestersContainer = document.getElementById('semesters-container');
     const subjectsTitle = document.getElementById('subjects-title');
     const toggleAllProgressBtn = document.getElementById('toggle-all-progress-btn');
@@ -734,20 +761,98 @@
        Gestión de pantallas
        ------------------------- */
     function showMenuScreen() {
-      menuScreen.classList.add('active');
-      subjectsScreen.classList.remove('active');
-      currentSemester = null;
-      renderSemesters();
-      checkUpcomingExams();
+      // Logic for mobile vs desktop
+      const isDesktop = window.innerWidth >= 1024;
+
+      if (document.startViewTransition) {
+        document.startViewTransition(() => {
+          menuScreen.classList.add('active');
+          if (!isDesktop) {
+            subjectsScreen.classList.remove('active');
+          }
+          // On desktop, we don't clear currentSemester immediately if we want persistence, 
+          // BUT the requirement is "on first open, subject column is empty".
+          // If the user explicitly clicks "Back", maybe we should clear selection on desktop too?
+          // Let's clear selection to show the placeholder.
+          currentSemester = null;
+          renderSemesters();
+          checkUpcomingExams();
+          updateDesktopPlaceholder();
+
+          // Always center on desktop when showing menu (unselected state)
+          if (window.innerWidth >= 1024) {
+            document.body.classList.add('center-mode');
+          }
+        });
+      } else {
+        menuScreen.classList.add('active');
+        if (!isDesktop) {
+          subjectsScreen.classList.remove('active');
+        }
+        currentSemester = null;
+        renderSemesters();
+        checkUpcomingExams();
+        updateDesktopPlaceholder();
+
+        // Always center on desktop when showing menu (unselected state)
+        if (window.innerWidth >= 1024) {
+          document.body.classList.add('center-mode');
+        }
+      }
     }
 
     function showSubjectsScreen(semester) {
       currentSemester = semester;
       subjectsTitle.textContent = semester.nombre;
-      menuScreen.classList.remove('active');
-      subjectsScreen.classList.add('active');
-      renderSubjects();
-      updateAIRecommendation();
+
+      const isDesktop = window.innerWidth >= 1024;
+
+      if (document.startViewTransition) {
+        document.startViewTransition(() => {
+          if (!isDesktop) {
+            menuScreen.classList.remove('active');
+          }
+          subjectsScreen.classList.add('active');
+          renderSubjects();
+          updateAIRecommendation();
+          updateDesktopPlaceholder();
+
+          if (isDesktop) {
+            document.body.classList.remove('center-mode');
+          }
+        });
+      } else {
+        if (isDesktop) {
+          menuScreen.classList.add('active');
+          subjectsScreen.classList.add('active');
+          document.body.classList.remove('center-mode');
+        } else {
+          menuScreen.classList.remove('active');
+          subjectsScreen.classList.add('active');
+        }
+        renderSubjects();
+        updateAIRecommendation();
+        updateDesktopPlaceholder();
+      }
+    }
+
+    function updateDesktopPlaceholder() {
+      const placeholder = document.getElementById('desktop-placeholder');
+      const subjectsContent = document.getElementById('subjects-content-wrapper'); // We will wrap subject content
+
+      if (!placeholder || !subjectsContent) return; // Si no existen (móvil o estructura antigua)
+
+      if (!currentSemester) {
+        placeholder.style.display = 'flex';
+        subjectsContent.style.display = 'none';
+        document.getElementById('add-btn').style.display = 'none'; // Hide FAB
+        document.querySelector('.tools-menu-wrapper').style.display = 'none'; // Hide tools
+      } else {
+        placeholder.style.display = 'none';
+        subjectsContent.style.display = 'block';
+        document.getElementById('add-btn').style.display = 'flex'; // Show FAB
+        document.querySelector('.tools-menu-wrapper').style.display = 'block'; // Show tools
+      }
     }
 
     backBtn.addEventListener('click', showMenuScreen);
@@ -880,16 +985,18 @@
       const allCards = document.querySelectorAll('.card:not(.drag-preview)');
       if (allCards.length === 0) return;
 
-      // Verificar si alguno está visible
-      const firstProgress = allCards[0].querySelector('.progress-container');
-      const isAnyVisible = firstProgress && firstProgress.style.display !== 'none';
+      // Verificar si alguno está visible (usando la clase .open)
+      const firstWrapper = allCards[0].querySelector('.progress-wrapper');
+      const isAnyOpen = firstWrapper && firstWrapper.classList.contains('open');
 
       allCards.forEach(card => {
-        const progressContainer = card.querySelector('.progress-container');
-        if (progressContainer) {
-          progressContainer.style.display = isAnyVisible ? 'none' : 'block';
-          if (!isAnyVisible) {
-            actualizarProgresoCard(card);
+        const p = card.querySelector('.progress-wrapper');
+        if (p) {
+          if (isAnyOpen) {
+            p.classList.remove('open');
+          } else {
+            p.classList.add('open');
+            updateSubjectProgress(card);
           }
         }
       });
@@ -1073,59 +1180,69 @@
       localStorage.setItem('cuatrimestres', JSON.stringify(datos));
     }
 
+
+
     function obtenerCuatrimestres() {
       return JSON.parse(localStorage.getItem('cuatrimestres')) || [];
     }
 
     function renderSemesters() {
-      semestersContainer.innerHTML = '';
-      let cuatrimestres = obtenerCuatrimestres();
+      try {
+        semestersContainer.innerHTML = '';
+        let cuatrimestres = obtenerCuatrimestres();
 
-      if (cuatrimestres.length === 0) {
-        // Verificar si hay datos antiguos (asignaturas) SOLO en primera carga
-        const datosAntiguos = JSON.parse(localStorage.getItem('asignaturas')) || [];
+        if (cuatrimestres.length === 0) {
+          // Verificar si hay datos antiguos (asignaturas) SOLO en primera carga
+          const datosAntiguos = JSON.parse(localStorage.getItem('asignaturas')) || [];
 
-        if (datosAntiguos.length > 0) {
-          // Solo migrar si hay datos antiguos
-          cuatrimestres = [
-            {
-              id: Date.now(),
-              nombre: 'Curso 2025/26 - Cuatrimestre 1',
-              asignaturas: datosAntiguos,
-              archived: false
-            },
-            {
-              id: Date.now() + 1,
-              nombre: 'Curso 2025/26 - Cuatrimestre 2',
-              asignaturas: [],
-              archived: false
-            }
-          ];
-          localStorage.setItem('cuatrimestres', JSON.stringify(cuatrimestres));
-          // Limpiar datos antiguos
-          localStorage.removeItem('asignaturas');
-        } else {
-          // No hay cuatrimestres ni datos antiguos - mostrar mensaje
-          semestersContainer.innerHTML = '<div class="empty-state">No hay cursos que mostrar</div>';
+          if (datosAntiguos.length > 0) {
+            // Solo migrar si hay datos antiguos
+            cuatrimestres = [
+              {
+                id: Date.now(),
+                nombre: 'Curso 2025/26 - Cuatrimestre 1',
+                asignaturas: datosAntiguos,
+                archived: false
+              },
+              {
+                id: Date.now() + 1,
+                nombre: 'Curso 2025/26 - Cuatrimestre 2',
+                asignaturas: [],
+                archived: false
+              }
+            ];
+            localStorage.setItem('cuatrimestres', JSON.stringify(cuatrimestres));
+            // Limpiar datos antiguos
+            localStorage.removeItem('asignaturas');
+          } else {
+            // No hay cuatrimestres ni datos antiguos - mostrar mensaje
+            semestersContainer.innerHTML = '<div class="empty-state">No hay cursos que mostrar</div>';
+            return;
+          }
+        }
+
+        // Mostrar solo cuatrimestres NO archivados
+        const filteredSemesters = cuatrimestres.filter(sem => !sem.archived);
+
+        if (filteredSemesters.length === 0) {
+          semestersContainer.innerHTML = '';
+          // 1. Case Empty: Add button alone
+          const addBtn = createAddSemesterCard();
+          semestersContainer.appendChild(addBtn);
           return;
         }
-      }
 
-      // Mostrar solo cuatrimestres NO archivados
-      const filteredSemesters = cuatrimestres.filter(sem => !sem.archived);
+        semestersContainer.innerHTML = ''; // Clear container
 
-      if (filteredSemesters.length === 0) {
-        semestersContainer.innerHTML = '<div class="empty-state">No hay cursos que mostrar</div>';
-        return;
-      }
-
-      filteredSemesters.forEach(sem => {
-        const card = document.createElement('div');
-        card.className = 'semester-card' + (sem.archived ? ' archived' : '');
-        card.draggable = true;
-        card.dataset.semesterId = sem.id;
-        const numAsignaturas = sem.asignaturas ? sem.asignaturas.length : 0;
-        card.innerHTML = `
+        // 2. Case with items: Render items first
+        filteredSemesters.forEach(sem => {
+          // ... (creation of card logic)
+          const card = document.createElement('div');
+          card.className = 'semester-card' + (sem.archived ? ' archived' : '');
+          card.draggable = true;
+          card.dataset.semesterId = sem.id;
+          const numAsignaturas = sem.asignaturas ? sem.asignaturas.length : 0;
+          card.innerHTML = `
       <h3>${escapeHtml(sem.nombre)}</h3>
       <p class="semester-info">${numAsignaturas} asignatura${numAsignaturas !== 1 ? 's' : ''}</p>
       <div class="semester-actions">
@@ -1140,136 +1257,144 @@
       </div>
     `;
 
-        // Click para abrir
-        card.addEventListener('click', (e) => {
-          if (!e.target.closest('.semester-actions')) {
-            showSubjectsScreen(sem);
-          }
-        });
-
-        // Drag & Drop para reordenar
-        card.addEventListener('dragstart', (e) => {
-          card.classList.add('dragging');
-          e.dataTransfer.effectAllowed = 'move';
-        });
-
-        card.addEventListener('dragend', (e) => {
-          card.classList.remove('dragging');
-          saveSemestersOrder();
-        });
-
-        // Touch para móviles
-        let touchStartY = 0;
-        let touchStartX = 0;
-        let isTouching = false;
-        let longPressTimer = null;
-        let isDragEnabled = false;
-
-        card.addEventListener('touchstart', (e) => {
-          if (e.target.closest('.semester-actions')) return;
-          touchStartY = e.touches[0].clientY;
-          touchStartX = e.touches[0].clientX;
-          isTouching = false;
-          isDragEnabled = false;
-
-          // Activar arrastre después de 500ms
-          longPressTimer = setTimeout(() => {
-            isDragEnabled = true;
-            card.style.opacity = '0.8';
-            // Vibración háptica si está disponible
-            if (navigator.vibrate) {
-              navigator.vibrate(50);
+          // Click para abrir
+          card.addEventListener('click', (e) => {
+            if (!e.target.closest('.semester-actions')) {
+              showSubjectsScreen(sem);
             }
-          }, 500);
-        }, { passive: true });
+          });
 
-        card.addEventListener('touchmove', (e) => {
-          if (e.target.closest('.semester-actions')) return;
-
-          const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
-          const deltaX = Math.abs(e.touches[0].clientX - touchStartX);
-
-          // Si se mueve mucho antes de activar el drag, cancelar el timer
-          if (!isDragEnabled && (deltaY > 10 || deltaX > 10)) {
-            clearTimeout(longPressTimer);
-            return;
-          }
-
-          // Solo arrastrar si está habilitado
-          if (isDragEnabled && (deltaY > 10 || deltaX > 10)) {
-            isTouching = true;
-            e.preventDefault();
+          // Drag & Drop para reordenar
+          card.addEventListener('dragstart', (e) => {
             card.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+          });
 
-            const touch = e.touches[0];
-            const cards = [...semestersContainer.querySelectorAll('.semester-card:not(.dragging)')];
-            const afterElement = cards.find(c => {
-              const box = c.getBoundingClientRect();
-              return touch.clientY < box.top + box.height / 2;
-            });
-
-            semestersContainer.insertBefore(card, afterElement || null);
-          }
-        }, { passive: false });
-
-        card.addEventListener('touchend', (e) => {
-          clearTimeout(longPressTimer);
-          card.style.opacity = '';
-
-          if (isTouching) {
-            e.preventDefault();
+          card.addEventListener('dragend', (e) => {
             card.classList.remove('dragging');
             saveSemestersOrder();
-          }
+          });
 
-          isDragEnabled = false;
-          isTouching = false;
-        }, { passive: false });
+          // Touch para móviles
+          let touchStartY = 0;
+          let touchStartX = 0;
+          let isTouching = false;
+          let longPressTimer = null;
+          let isDragEnabled = false;
 
-        card.addEventListener('touchcancel', () => {
-          clearTimeout(longPressTimer);
-          card.style.opacity = '';
-          card.classList.remove('dragging');
-          isDragEnabled = false;
-          isTouching = false;
+          card.addEventListener('touchstart', (e) => {
+            if (e.target.closest('.semester-actions')) return;
+            touchStartY = e.touches[0].clientY;
+            touchStartX = e.touches[0].clientX;
+            isTouching = false;
+            isDragEnabled = false;
+
+            // Activar arrastre después de 500ms
+            longPressTimer = setTimeout(() => {
+              isDragEnabled = true;
+              card.style.opacity = '0.8';
+              // Vibración háptica si está disponible
+              if (navigator.vibrate) {
+                navigator.vibrate(50);
+              }
+            }, 500);
+          }, { passive: true });
+
+          card.addEventListener('touchmove', (e) => {
+            if (e.target.closest('.semester-actions')) return;
+
+            const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
+            const deltaX = Math.abs(e.touches[0].clientX - touchStartX);
+
+            // Si se mueve mucho antes de activar el drag, cancelar el timer
+            if (!isDragEnabled && (deltaY > 10 || deltaX > 10)) {
+              clearTimeout(longPressTimer);
+              return;
+            }
+
+            // Solo arrastrar si está habilitado
+            if (isDragEnabled && (deltaY > 10 || deltaX > 10)) {
+              isTouching = true;
+              e.preventDefault();
+              card.classList.add('dragging');
+
+              const touch = e.touches[0];
+              const cards = [...semestersContainer.querySelectorAll('.semester-card:not(.dragging)')];
+              const afterElement = cards.find(c => {
+                const box = c.getBoundingClientRect();
+                return touch.clientY < box.top + box.height / 2;
+              });
+
+              semestersContainer.insertBefore(card, afterElement || null);
+            }
+          }, { passive: false });
+
+          card.addEventListener('touchend', (e) => {
+            clearTimeout(longPressTimer);
+            card.style.opacity = '';
+
+            if (isTouching) {
+              e.preventDefault();
+              card.classList.remove('dragging');
+              saveSemestersOrder();
+            }
+
+            isDragEnabled = false;
+            isTouching = false;
+          }, { passive: false });
+
+          card.addEventListener('touchcancel', () => {
+            clearTimeout(longPressTimer);
+            card.style.opacity = '';
+            card.classList.remove('dragging');
+            isDragEnabled = false;
+            isTouching = false;
+          });
+
+          // Duplicar
+          card.querySelector('.btn-duplicate-semester').addEventListener('click', (e) => {
+            e.stopPropagation();
+            openDuplicateSheet(sem);
+          });
+
+          // Archivar/Desarchivar
+          card.querySelector('.btn-archive-semester').addEventListener('click', (e) => {
+            e.stopPropagation();
+            saveStateToHistory('archivar/desarchivar cuatrimestre');
+            const cuatrimestres = obtenerCuatrimestres();
+            const idx = cuatrimestres.findIndex(c => c.id === sem.id);
+            if (idx !== -1) {
+              cuatrimestres[idx].archived = !cuatrimestres[idx].archived;
+              localStorage.setItem('cuatrimestres', JSON.stringify(cuatrimestres));
+              renderSemesters();
+            }
+          });
+
+          // Editar nombre
+          card.querySelector('.btn-edit-semester').addEventListener('click', (e) => {
+            e.stopPropagation();
+            openEditSheet(sem);
+          });
+
+          // Eliminar (abrir bottom-sheet de confirmación)
+          card.querySelector('.btn-delete-semester').addEventListener('click', (e) => {
+            e.stopPropagation();
+            openDeleteSheet(sem);
+          });
+
+          semestersContainer.appendChild(card);
         });
 
-        // Duplicar
-        card.querySelector('.btn-duplicate-semester').addEventListener('click', (e) => {
-          e.stopPropagation();
-          openDuplicateSheet(sem);
-        });
+        // 3. Add button AT THE END
+        const addBtn = createAddSemesterCard();
+        semestersContainer.appendChild(addBtn);
 
-        // Archivar/Desarchivar
-        card.querySelector('.btn-archive-semester').addEventListener('click', (e) => {
-          e.stopPropagation();
-          saveStateToHistory('archivar/desarchivar cuatrimestre');
-          const cuatrimestres = obtenerCuatrimestres();
-          const idx = cuatrimestres.findIndex(c => c.id === sem.id);
-          if (idx !== -1) {
-            cuatrimestres[idx].archived = !cuatrimestres[idx].archived;
-            localStorage.setItem('cuatrimestres', JSON.stringify(cuatrimestres));
-            renderSemesters();
-          }
-        });
-
-        // Editar nombre
-        card.querySelector('.btn-edit-semester').addEventListener('click', (e) => {
-          e.stopPropagation();
-          openEditSheet(sem);
-        });
-
-        // Eliminar (abrir bottom-sheet de confirmación)
-        card.querySelector('.btn-delete-semester').addEventListener('click', (e) => {
-          e.stopPropagation();
-          openDeleteSheet(sem);
-        });
-
-        semestersContainer.appendChild(card);
-      });
-
-      // Verificar y mostrar avisos de exámenes próximos
-      checkUpcomingExams();
+        // Verificar y mostrar avisos de exámenes próximos
+        checkUpcomingExams();
+      } catch (e) {
+        console.error("Error rendering semesters:", e);
+        semestersContainer.innerHTML = `<div class="error-state">Error cargando datos: ${e.message}</div>`;
+      }
     }
 
     // Guardar orden de cuatrimestres
@@ -1287,20 +1412,72 @@
       localStorage.setItem('cuatrimestres', JSON.stringify(newOrder));
     }
 
-    // Dragover para el contenedor de cuatrimestres
+    // Dragover container
     semestersContainer.addEventListener('dragover', (e) => {
       e.preventDefault();
-      const dragging = document.querySelector('.semester-card.dragging');
-      if (!dragging) return;
+      const afterElement = getDragAfterElement(semestersContainer, e.clientY);
+      const draggable = document.querySelector('.dragging');
+      if (!draggable) return;
+      if (afterElement == null) {
+        semestersContainer.appendChild(draggable);
+      } else {
+        semestersContainer.insertBefore(draggable, afterElement);
+      }
+    });
 
-      const cards = [...semestersContainer.querySelectorAll('.semester-card:not(.dragging)')];
-      const afterElement = cards.find(card => {
-        const box = card.getBoundingClientRect();
-        return e.clientY < box.top + box.height / 2;
+    function getDragAfterElement(container, y) {
+      const draggableElements = [...container.querySelectorAll('.semester-card:not(.dragging)')];
+
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    // Helper to create the "Add Semester" card
+    function createAddSemesterCard() {
+      const btn = document.createElement('div');
+      btn.className = 'semester-card add-semester-card';
+      btn.innerHTML = `
+            <div style="font-size: 32px; margin-bottom: 8px;">➕</div>
+            <h3 style="margin-bottom: 4px;">Nuevo Cuatrimestre</h3>
+            <p style="font-size: 13px; opacity: 0.7;">Crear curso vacío</p>
+        `;
+
+      btn.style.display = 'flex';
+      btn.style.flexDirection = 'column';
+      btn.style.alignItems = 'center';
+      btn.style.justifyContent = 'center';
+      btn.style.border = '2px dashed #cbd5e1';
+      btn.style.background = 'transparent';
+      btn.style.boxShadow = 'none';
+      btn.style.cursor = 'pointer';
+      btn.style.opacity = '0.7';
+      btn.style.transition = 'all 0.2s ease';
+
+      btn.onclick = () => openCreateSheet(); // Use lambda to ensure correct scope call
+
+      btn.addEventListener('mouseenter', () => {
+        btn.style.background = 'rgba(99, 102, 241, 0.05)';
+        btn.style.borderColor = '#6366f1';
+        btn.style.opacity = '1';
+        btn.style.transform = 'translateY(-2px)';
       });
 
-      semestersContainer.insertBefore(dragging, afterElement || null);
-    });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.background = 'transparent';
+        btn.style.borderColor = '#cbd5e1';
+        btn.style.opacity = '0.7';
+        btn.style.transform = 'translateY(0)';
+      });
+
+      return btn;
+    }
 
     function editSemesterName(sem) {
       // (Mantener por compatibilidad; ahora abrimos un bottom-sheet desde el UI.)
@@ -1315,9 +1492,12 @@
       renderSemesters();
     }
 
-    addSemesterBtn.addEventListener('click', () => {
-      openCreateSheet();
-    });
+    // addSemesterBtn listener functionality depends on the button existing
+    if (addSemesterBtn) {
+      addSemesterBtn.addEventListener('click', () => {
+        openCreateSheet();
+      });
+    }
 
     /* -------------------------
        Gestión de asignaturas
@@ -1439,44 +1619,40 @@
 
           gradeDiv.textContent = nota + (emoji ? ' ' + emoji : '');
         }
-        actualizarProgresoCard(card);
+        updateSubjectProgress(card);
       });
       updateAIRecommendation();
       updateDashboard();
     }
 
-    function actualizarProgresoCard(card) {
-      if (!card._tests || card._tests.length === 0) {
-        const progressPercentage = card.querySelector('.progress-percentage');
-        const progressFill = card.querySelector('.progress-bar-fill');
-        if (progressPercentage) progressPercentage.textContent = '0%';
-        if (progressFill) progressFill.style.width = '0%';
-        return;
-      }
+    function updateSubjectProgress(card) {
+      const percentageText = card.querySelector('.progress-text');
+      const bar = card.querySelector('.progress-bar-fill');
 
       let totalPonderacion = 0;
-      card._tests.forEach(t => {
-        const ponderacion = parseNumber(t.ponderacion);
-        totalPonderacion += ponderacion;
-      });
+      if (card._tests && card._tests.length > 0) {
+        card._tests.forEach(t => {
+          const ponderacion = parseNumber(t.ponderacion);
+          totalPonderacion += ponderacion;
+        });
+      }
 
       const porcentaje = Math.min(100, totalPonderacion);
-      const progressPercentage = card.querySelector('.progress-percentage');
-      const progressFill = card.querySelector('.progress-bar-fill');
 
-      if (progressPercentage) progressPercentage.textContent = `${porcentaje.toFixed(0)}%`;
-      if (progressFill) {
-        progressFill.style.width = `${porcentaje}%`;
+      if (percentageText) percentageText.textContent = `Evaluado: ${porcentaje.toFixed(0)}%`;
+
+      if (bar) {
+        bar.style.width = `${porcentaje}%`;
+
         // Color dinámico basado en porcentaje
         if (porcentaje < 40) {
-          progressFill.style.background = '#ef4444';
+          bar.style.backgroundColor = '#ef4444'; // Rojo si es bajo
         } else if (porcentaje < 70) {
-          progressFill.style.background = '#f59e0b';
+          bar.style.backgroundColor = '#f59e0b'; // Naranja/Amarillo medio
         } else if (porcentaje >= 99.5) {
-          // Si el porcentaje redondeado es 100%, mostrar verde
-          progressFill.style.background = '#10b981';
+          bar.style.backgroundColor = '#10b981'; // Verde completado
         } else {
-          progressFill.style.background = '#3b82f6';
+          bar.style.backgroundColor = '#facc15'; // Amarillo por defecto
         }
       }
     }
@@ -1565,13 +1741,11 @@
         <button class="open-tests-btn" aria-label="Ver pruebas evaluables" title="Ver pruebas" style="background:rgba(255,255,255,0.12); border:none; padding:6px 8px; border-radius:8px; cursor:pointer; font-size:16px; line-height:1; transition: transform 0.2s ease;">📝</button>
       </div>
     </div>
-    <div class="progress-container" style="display:none;">
-      <div class="progress-header">
-        <span class="progress-label">Evaluado: <strong class="progress-percentage">0%</strong></span>
-      </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" style="width: 0%"></div>
-      </div>
+    <div class="progress-wrapper">
+        <div class="progress-text" style="text-align:left; font-size:13px; font-weight:600; margin-bottom:4px; opacity:0.9;">Evaluado: 0%</div>
+        <div class="progress-bar-bg" style="width:100%; height:8px; background:rgba(255,255,255,0.3); border-radius:4px; overflow:hidden;">
+            <div class="progress-bar-fill" style="width:0%; height:100%; background:#facc15; transition: width 0.3s ease, background-color 0.3s ease;"></div>
+        </div>
     </div>
     <div class="controls" aria-hidden="true">
       <label class="sr-only">Color</label>
@@ -1603,12 +1777,18 @@
       });
 
       // Toggle progreso
+      // Toggle progreso
       card.querySelector('.progress-toggle-btn').addEventListener('click', (e) => {
         e.stopPropagation();
-        const progressContainer = card.querySelector('.progress-container');
-        const isVisible = progressContainer.style.display !== 'none';
-        progressContainer.style.display = isVisible ? 'none' : 'block';
-        actualizarProgresoCard(card);
+        const wrapper = card.querySelector('.progress-wrapper');
+        const isOpen = wrapper.classList.contains('open');
+
+        if (isOpen) {
+          wrapper.classList.remove('open');
+        } else {
+          wrapper.classList.add('open');
+          updateSubjectProgress(card);
+        }
       });
 
       // Botón para abrir modal de pruebas
@@ -1972,6 +2152,22 @@
       setOrientationClass();
       window.addEventListener('orientationchange', setOrientationClass);
       window.addEventListener('resize', setOrientationClass);
+
+      // Local Notifications Permission
+      const hasAskedNotifications = localStorage.getItem('notificationsAsked');
+      if (!hasAskedNotifications && 'Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+        // Mark as asked IMMEDIATELY so we don't ask again on refresh
+        localStorage.setItem('notificationsAsked', 'true');
+
+        setTimeout(() => {
+          Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+              console.log('Notificaciones activadas');
+              checkExamAlerts(); // Re-check with permissions
+            }
+          });
+        }, 3000);
+      }
     });
 
     /* -------------------------
@@ -2814,6 +3010,7 @@
     function initScrollHideUI() {
       const menu = document.getElementById('menu-screen');
       const subjects = document.getElementById('subjects-screen');
+      // addSemesterBtn might be null now
       const addSemester = document.getElementById('add-semester-btn');
       const addSubject = document.getElementById('add-btn');
       const toolsWrapper = document.querySelector('.tools-menu-wrapper');
@@ -2826,11 +3023,7 @@
           const y = menu.scrollTop;
           const scrollingDown = y > lastMenuScroll + 3;
           lastMenuScroll = y;
-          if (scrollingDown) {
-            addSemester && addSemester.classList.add('hide');
-          } else {
-            addSemester && addSemester.classList.remove('hide');
-          }
+          // Fab removal logic was here
         }, { passive: true });
       }
 
@@ -3948,37 +4141,92 @@
     function renderExams() {
       if (!currentSemester) return;
 
-      let exams = JSON.parse(localStorage.getItem('exams') || '[]');
+      let allExams = JSON.parse(localStorage.getItem('exams') || '[]');
       // Filtrar exámenes del cuatrimestre actual
-      exams = exams.filter(e => e.semesterId === currentSemester.id);
+      allExams = allExams.filter(e => e.semesterId === currentSemester.id);
 
-      // Ordenar por fecha
-      exams.sort((a, b) => new Date(a.date) - new Date(b.date));
+      // Separar futuros y pasados
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-      if (exams.length === 0) {
-        examsList.innerHTML = '';
+      const futureExams = [];
+      const pastExams = [];
+
+      allExams.forEach(exam => {
+        const examDate = new Date(exam.date + 'T00:00:00');
+        // Consider today as future
+        if (examDate >= today) {
+          futureExams.push(exam);
+        } else {
+          pastExams.push(exam);
+        }
+      });
+
+      // Ordenar: Futuros ascendente (lo que llega antes primero), Pasados descendente (lo más reciente primero)
+      futureExams.sort((a, b) => new Date(a.date) - new Date(b.date));
+      pastExams.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      // Renderizar FUTUROS
+      examsList.innerHTML = '';
+      if (futureExams.length === 0) {
         noExamsMessage.style.display = 'block';
-        return;
+        if (pastExams.length > 0) noExamsMessage.innerHTML = '<p>✅ No tienes exámenes próximos</p>';
+        else noExamsMessage.innerHTML = '<p>📚 No hay exámenes programados</p><p class="hint">Añade tu primer examen para llevar un seguimiento.</p>';
+      } else {
+        noExamsMessage.style.display = 'none';
+        renderExamListToContainer(futureExams, examsList);
       }
 
-      noExamsMessage.style.display = 'none';
-      examsList.innerHTML = '';
+      // Renderizar PASADOS
+      const pastSection = document.getElementById('past-exams-section');
+      const pastList = document.getElementById('past-exams-list');
+      const toggleBtn = document.getElementById('toggle-past-exams');
+
+      if (pastExams.length > 0) {
+        pastSection.style.display = 'block';
+        pastList.innerHTML = ''; // Limpiar previo
+        renderExamListToContainer(pastExams, pastList);
+
+        // Ensure strictly class-based control
+        pastList.style.display = 'flex';
+
+        // Inicializar botón
+        toggleBtn.innerHTML = '<span class="icon">⬇️</span> Ver Exámenes Pasados';
+        toggleBtn.className = 'btn'; // Reset classes
+        toggleBtn.onclick = () => {
+          const isExpanded = pastList.classList.contains('expanded');
+          if (isExpanded) {
+            pastList.classList.remove('expanded');
+            toggleBtn.classList.remove('active');
+            toggleBtn.innerHTML = '<span class="icon">⬇️</span> Ver Exámenes Pasados';
+          } else {
+            pastList.classList.add('expanded');
+            toggleBtn.classList.add('active');
+            toggleBtn.innerHTML = '<span class="icon">⬇️</span> Ocultar Exámenes Pasados';
+          }
+        };
+      } else {
+        pastSection.style.display = 'none';
+      }
+    }
+
+    function renderExamListToContainer(exams, container) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
       exams.forEach(exam => {
         const examItem = document.createElement('div');
         examItem.className = 'exam-item';
 
         const examDate = new Date(exam.date + 'T00:00:00');
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
         const daysUntil = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
 
         let countdownClass = '';
         let countdownText = '';
 
         if (daysUntil < 0) {
-          countdownText = 'Examen pasado';
-          countdownClass = '';
+          countdownText = 'Finalizado';
+          countdownClass = 'passed'; // Add minimal style if needed
         } else if (daysUntil === 0) {
           countdownText = '¡HOY!';
           countdownClass = 'urgent';
@@ -4025,8 +4273,7 @@
       </div>
       ${daysUntil >= 0 ? `<div class="exam-countdown ${countdownClass}">${countdownText}</div>` : ''}
     `;
-
-        examsList.appendChild(examItem);
+        container.appendChild(examItem);
       });
     }
 
@@ -4064,6 +4311,34 @@
         const daysUntil = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
         return daysUntil >= 0 && daysUntil <= 7;
       });
+
+      // LÓGICA DE NOTIFICACIONES LOCALES
+      if ('Notification' in window && Notification.permission === 'granted') {
+        const notifiedExams = JSON.parse(localStorage.getItem('notifiedExams') || '{}');
+        const nowStr = new Date().toDateString();
+
+        upcomingExams.forEach(exam => {
+          const examDate = new Date(exam.date + 'T00:00:00');
+          const daysUntil = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
+
+          // Notificar si es mañana (1 día) o hoy (0 días) y no se ha notificado hoy
+          if ((daysUntil === 0 || daysUntil === 1) && notifiedExams[exam.id] !== nowStr) {
+            const baseTitle = daysUntil === 0 ? '¡Examen HOY!' : '¡Examen MAÑANA!';
+            const body = `Tienes examen de ${exam.subjectName} ${daysUntil === 0 ? 'hoy' : 'mañana'}. ¡Mucho éxito!`;
+
+            try {
+              new Notification(baseTitle, {
+                body: body,
+                tag: 'exam-' + exam.id
+              });
+            } catch (e) { console.log('Error notificación:', e); }
+
+            // Marcar como notificado hoy
+            notifiedExams[exam.id] = nowStr;
+          }
+        });
+        localStorage.setItem('notifiedExams', JSON.stringify(notifiedExams));
+      }
 
       if (upcomingExams.length === 0) {
         alertContainer.style.display = 'none';
@@ -4473,6 +4748,59 @@
         progressDiv.style.display = 'none';
         alert('Error al generar el PDF. Por favor, inténtalo de nuevo.');
       }
+    }
+
+    /* -------------------------
+       EXPORTAR ICS (Calendario)
+       ------------------------- */
+    function generateAndDownloadICS() {
+      if (!currentSemester) return;
+      let exams = JSON.parse(localStorage.getItem('exams') || '[]');
+      // Filtrar por cuatrimestre actual
+      exams = exams.filter(e => e.semesterId === currentSemester.id);
+
+      if (exams.length === 0) {
+        alert('No hay exámenes para exportar en este cuatrimestre.');
+        return;
+      }
+
+      let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//StudyBoard//Exams//ES\nCALSCALE:GREGORIAN\nMETHOD:PUBLISH\n";
+
+      exams.forEach(exam => {
+        const cleanDate = exam.date.replace(/-/g, ''); // YYYYMMDD
+        // Hora por defecto 09:00 si no existe
+        let startTime = exam.time ? exam.time.replace(/:/g, '') + '00' : '090000';
+
+        // Formato: YYYYMMDDTHHmmss
+        let dtStart = `${cleanDate}T${startTime}`;
+
+        // Duración estimada: 2 horas por defecto
+        let hour = parseInt(startTime.substring(0, 2));
+        let endHour = hour + 2;
+        let endTime = (endHour < 10 ? '0' : '') + endHour + startTime.substring(2);
+
+        let dtEnd = `${cleanDate}T${endTime}`;
+
+        icsContent += "BEGIN:VEVENT\n";
+        icsContent += `DTSTART:${dtStart}\n`;
+        icsContent += `DTEND:${dtEnd}\n`;
+        icsContent += `SUMMARY:Examen ${exam.subjectName}\n`;
+        icsContent += `DESCRIPTION:Examen de ${exam.subjectName}\\nStudyBoard\n`;
+        if (exam.location) icsContent += `LOCATION:${exam.location}\n`;
+        icsContent += `UID:${exam.id}@studyboard.app\n`;
+        icsContent += `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z\n`;
+        icsContent += "END:VEVENT\n";
+      });
+
+      icsContent += "END:VCALENDAR";
+
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.setAttribute('download', `studyboard_exams_${currentSemester.id}.ics`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     // Función auxiliar para cargar scripts dinámicamente

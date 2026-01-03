@@ -48,7 +48,7 @@ body {
   overflow: hidden;
 }
 
-html {
+body {
   background: var(--bg);
 }
 
@@ -2485,7 +2485,7 @@ body.glass-mode #global-search-input::placeholder {
 
 /* Integración más suave del header del modal de sincronización */
 #sync-code-modal .modal-header {
-  background: linear-gradient(135deg, rgba(66, 133, 244, 0.25), rgba(52, 168, 83, 0.25)) !important;
+  background: linear-gradient(135deg, #4285f4 0%, #34a853 100%) !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
@@ -3384,36 +3384,95 @@ body.glass-mode .exam-detail-actions .btn:hover {
   margin-top: 16px;
 }
 
-.exams-list {
+/* Wrapper principal que controla el scroll de todo el modal */
+.exams-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  flex: 1 1 auto;
-  min-height: 0;
-  height: auto;
+  height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 20px;
   box-sizing: border-box;
 }
 
-.exams-list::-webkit-scrollbar {
-  width: 8px;
+/* La lista ya no scrollea independientemente, fluye con el wrapper */
+.exams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
 }
 
-.exams-list::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.03);
-  border-radius: 4px;
+/* Estilo mejorado para el botón de toggle */
+#toggle-past-exams {
+  width: 100%;
+  padding: 12px 16px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
 }
 
-.exams-list::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.25);
-  border-radius: 4px;
-  transition: background 0.2s ease;
+#toggle-past-exams:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #334155;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-.exams-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.4);
+#toggle-past-exams .icon {
+  transition: transform 0.3s ease;
+  font-size: 16px;
+}
+
+#toggle-past-exams.active {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+#toggle-past-exams.active .icon {
+  transform: rotate(180deg);
+}
+
+.dark-mode #toggle-past-exams {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+}
+
+.dark-mode #toggle-past-exams:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
+/* Transición suave para la lista de pasados */
+#past-exams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#past-exams-list.expanded {
+  max-height: 1000px;
+  /* Altura suficiente */
+  opacity: 1;
+  margin-top: 10px;
 }
 
 .exam-item {
@@ -4082,4 +4141,191 @@ body.glass-mode .exam-detail-actions .btn:hover {
     margin-top: 8px;
     text-align: center;
   }
+}
+
+/* -------------------------
+   Desktop Grid Layout (Split View)
+   ------------------------- */
+@media (min-width: 1024px) {
+
+  /* Layout Base */
+  /* Layout Base */
+  body {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    grid-template-rows: 100vh;
+    overflow: hidden;
+    transition: grid-template-columns 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  /* Center mode: Single column */
+  body.center-mode {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  body.center-mode #subjects-screen {
+    display: none !important;
+  }
+
+  body.center-mode #menu-screen {
+    max-width: 800px;
+    grid-column: 1;
+    border-right: none;
+    box-shadow: none;
+    margin-top: 0;
+    height: 100vh !important;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+  }
+
+  /* Force screens to be always relative in grid cells */
+  .screen {
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    display: flex !important;
+    border-right: 1px solid var(--input-border);
+    padding-top: 20px !important;
+    background: transparent;
+  }
+
+  /* Menu Screen (Sidebar) */
+  #menu-screen {
+    grid-column: 1;
+    z-index: 10;
+    max-width: none;
+    /* Override mobile max-width */
+    background: var(--bg);
+  }
+
+  /* Subjects Screen (Main Content) */
+  #subjects-screen {
+    grid-column: 2;
+    z-index: 5;
+    background: var(--card-bg);
+    max-width: none;
+    /* Override mobile max-width */
+    overflow-y: auto;
+  }
+
+  /* Hide back button on desktop as persistence is key */
+  #back-btn {
+    display: none;
+  }
+
+  /* Adjust containers for full width of their cells */
+  main {
+    max-width: 100%;
+    padding: 0 24px;
+  }
+
+  header {
+    max-width: 100%;
+    padding: 0 24px;
+  }
+}
+
+/* -------------------------
+   Circular Progress
+   ------------------------- */
+.circular-chart {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  max-height: 250px;
+}
+
+.circular-bg {
+  fill: none;
+  stroke: var(--input-border);
+  stroke-width: 3.8;
+}
+
+.circle {
+  fill: none;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  animation: progress 1s ease-out forwards;
+}
+
+@keyframes progress {
+  0% {
+    stroke-dasharray: 0 100;
+  }
+}
+
+.percentage {
+  fill: var(--text);
+  font-family: 'Poppins', sans-serif;
+  font-weight: bold;
+  font-size: 0.5em;
+  text-anchor: middle;
+}
+
+/* -------------------------
+   View Transitions
+   ------------------------- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.4s;
+}
+
+/* Estilos para el botón de alternar exámenes pasados */
+#toggle-past-exams {
+  background: transparent;
+  color: #64748b;
+  /* Fallback for var(--text-secondary) */
+  border: 1px dashed #cbd5e1 !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease;
+}
+
+#toggle-past-exams:hover {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border-color: #94a3b8 !important;
+  transform: translateY(-1px);
+}
+
+.dark-mode #toggle-past-exams {
+  color: #94a3b8;
+  border-color: #475569 !important;
+}
+
+.dark-mode #toggle-past-exams:hover {
+  background: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+/* Ajuste color texto modal header sincronización para asegurar contraste */
+#sync-code-modal .modal-title {
+  color: white !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* -------------------------
+   ANIMATED PROGRESS BAR WRAPPER
+   ------------------------- */
+.progress-wrapper {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin 0.3s ease;
+  margin-top: 0 !important;
+  /* Override inline styles if any */
+  margin-bottom: 0 !important;
+}
+
+.progress-wrapper.open {
+  max-height: 100px;
+  /* Suficiente para el contenido */
+  opacity: 1;
+  margin-top: 12px !important;
+  margin-bottom: 4px !important;
 }
