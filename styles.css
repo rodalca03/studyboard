@@ -3299,26 +3299,32 @@ body.glass-mode .exam-detail-actions .btn:hover {
 .exams-actions-container {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 12px;
-  margin-bottom: 24px;
-  padding: 0 16px;
+  margin: 0 auto 20px auto;
+  padding: 20px 20px 0 20px;
   flex-wrap: wrap;
+  max-width: 600px;
 }
 
 .btn-add-exam,
 .btn-export-exam {
-  padding: 12px 20px;
+  padding: 13px 24px;
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   transition: all 0.2s ease;
   flex: 1 1 auto;
-  min-width: 140px;
-  max-width: 200px;
+  min-width: 150px;
+  max-width: 220px;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .btn-add-exam {
@@ -3653,15 +3659,17 @@ body.glass-mode .exam-detail-actions .btn:hover {
   }
 
   .exams-actions-container {
-    padding: 0 12px;
+    padding: 16px 16px 0 16px;
     gap: 10px;
+    margin-bottom: 16px;
   }
 
   .btn-add-exam,
   .btn-export-exam {
-    padding: 11px 16px;
-    font-size: 13px;
-    min-width: 120px;
+    padding: 12px 18px;
+    font-size: 14px;
+    min-width: 130px;
+    max-width: none;
     flex: 1 1 0;
   }
 
