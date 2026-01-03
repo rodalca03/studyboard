@@ -3490,7 +3490,7 @@ body.glass-mode .exam-detail-actions .btn:hover {
 }
 
 /* Sección de exámenes pasados */
-.past-exams-section {
+#past-exams-section {
   margin-top: 24px;
   padding-top: 24px;
   border-top: 2px dashed var(--input-border);
@@ -3512,6 +3512,7 @@ body.glass-mode .exam-detail-actions .btn:hover {
   justify-content: center;
   gap: 8px;
   opacity: 0.7;
+  margin-bottom: 16px;
 }
 
 .btn-toggle-past-exams:hover {
@@ -3530,18 +3531,11 @@ body.glass-mode .exam-detail-actions .btn:hover {
   transform: rotate(180deg);
 }
 
-.past-exams-list-content {
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-top: 0;
-}
-
-.past-exams-list-content.expanded {
-  max-height: 1000px;
+#past-exams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   opacity: 0.7;
-  margin-top: 16px;
 }
 
 .exam-item {

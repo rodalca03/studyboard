@@ -508,11 +508,11 @@
             <!-- Los exámenes futuros se renderizarán aquí -->
           </div>
 
-          <div id="past-exams-section" class="past-exams-section" style="display:none;">
+          <div id="past-exams-section" style="display:none;">
             <button id="toggle-past-exams" class="btn-toggle-past-exams">
               <span class="icon">📥</span> Ver Exámenes Pasados
             </button>
-            <div id="past-exams-list" class="exams-list past-exams-list-content" style="display:none;">
+            <div id="past-exams-list" class="exams-list" style="display:none;">
               <!-- Los exámenes pasados se renderizarán aquí -->
             </div>
           </div>
@@ -4975,14 +4975,14 @@
     if (togglePastExamsBtn) {
       togglePastExamsBtn.addEventListener('click', function () {
         const pastExamsList = document.getElementById('past-exams-list');
-        const isExpanded = pastExamsList.classList.contains('expanded');
+        const isVisible = pastExamsList.style.display !== 'none';
 
-        if (isExpanded) {
-          pastExamsList.classList.remove('expanded');
+        if (isVisible) {
+          pastExamsList.style.display = 'none';
           this.classList.remove('expanded');
           this.innerHTML = '<span class="icon">📥</span> Ver Exámenes Pasados';
         } else {
-          pastExamsList.classList.add('expanded');
+          pastExamsList.style.display = 'flex';
           this.classList.add('expanded');
           this.innerHTML = '<span class="icon">📥</span> Ocultar Exámenes Pasados';
         }
