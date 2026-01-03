@@ -3489,22 +3489,59 @@ body.glass-mode .exam-detail-actions .btn:hover {
   color: #e2e8f0;
 }
 
-/* Transición suave para la lista de pasados */
-#past-exams-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+/* Sección de exámenes pasados */
+.past-exams-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px dashed var(--input-border);
 }
 
-#past-exams-list.expanded {
-  max-height: 1000px;
-  /* Altura suficiente */
+.btn-toggle-past-exams {
+  width: 100%;
+  padding: 14px 20px;
+  background: transparent;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0.7;
+}
+
+.btn-toggle-past-exams:hover {
   opacity: 1;
-  margin-top: 10px;
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.05);
+  transform: translateY(-1px);
+}
+
+.btn-toggle-past-exams .icon {
+  font-size: 16px;
+  transition: transform 0.2s ease;
+}
+
+.btn-toggle-past-exams.expanded .icon {
+  transform: rotate(180deg);
+}
+
+.past-exams-list-content {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 0;
+}
+
+.past-exams-list-content.expanded {
+  max-height: 1000px;
+  opacity: 0.7;
+  margin-top: 16px;
 }
 
 .exam-item {
