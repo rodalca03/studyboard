@@ -473,12 +473,9 @@
       </div>
       <div class="modal-body">
         <div class="exams-wrapper">
-          <div class="exams-actions-container"
-            style="display:flex; justify-content:center; gap:12px; margin-bottom:24px; padding: 0 10px;">
-            <button class="btn-add-exam" onclick="openAddExamForm()"
-              style="flex:0 1 auto; min-width:160px; max-width:240px;">➕ Añadir Examen</button>
-            <button class="btn-add-exam" onclick="generateAndDownloadICS()"
-              style="flex:0 1 auto; min-width:160px; max-width:240px; background: #6366f1;">📅 Exportar</button>
+          <div class="exams-actions-container">
+            <button class="btn-add-exam" onclick="openAddExamForm()">➕ Añadir Examen</button>
+            <button class="btn-export-exam" onclick="generateAndDownloadICS()">📅 Exportar</button>
           </div>
 
           <div id="add-exam-form" class="add-exam-form" style="display:none;">
