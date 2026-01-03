@@ -4975,16 +4975,21 @@
     if (togglePastExamsBtn) {
       togglePastExamsBtn.addEventListener('click', function () {
         const pastExamsList = document.getElementById('past-exams-list');
-        const isVisible = pastExamsList.style.display !== 'none';
 
-        if (isVisible) {
-          pastExamsList.style.display = 'none';
-          this.classList.remove('expanded');
-          this.innerHTML = '<span class="icon">📥</span> Ver Exámenes Pasados';
-        } else {
+        // Verificar el estado actual basándose en display y visibilidad
+        const currentDisplay = window.getComputedStyle(pastExamsList).display;
+        const isCurrentlyHidden = currentDisplay === 'none';
+
+        if (isCurrentlyHidden) {
+          // Mostrar exámenes pasados
           pastExamsList.style.display = 'flex';
           this.classList.add('expanded');
           this.innerHTML = '<span class="icon">📥</span> Ocultar Exámenes Pasados';
+        } else {
+          // Ocultar exámenes pasados
+          pastExamsList.style.display = 'none';
+          this.classList.remove('expanded');
+          this.innerHTML = '<span class="icon">📥</span> Ver Exámenes Pasados';
         }
       });
     }
