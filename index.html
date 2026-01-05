@@ -252,7 +252,7 @@
           style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative; border-bottom: 1px solid rgba(0,0,0,0.06);">
           <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
           <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;"
-            title="Ver historial de cambios">v2.3.22</div>
+            title="Ver historial de cambios">v3.0.0</div>
         </div>
         <div class="modal-body">
           <div id="sync-code-content"></div>
@@ -4158,43 +4158,10 @@
       examsList.innerHTML = '';
       if (futureExams.length === 0) {
         noExamsMessage.style.display = 'block';
-        if (pastExams.length > 0) noExamsMessage.innerHTML = '<p>✅ No tienes exámenes próximos</p>';
-        else noExamsMessage.innerHTML = '<p>📚 No hay exámenes programados</p><p class="hint">Añade tu primer examen para llevar un seguimiento.</p>';
+        noExamsMessage.innerHTML = '<p>📚 No hay exámenes programados</p><p class="hint">Añade tu primer examen para llevar un seguimiento.</p>';
       } else {
         noExamsMessage.style.display = 'none';
         renderExamListToContainer(futureExams, examsList);
-      }
-
-      // Renderizar PASADOS
-      const pastSection = document.getElementById('past-exams-section');
-      const pastList = document.getElementById('past-exams-list');
-      const toggleBtn = document.getElementById('toggle-past-exams');
-
-      if (pastExams.length > 0) {
-        pastSection.style.display = 'block';
-        pastList.innerHTML = ''; // Limpiar previo
-        renderExamListToContainer(pastExams, pastList);
-
-        // Ensure strictly class-based control
-        pastList.style.display = 'flex';
-
-        // Inicializar botón
-        toggleBtn.innerHTML = '<span class="icon">⬇️</span> Ver Exámenes Pasados';
-        toggleBtn.className = 'btn'; // Reset classes
-        toggleBtn.onclick = () => {
-          const isExpanded = pastList.classList.contains('expanded');
-          if (isExpanded) {
-            pastList.classList.remove('expanded');
-            toggleBtn.classList.remove('active');
-            toggleBtn.innerHTML = '<span class="icon">⬇️</span> Ver Exámenes Pasados';
-          } else {
-            pastList.classList.add('expanded');
-            toggleBtn.classList.add('active');
-            toggleBtn.innerHTML = '<span class="icon">⬇️</span> Ocultar Exámenes Pasados';
-          }
-        };
-      } else {
-        pastSection.style.display = 'none';
       }
     }
 

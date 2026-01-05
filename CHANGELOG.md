@@ -2,7 +2,7 @@
 
 Todos los cambios notables de este proyecto serán documentados en este archivo.
 
-## [3.0.0] - 2026-01-03
+## [3.0.0] - 2026-01-05
 
 ### 🎨 Mejoras de UI/UX
 - **Desktop Layout Mejorado**: Implementado diseño centrado inicial que transiciona a vista dividida al seleccionar un cuatrimestre
