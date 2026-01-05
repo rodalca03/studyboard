@@ -19,6 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="calendar.css">
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -252,7 +253,7 @@
           style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative; border-bottom: 1px solid rgba(0,0,0,0.06);">
           <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
           <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;"
-            title="Ver historial de cambios">v3.0.1</div>
+            title="Ver historial de cambios">v3.1.0</div>
         </div>
         <div class="modal-body">
           <div id="sync-code-content"></div>
@@ -504,8 +505,33 @@
             </div>
           </div>
 
-          <div id="exams-list" class="exams-list">
-            <!-- Los exámenes futuros se renderizarán aquí -->
+          <div id="calendar-view" class="calendar-view">
+            <div class="calendar-header">
+              <button class="calendar-nav-btn" id="prev-month">←</button>
+              <h3 class="calendar-month-title" id="calendar-title">Enero 2026</h3>
+              <button class="calendar-nav-btn" id="next-month">→</button>
+            </div>
+            <div class="calendar-weekdays">
+              <div class="calendar-day-name">L</div>
+              <div class="calendar-day-name">M</div>
+              <div class="calendar-day-name">X</div>
+              <div class="calendar-day-name">J</div>
+              <div class="calendar-day-name">V</div>
+              <div class="calendar-day-name">S</div>
+              <div class="calendar-day-name">D</div>
+            </div>
+            <div class="calendar-days-container" id="calendar-days">
+              <!-- Días generados por JS -->
+            </div>
+            <!-- Lista reducida debajo para ver detalles -->
+            <div id="selected-date-events" class="selected-date-events"
+              style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border);">
+              <!-- Aquí se mostrarán los eventos del día seleccionado -->
+            </div>
+          </div>
+
+          <div id="exams-list" class="exams-list" style="display:none;">
+            <!-- Legacy list hidden -->
           </div>
 
           <div id="no-exams-message" class="no-exams-message" style="display:none;">
@@ -601,7 +627,7 @@
           <div class="glass-preview strong-glare" aria-hidden="true">
             <div class="preview-card lens-glare-strong">
               <!-- SVG idéntico al del último slide del tutorial -->
-              <svg width="100%" height="auto" viewBox="0 0 200 160" fill="none" preserveAspectRatio="xMidYMid meet">
+              <svg width="100%" viewBox="0 0 200 160" fill="none" preserveAspectRatio="xMidYMid meet">
                 <defs>
                   <linearGradient id="lg-suggestion" x1="0" y1="0" x2="1" y2="1">
                     <stop offset="0%" stop-color="#f0f9ff" />
@@ -3979,10 +4005,15 @@
     const examsList = document.getElementById('exams-list');
     const noExamsMessage = document.getElementById('no-exams-message');
 
-    // Abrir modal de exámenes
+    // Abrir modal de exámenes (AHORA CON CALENDARIO)
     examsBtn.addEventListener('click', () => {
       populateSubjectSelect();
-      renderExams();
+      // Reset calendar to today
+      calendarCurrentDate = new Date();
+      renderCalendar();
+      // Clear details preview
+      document.getElementById('selected-date-events').innerHTML = '<p style="color:#64748b; font-size:13px; text-align:center; margin:0;">Selecciona un día para ver detalles</p>';
+
       examsModal.style.display = 'flex';
       requestAnimationFrame(() => examsModal.classList.add('show'));
       document.body.style.overflow = 'hidden';
@@ -4095,6 +4126,7 @@
 
       closeAddExamForm();
       renderExams();
+      renderCalendar(); // Actualizar calendario
       scheduleSyncToFirebase();
       checkUpcomingExams();
     }
@@ -4238,6 +4270,7 @@
       localStorage.setItem('exams', JSON.stringify(exams));
 
       renderExams();
+      renderCalendar(); // Actualizar calendario
       scheduleSyncToFirebase(); // Sincronizar con la nube
       showSyncIndicator('Examen eliminado', 'success');
       // Actualizar avisos en menú principal
@@ -4925,6 +4958,140 @@
       deferredPrompt = null;
     });
 
+    /* -------------------------
+       CALENDAR LOGIC
+       ------------------------- */
+    let calendarCurrentDate = new Date();
+
+    // Calendar Navigation
+    document.getElementById('prev-month').addEventListener('click', () => {
+      calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() - 1);
+      renderCalendar();
+    });
+
+    document.getElementById('next-month').addEventListener('click', () => {
+      calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + 1);
+      renderCalendar();
+    });
+
+    function renderCalendar() {
+      const year = calendarCurrentDate.getFullYear();
+      const month = calendarCurrentDate.getMonth();
+
+      // Update header
+      const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+      document.getElementById('calendar-title').textContent = `${monthNames[month]} ${year}`;
+
+      const daysContainer = document.getElementById('calendar-days');
+      daysContainer.innerHTML = '';
+
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const daysInMonth = lastDay.getDate();
+
+      // Calculate start day (Mon=0)
+      // Date.getDay(): Sun=0, Mon=1...Sat=6
+      // Mon=0, Tue=1, ..., Sun=6
+      let startDay = (firstDay.getDay() + 6) % 7;
+
+      // Empty slots for previous month
+      for (let i = 0; i < startDay; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'calendar-day empty';
+        daysContainer.appendChild(emptyCell);
+      }
+
+      // Fetch exams and subjects
+      let allExams = JSON.parse(localStorage.getItem('exams') || '[]');
+      if (currentSemester) {
+        allExams = allExams.filter(e => e.semesterId === currentSemester.id);
+      }
+      const subjects = JSON.parse(localStorage.getItem('subjects_' + (currentSemester ? currentSemester.id : '')) || '[]');
+
+      // Days of the month
+      const today = new Date();
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement('div');
+        cell.className = 'calendar-day';
+
+        // Check if today
+        if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+          cell.classList.add('today');
+        }
+
+        const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+
+        // Add number
+        const numberDiv = document.createElement('div');
+        numberDiv.className = 'day-number';
+        numberDiv.textContent = day;
+        cell.appendChild(numberDiv);
+
+        // Find exams for this day
+        const dayExams = allExams.filter(e => e.date === dateStr);
+
+        const markersContainer = document.createElement('div');
+        markersContainer.className = 'day-markers';
+
+        dayExams.forEach(exam => {
+          const marker = document.createElement('div');
+          marker.className = 'calendar-marker';
+          marker.textContent = exam.subjectName;
+
+          // Set color from subject if possible
+          const subject = subjects.find(s => s.id === exam.subjectId);
+          if (subject && subject.color) {
+            marker.style.backgroundColor = subject.color;
+          } else if (exam.color) { // Fallback if exam has color
+            marker.style.backgroundColor = exam.color;
+          }
+          markersContainer.appendChild(marker);
+        });
+
+        cell.appendChild(markersContainer);
+
+        // Click event
+        cell.addEventListener('click', () => {
+          showEventsForDate(dateStr, dayExams);
+          // Highlight selected
+          document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected'));
+          cell.classList.add('selected');
+        });
+
+        daysContainer.appendChild(cell);
+      }
+    }
+
+    function showEventsForDate(dateStr, exams) {
+      const container = document.getElementById('selected-date-events');
+
+      const dateObj = new Date(dateStr);
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const dateFormatted = dateObj.toLocaleDateString('es-ES', options);
+
+      if (exams.length === 0) {
+        container.innerHTML = `<p style="color:#64748b; font-size:13px; text-align:center; margin:0;">No hay eventos para el ${dateFormatted}</p>`;
+        return;
+      }
+
+      let html = `<h4 style="margin:0 0 10px 0; font-size:14px; color:var(--text); text-transform:capitalize;">${dateFormatted}</h4>`;
+
+      exams.forEach(exam => {
+        html += `
+             <div class="exam-item" onclick="openEditExamForm('${exam.id}')" style="cursor:pointer; margin-bottom:8px; padding: 8px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border); transition: all 0.2s ease;">
+               <div class="exam-info">
+                 <div class="exam-subject" style="font-weight:600; font-size: 14px; margin-bottom: 2px;">${exam.subjectName} <span style="font-size:10px; opacity:0.7;">(Editar)</span></div>
+                 <div class="exam-details" style="font-size:12px; color:#64748b;">
+                   ${exam.time || '--:--'} • ${exam.location || 'Sin ubicación'}
+                 </div>
+               </div>
+             </div>
+           `;
+      });
+
+      container.innerHTML = html;
+    }
   </script>
 
 </body>

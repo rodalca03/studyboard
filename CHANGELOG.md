@@ -2,7 +2,17 @@
 
 Todos los cambios notables de este proyecto serán documentados en este archivo.
 
-## [3.0.1] - 2026-01-05
+## [v3.1.0] - 2026-01-05
+### Añadido
+- **Calendario Interactivo**: Nueva vista mensual para visualizar los exámenes y entregas.
+- **Edición desde Calendario**: Ahora se pueden abrir y editar los exámenes directamente pulsando en el detalle del día.
+- Soporte para navegación entre meses en el calendario.
+
+### Mejorado
+- **Diseño Móvil del Calendario**: Optimizada la rejilla para evitar superposiciones en pantallas pequeñas, usando marcadores tipo "dot".
+- **Accesibilidad**: Mejorado el contraste del botón "Cancelar" en los formularios modales.
+
+## [v3.0.1] - 2026-01-05
 
 ### 🔧 Correcciones
 - **Botón Nuevo Cuatrimestre**: Solucionado error que impedía ver el botón de crear cuatrimestre cuando no existían cursos.

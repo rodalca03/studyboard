@@ -1311,13 +1311,14 @@ main {
 }
 
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: transparent;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
 }
 
 .btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
 .btn-delete {
