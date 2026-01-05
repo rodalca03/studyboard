@@ -252,7 +252,7 @@
           style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative; border-bottom: 1px solid rgba(0,0,0,0.06);">
           <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
           <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;"
-            title="Ver historial de cambios">v3.0.0</div>
+            title="Ver historial de cambios">v3.0.1</div>
         </div>
         <div class="modal-body">
           <div id="sync-code-content"></div>
@@ -1202,11 +1202,8 @@
             localStorage.setItem('cuatrimestres', JSON.stringify(cuatrimestres));
             // Limpiar datos antiguos
             localStorage.removeItem('asignaturas');
-          } else {
-            // No hay cuatrimestres ni datos antiguos - mostrar mensaje
-            semestersContainer.innerHTML = '<div class="empty-state">No hay cursos que mostrar</div>';
-            return;
           }
+          // Si no hay datos antiguos, continuamos para mostrar el botón de añadir (handled below)
         }
 
         // Mostrar solo cuatrimestres NO archivados

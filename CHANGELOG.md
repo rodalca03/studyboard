@@ -2,6 +2,11 @@
 
 Todos los cambios notables de este proyecto serán documentados en este archivo.
 
+## [3.0.1] - 2026-01-05
+
+### 🔧 Correcciones
+- **Botón Nuevo Cuatrimestre**: Solucionado error que impedía ver el botón de crear cuatrimestre cuando no existían cursos.
+
 ## [3.0.0] - 2026-01-05
 
 ### 🎨 Mejoras de UI/UX
