@@ -253,7 +253,7 @@
           style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative; border-bottom: 1px solid rgba(0,0,0,0.06);">
           <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
           <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;"
-            title="Ver historial de cambios">v3.2.5</div>
+            title="Ver historial de cambios">v3.2.6</div>
         </div>
         <div class="modal-body">
           <div id="sync-code-content"></div>
@@ -1971,205 +1971,197 @@
     });
 
     /* -------------------------
-       Reordenación TOUCH (móvil) - MEJORADO CON GESTOS
+       Reordenación TOUCH (móvil) - REDISEÑADO
        ------------------------- */
     let touchCard = null;
-    let startY = 0;
-    let startX = 0;
-    let moved = false;
-    let isDraggingFromHandle = false;
-    let swipeDirection = null;
+    let touchClone = null; // The floating clone
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchOffsetX = 0;
+    let touchOffsetY = 0;
+    let isDragging = false;
+    let hasMoved = false; // To distinguish tap from scroll/swipe
     let longPressTimer = null;
-    const MOVE_THRESHOLD = 10;
-    const SWIPE_THRESHOLD = 80;
-    const LONG_PRESS_DURATION = 500;
+    const PRESS_DELAY = 500; // ms
 
     container.addEventListener('touchstart', (e) => {
-      const el = e.target.closest('.card');
+      const card = e.target.closest('.card');
+      // Ignore if touching controls
+      if (!card || e.target.closest('.controls') || e.target.closest('.subdiv-row')) return;
 
-      if (!el) return;
+      touchCard = card;
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
 
-      isDraggingFromHandle = false;
-      touchCard = el;
-      startY = e.touches[0].clientY;
-      startX = e.touches[0].clientX;
-      moved = false;
-      swipeDirection = null;
-    }, { passive: true });
+      // Calculate offset so the card doesn't jump to center immediately
+      const rect = card.getBoundingClientRect();
+      touchOffsetX = touchStartX - rect.left;
+      touchOffsetY = touchStartY - rect.top;
+
+      hasMoved = false;
+      isDragging = false;
+
+      // Start Long Press Timer
+      longPressTimer = setTimeout(() => {
+        startMobileDrag(touch);
+      }, PRESS_DELAY);
+
+    }, { passive: false });
 
     container.addEventListener('touchmove', (e) => {
-      // Cancelar long press si se mueve
-      if (longPressTimer) {
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - touchStartX;
+      const deltaY = touch.clientY - touchStartY;
+
+      // If moved significantly before timer, cancel timer (it's a scroll or swipe)
+      if (!isDragging && (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10)) {
         clearTimeout(longPressTimer);
         longPressTimer = null;
+        hasMoved = true;
       }
 
-      if (!touchCard) return;
+      // 1. DRAGGING LOGIC
+      if (isDragging && touchClone) {
+        e.preventDefault(); // Stop scrolling
 
-      const y = e.touches[0].clientY;
-      const x = e.touches[0].clientX;
-      const deltaX = x - startX;
-      const deltaY = y - startY;
+        // Update interactions
+        moveMobileClone(touch.clientX, touch.clientY);
 
-      if (Math.abs(deltaY) > MOVE_THRESHOLD || Math.abs(deltaX) > MOVE_THRESHOLD) {
-        moved = true;
-      }
+        // Reorder in DOM
+        const elements = [...container.querySelectorAll('.card:not(.dragging-placeholder)')];
+        const afterElement = elements.find(el => {
+          const box = el.getBoundingClientRect();
+          return touch.clientY < box.top + box.height / 2;
+        });
 
-      // Detectar swipe horizontal (solo si no es drag desde handle)
-      if (!isDraggingFromHandle && Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 20) {
-        e.preventDefault();
-
-        // Limitar desplazamiento a la mitad del ancho de la tarjeta
-        const cardWidth = touchCard.offsetWidth;
-        const maxSwipe = cardWidth / 2;
-        const limitedDeltaX = Math.max(-maxSwipe, Math.min(maxSwipe, deltaX));
-
-        // Aplicar transformación visual del swipe (solo horizontal, eje vertical fijo)
-        touchCard.classList.add('swiping');
-        touchCard.style.transform = `translateX(${limitedDeltaX}px)`;
-
-        // Mostrar/ocultar fondos de acción con opacidad progresiva
-        const leftBg = touchCard.querySelector('.swipe-action-bg.left');
-        const rightBg = touchCard.querySelector('.swipe-action-bg.right');
-
-        // Calcular opacidad basada en el progreso del swipe (0 a 1)
-        const swipeProgress = Math.abs(limitedDeltaX) / maxSwipe;
-
-        if (deltaX < -20) {
-          // Swipe izquierda - mostrar "Eliminar" con opacidad progresiva
-          leftBg.classList.add('visible');
-          leftBg.style.opacity = swipeProgress;
-          rightBg.classList.remove('visible');
-          rightBg.style.opacity = '0';
-          if (deltaX < -SWIPE_THRESHOLD) {
-            swipeDirection = 'left';
-          } else {
-            swipeDirection = null;
-          }
-        } else if (deltaX > 20) {
-          // Swipe derecha - mostrar "Información" con opacidad progresiva
-          rightBg.classList.add('visible');
-          rightBg.style.opacity = swipeProgress;
-          leftBg.classList.remove('visible');
-          leftBg.style.opacity = '0';
-          if (deltaX > SWIPE_THRESHOLD) {
-            swipeDirection = 'right';
-          } else {
-            swipeDirection = null;
-          }
+        if (afterElement) {
+          container.insertBefore(touchCard, afterElement);
         } else {
-          leftBg.classList.remove('visible');
-          rightBg.classList.remove('visible');
-          leftBg.style.opacity = '0';
-          rightBg.style.opacity = '0';
-          swipeDirection = null;
+          container.appendChild(touchCard);
         }
         return;
       }
 
-      // Drag vertical para reordenar (solo desde handle)
-      if (isDraggingFromHandle && moved) {
-        e.preventDefault();
-        const cards = [...container.querySelectorAll('.card:not(.dragging)')];
-        const next = cards.find(c => y <= c.getBoundingClientRect().top + c.offsetHeight / 2);
-        container.insertBefore(touchCard, next || null);
+      // 2. SWIPE LOGIC (Only if not dragging)
+      if (!isDragging && hasMoved && Math.abs(deltaX) > Math.abs(deltaY)) {
+        // Horizontal Swipe Logic
+        if (!touchCard) return;
+        e.preventDefault(); // Stop text selection/scroll
+
+        const cardWidth = touchCard.offsetWidth;
+        const limit = cardWidth / 2;
+        const moveX = Math.max(-limit, Math.min(limit, deltaX));
+
+        touchCard.style.transform = `translateX(${moveX}px)`;
+
+        // Visual Feedback for Swipe
+        const leftBg = touchCard.querySelector('.swipe-action-bg.left'); // Delete
+        const rightBg = touchCard.querySelector('.swipe-action-bg.right'); // Info
+
+        const progress = Math.abs(moveX) / limit;
+
+        if (moveX < 0) { // Left (Delete)
+          if (leftBg) {
+            leftBg.style.opacity = progress;
+            leftBg.classList.add('visible');
+          }
+          if (rightBg) rightBg.style.opacity = 0;
+        } else { // Right (Info)
+          if (rightBg) {
+            rightBg.style.opacity = progress;
+            rightBg.classList.add('visible');
+          }
+          if (leftBg) leftBg.style.opacity = 0;
+        }
       }
+
     }, { passive: false });
 
     container.addEventListener('touchend', (e) => {
-      // Cancelar long press
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
-      }
+      clearTimeout(longPressTimer);
 
-      if (!touchCard) return;
+      if (isDragging) {
+        endMobileDrag();
+      } else if (hasMoved && touchCard) {
+        // Finish Swipe
+        const touch = e.changedTouches[0];
+        const deltaX = touch.clientX - touchStartX;
+        const SWIPE_THRESHOLD = 80;
 
-      const deltaX = e.changedTouches[0].clientX - startX;
-
-      // Ocultar fondos de acción
-      const leftBg = touchCard.querySelector('.swipe-action-bg.left');
-      const rightBg = touchCard.querySelector('.swipe-action-bg.right');
-      if (leftBg) {
-        leftBg.classList.remove('visible');
-        leftBg.style.opacity = '0';
-      }
-      if (rightBg) {
-        rightBg.classList.remove('visible');
-        rightBg.style.opacity = '0';
-      }
-
-      // Manejar swipe completado
-      if (swipeDirection && Math.abs(deltaX) > SWIPE_THRESHOLD) {
-        if (swipeDirection === 'left') {
-          // Swipe izquierda = ELIMINAR
+        if (deltaX < -SWIPE_THRESHOLD) {
+          // Delete Action
           const subjectName = touchCard.querySelector('.titulo').textContent;
           if (confirm(`¿Eliminar la asignatura "${subjectName}"?\n\nEsta acción no se puede deshacer.`)) {
             saveStateToHistory('eliminar asignatura');
-
-            // Eliminar del array de datos primero
-            if (currentSemester && currentSemester.asignaturas) {
-              const cuatrimestres = obtenerCuatrimestres();
-              const idx = cuatrimestres.findIndex(c => c.id === currentSemester.id);
-              if (idx !== -1) {
-                // Filtrar la asignatura por nombre
-                cuatrimestres[idx].asignaturas = cuatrimestres[idx].asignaturas.filter(a => a.nombre !== subjectName);
-                currentSemester.asignaturas = cuatrimestres[idx].asignaturas;
-                localStorage.setItem('cuatrimestres', JSON.stringify(cuatrimestres));
-              }
-            }
-
-            // Eliminar inmediatamente del DOM sin animación
             touchCard.remove();
-
-            // Actualizar UI
-            actualizarNotasCards();
+            guardar();
             actualizarEstadisticas();
-            scheduleSyncToFirebase();
-          } else {
-            // Cancelar - resetear visual
-            touchCard.style.transform = '';
-            touchCard.classList.remove('swiping');
           }
-        } else if (swipeDirection === 'right') {
-          // Swipe derecha = MOSTRAR INFORMACIÓN (abrir modal)
+        } else if (deltaX > SWIPE_THRESHOLD) {
+          // Info Action
           openSubjectDetail(touchCard);
-
-          // Resetear visual
-          touchCard.style.transform = '';
-          touchCard.classList.remove('swiping');
         }
-      } else {
-        // Cancelar swipe incompleto
+
+        // Reset Card
         touchCard.style.transform = '';
-        touchCard.classList.remove('swiping');
+        const bgs = touchCard.querySelectorAll('.swipe-action-bg');
+        bgs.forEach(bg => { bg.style.opacity = 0; bg.classList.remove('visible'); });
       }
 
-      touchCard.classList.remove('dragging');
+      // Cleanup
+      touchCard = null;
+      isDragging = false;
+      hasMoved = false;
+    });
 
-      if (moved && isDraggingFromHandle) {
+    function startMobileDrag(touch) {
+      if (!touchCard) return;
+      isDragging = true;
+
+      // Haptic feedback
+      if (navigator.vibrate) navigator.vibrate(50);
+
+      // Create Clone
+      touchClone = touchCard.cloneNode(true);
+      touchClone.classList.add('drag-preview');
+      touchClone.style.position = 'fixed';
+      touchClone.style.width = touchCard.offsetWidth + 'px';
+      touchClone.style.height = touchCard.offsetHeight + 'px';
+      touchClone.style.zIndex = '9999';
+      touchClone.style.boxShadow = '0 10px 20px rgba(0,0,0,0.2)';
+      touchClone.style.opacity = '0.9';
+      touchClone.style.pointerEvents = 'none';
+
+      document.body.appendChild(touchClone);
+
+      // Initial position
+      moveMobileClone(touch.clientX, touch.clientY);
+
+      // Hide original but keep space
+      touchCard.style.opacity = '0.3';
+      touchCard.classList.add('dragging-placeholder');
+    }
+
+    function moveMobileClone(x, y) {
+      if (!touchClone) return;
+      // Position relative to finger using recorded offset
+      touchClone.style.left = (x - touchOffsetX) + 'px';
+      touchClone.style.top = (y - touchOffsetY) + 'px';
+    }
+
+    function endMobileDrag() {
+      if (touchClone) {
+        touchClone.remove();
+        touchClone = null;
+      }
+      if (touchCard) {
+        touchCard.style.opacity = '';
+        touchCard.classList.remove('dragging-placeholder');
+        touchCard.style.transform = ''; // Clear any swipe transform
         guardar();
       }
-
-      touchCard = null;
-      isDraggingFromHandle = false;
-      moved = false;
-      swipeDirection = null;
-    }, { passive: true });
-
-    document.addEventListener('touchstart', (e) => {
-      const c = e.target.closest('.card');
-      if (!c) {
-        document.querySelectorAll('.card.show-controls').forEach(card => card.classList.remove('show-controls'));
-      }
-    }, { passive: true });
-
-    document.addEventListener('click', (e) => {
-      const c = e.target.closest('.card');
-      if (!c) {
-        document.querySelectorAll('.card.show-controls').forEach(card => card.classList.remove('show-controls'));
-      }
-    });
+    }
 
     /* -------------------------
        Añadir tarjeta
