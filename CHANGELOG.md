@@ -2,6 +2,16 @@
 
 Todos los cambios notables de este proyecto serán documentados en este archivo.
 
+
+## [v3.2.8] - 2026-02-16
+### Correcciones
+- **Modal de Pruebas**: Corregido error crítico que impedía abrir el modal de pruebas evaluables en asignaturas con subdivisiones.
+- **Selector JavaScript**: Solucionado selector incorrecto (`.test-name` → `.sub-name`) en el evento de input de subdivisiones.
+
+### Mejoras UI
+- **Alineación de Subdivisiones**: Inputs de subdivisiones ahora están perfectamente alineados con las pruebas principales.
+- **Consistencia Visual**: Eliminado fondo blanco de inputs en subdivisiones para mantener coherencia con el diseño general.
+
 ## [v3.2.7] - 2026-02-16
 ### Reordenación Móvil
 - **Corrección Fantasmas UI**: Implementada limpieza robusta de elementos de arrastre para evitar que se queden atascados en pantalla.

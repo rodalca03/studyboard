@@ -4771,17 +4771,19 @@ body.glass-mode .wizard-select {
   color: var(--text);
 }
 
+
+/* Weight Wrapper: % outside input */
 .weight-wrapper {
-  position: relative;
-  width: 64px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: auto;
 }
 
 .test-weight {
-  width: 100%;
-  padding: 8px 36px 8px 8px;
-  /* Increased to 36px */
-  /* Room for % */
-  text-align: right;
+  width: 50px;
+  padding: 8px;
+  text-align: center;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--input-bg);
@@ -4789,14 +4791,13 @@ body.glass-mode .wizard-select {
 }
 
 .percent-sign {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 12px;
-  color: #94a3b8;
+  position: static;
+  transform: none;
+  font-size: 14px;
+  color: var(--text-muted);
   pointer-events: none;
 }
+
 
 .btn-delete {
   width: 32px;
@@ -4843,39 +4844,128 @@ body.glass-mode .wizard-select {
 
 .sub-test-row:last-child .sub-indicator-line {
   height: 50%;
-  /* Stop at middle of last item */
+  /* Old default, overridden below */
 }
 
-/* Horizontal connector */
+.subdivisions-list {
+  background: transparent;
+  padding-bottom: 4px;
+  margin-top: 8px;
+  /* Separation from parent test name */
+}
+
+.sub-test-row {
+  display: flex;
+  align-items: center;
+  /* Use padding to create space on the left, but keep inputs aligned right */
+  padding: 8px 16px 8px 0;
+  gap: 12px;
+  position: relative;
+  min-height: 48px;
+}
+
+/* Vertical line indicator (trunk) */
+.sub-indicator-line {
+  position: absolute;
+  left: 24px;
+  top: -24px;
+  /* Connect from row above */
+  bottom: 0;
+  width: 2px;
+  background: #cbd5e1;
+  z-index: 1;
+}
+
+.sub-test-row:last-child .sub-indicator-line {
+  height: 48px;
+  /* Stop halfway down for last item (approx) */
+  bottom: auto;
+}
+
+/* Horizontal connector (branch) */
 .sub-test-row::before {
   content: '';
   position: absolute;
-  left: 20px;
-  top: 50%;
-  width: 12px;
+  left: 24px;
+  top: 24px;
+  /* Center VERTICALLY relative to row height approx */
+  width: 20px;
   height: 2px;
-  background: #e2e8f0;
+  background: #cbd5e1;
+  z-index: 1;
+}
+
+/* The text input container */
+/* We want the input to start AFTER the branch line */
+.sub-name-container {
+  flex: 1;
+  padding-left: 52px;
+  /* 24px left + 20px width + gap */
+  box-sizing: border-box;
 }
 
 .sub-name {
   font-size: 14px;
   color: var(--text-muted);
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 8px;
+}
+
+.sub-name:focus {
+  background: var(--input-bg);
+  border-color: var(--input-border);
+  outline: none;
+  border-radius: 6px;
+}
+
+/* Subdivision grade and weight inputs - transparent background */
+.sub-grade,
+.sub-weight {
+  background: transparent !important;
+  border: 1px solid transparent;
+}
+
+.sub-grade:focus,
+.sub-weight:focus {
+  background: var(--input-bg) !important;
+  border-color: var(--input-border);
 }
 
 /* Mobile Optimization */
 @media (max-width: 600px) {
 
-  .test-row,
-  .sub-test-row {
+  .test-row {
     padding: 10px;
     gap: 8px;
   }
 
-  .test-name {
+  .sub-test-row {
+    padding: 8px 10px 8px 0;
+    gap: 8px;
+  }
+
+  .sub-indicator-line {
+    left: 14px;
+    top: -20px;
+  }
+
+  .sub-test-row::before {
+    left: 14px;
+    top: 24px;
+    width: 14px;
+  }
+
+  .sub-name-container {
+    padding-left: 36px;
+  }
+
+  .test-name,
+  .sub-name {
     font-size: 14px;
     padding: 6px;
     min-width: 80px;
-    /* Allow shrinking */
   }
 
   .test-inputs-group {
@@ -4888,47 +4978,17 @@ body.glass-mode .wizard-select {
     font-size: 14px;
   }
 
-  .weight-wrapper {
-    width: 52px;
-  }
+  /* End Mobile Optimization */
 
-  .test-weight {
-    padding: 6px 18px 6px 4px;
-    font-size: 14px;
-  }
-
-  .percent-sign {
-    right: 4px;
-    font-size: 10px;
-  }
-
+  /* Smaller btn */
   .btn-delete {
     width: 28px;
     height: 28px;
     font-size: 14px;
   }
-
-  /* Subdivisions mobile */
-  .sub-test-row {
-    padding-left: 16px;
-    /* Less indentation */
-  }
-
-  .sub-indicator-line,
-  .sub-test-row::before {
-    display: none;
-    /* Hide fancy indicators to save space/clutter */
-  }
-
-  /* Maybe add a left border instead for subdivisions */
-  .subdivisions-list {
-    padding-left: 8px;
-    border-left: 3px solid #e2e8f0;
-    margin-left: 8px;
-    background: transparent;
-    border-top: none;
-  }
 }
+
+/* End Mobile Optimization */
 
 /* Dark Mode overrides for new elements */
 body.dark-mode .test-container {

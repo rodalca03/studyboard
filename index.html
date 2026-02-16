@@ -253,7 +253,7 @@
           style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative; border-bottom: 1px solid rgba(0,0,0,0.06);">
           <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
           <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;"
-            title="Ver historial de cambios">v3.2.7</div>
+            title="Ver historial de cambios">v3.2.8</div>
         </div>
         <div class="modal-body">
           <div id="sync-code-content"></div>
@@ -2991,15 +2991,17 @@
         mainRow.className = 'test-row main-test';
         // Updated innerHTML with cleaner structure
         mainRow.innerHTML = `
-            <input class="test-name" type="text" value="${escapeHtml(t.nombre)}" placeholder="Nombre de la prueba" aria-label="Nombre prueba">
+            <div style="flex:1;">
+               <input class="test-name" type="text" value="${escapeHtml(t.nombre)}" placeholder="Nombre de la prueba" aria-label="Nombre prueba">
+            </div>
             <div class="test-inputs-group">
                 <input class="test-grade" type="text" value="${escapeHtml(String(displayGrade || ''))}" ${hasSubdivs ? 'disabled' : ''} placeholder="Nota" aria-label="Nota">
                 <div class="weight-wrapper">
-                    <input class="test-weight" type="text" value="${escapeHtml(String(t.ponderacion || ''))}" placeholder="%" aria-label="Ponderación">
+                    <input class="test-weight" type="text" value="${escapeHtml(String(t.ponderacion || ''))}" placeholder="0" aria-label="Ponderación">
                     <span class="percent-sign">%</span>
                 </div>
+                <button class="btn-delete delete-test" title="Eliminar">🗑️</button>
             </div>
-            <button class="btn-delete delete-test" title="Eliminar">✕</button>
         `;
 
         // Bind events for Main Row
@@ -3045,21 +3047,27 @@
           t.subdivisiones.forEach((sub, subIdx) => {
             const subRow = document.createElement('div');
             subRow.className = 'sub-test-row';
-            // Integrated view: No "↳", just structure
+            // Integrated view with separate container for name to handle tree structure
             subRow.innerHTML = `
                     <div class="sub-indicator-line"></div>
-                    <input class="test-name sub-name" type="text" value="${escapeHtml(sub.nombre)}" placeholder="Parte" aria-label="Nombre parte">
+                    
+                    <div class="sub-name-container">
+                        <input class="sub-name" type="text" value="${escapeHtml(sub.nombre)}" placeholder="Parte" aria-label="Nombre parte">
+                    </div>
+                    
                     <div class="test-inputs-group">
                         <input class="test-grade sub-grade" type="text" value="${escapeHtml(String(sub.nota || ''))}" placeholder="Nota">
                         <div class="weight-wrapper">
-                            <input class="test-weight sub-weight" type="text" value="${escapeHtml(String(sub.ponderacion || ''))}" placeholder="%">
+                            <input class="test-weight sub-weight" type="text" value="${escapeHtml(String(sub.ponderacion || ''))}" placeholder="0">
                             <span class="percent-sign">%</span>
                         </div>
+                        <!-- Empty placeholder using btn-delete class for responsive sizing matches -->
+                        <button class="btn-delete" style="visibility: hidden; pointer-events: none;">✕</button>
                     </div>
                 `;
 
             // Bind Sub-events
-            const sName = subRow.querySelector('.test-name');
+            const sName = subRow.querySelector('.sub-name');
             sName.addEventListener('input', (e) => {
               t.subdivisiones[subIdx].nombre = e.target.value;
               guardar();
