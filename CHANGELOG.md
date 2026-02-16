@@ -2,6 +2,10 @@
 
 Todos los cambios notables de este proyecto serán documentados en este archivo.
 
+## [v3.2.1] - 2026-02-16
+### Añadido
+- **Paso de Notas en Wizard**: Añadido un paso final al asistente para introducir directamente las notas obtenidas (global o por partes).
+
 ## [v3.2.0] - 2026-02-16
 ### Añadido
 - **Nuevo Asistente de Pruebas**: Implementado un wizard paso a paso para añadir pruebas evaluables de forma intuitiva.

@@ -253,7 +253,7 @@
           style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative; border-bottom: 1px solid rgba(0,0,0,0.06);">
           <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
           <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;"
-            title="Ver historial de cambios">v3.2.0</div>
+            title="Ver historial de cambios">v3.2.1</div>
         </div>
         <div class="modal-body">
           <div id="sync-code-content"></div>
@@ -2434,7 +2434,22 @@
           </div>
           <div class="step-actions">
             <button class="btn btn-ghost wizard-prev">Atrás</button>
-            <button class="btn btn-primary" id="wizard-finish">Finalizar</button>
+            <button class="btn btn-primary" id="wizard-step5-next">Siguiente</button>
+          </div>
+        </div>
+
+        <!-- Step 6: Introducir Notas -->
+        <div class="wizard-step" data-step="6">
+          <h3 class="step-title">Notas Obtenidas</h3>
+          <div class="step-content">
+             <p class="wizard-label" style="text-align:center; margin-bottom: 16px;">Introduce las notas si ya las tienes (opcional)</p>
+             <div id="wizard-grades-container" style="display: flex; flex-direction: column; gap: 12px; max-width: 400px; margin: 0 auto; width: 100%;">
+                 <!-- Dynamically filled -->
+             </div>
+          </div>
+          <div class="step-actions">
+            <button class="btn btn-ghost wizard-prev">Atrás</button>
+            <button class="btn btn-primary" id="wizard-final-finish">Finalizar</button>
           </div>
         </div>
 
@@ -2626,7 +2641,9 @@
         categoria: 'Teoria',
         ponderacion: 0,
         sustituye: [],
-        subdivisiones: []
+        sustituye: [],
+        subdivisiones: [],
+        hasSubdivisions: false
       };
       currentWizardStep = 1;
       resetWizardUI();
@@ -2663,12 +2680,17 @@
       });
 
       // Update progress bar
-      const progress = (currentWizardStep / 5) * 100;
+      const progress = (currentWizardStep / 6) * 100;
       wizardProgressBar.style.width = `${progress}%`;
 
       // Special render for step 3 (Loading substitutions)
       if (currentWizardStep === 3) {
         renderSubstitutionList();
+      }
+
+      // Special render for step 6 (Grades)
+      if (currentWizardStep === 6) {
+        renderGradesStep();
       }
     }
 
@@ -2745,7 +2767,11 @@
 
     document.querySelectorAll('.wizard-prev').forEach(btn => {
       btn.addEventListener('click', () => {
-        currentWizardStep--;
+        if (currentWizardStep === 6 && !wizardData.hasSubdivisions) {
+          currentWizardStep = 4;
+        } else {
+          currentWizardStep--;
+        }
         updateWizardStep();
       });
     });
@@ -2760,11 +2786,15 @@
 
     // Step 4 Binary Choice
     document.getElementById('wizard-subdiv-no').addEventListener('click', () => {
-      // Finish without subdivisions
-      finalizeWizard();
+      // Go to grades step
+      wizardData.subdivisiones = [];
+      wizardData.hasSubdivisions = false;
+      currentWizardStep = 6;
+      updateWizardStep();
     });
 
     document.getElementById('wizard-subdiv-yes').addEventListener('click', () => {
+      wizardData.hasSubdivisions = true;
       currentWizardStep = 5;
       updateWizardStep();
     });
@@ -2806,7 +2836,7 @@
       return total;
     }
 
-    document.getElementById('wizard-finish').addEventListener('click', () => {
+    document.getElementById('wizard-step5-next').addEventListener('click', () => {
       // Collect subdivisions
       const rows = document.querySelectorAll('.subdiv-row');
       const subs = [];
@@ -2818,7 +2848,7 @@
         subs.push({
           nombre: name,
           ponderacion: weight,
-          nota: '' // Init empty
+          nota: '' // Will be filled in step 6
         });
       });
 
@@ -2828,6 +2858,57 @@
       }
 
       wizardData.subdivisiones = subs;
+      currentWizardStep = 6;
+      updateWizardStep();
+    });
+
+    function renderGradesStep() {
+      const container = document.getElementById('wizard-grades-container');
+      container.innerHTML = '';
+
+      if (wizardData.subdivisiones && wizardData.subdivisiones.length > 0) {
+        // Render inputs for each subdivision
+        wizardData.subdivisiones.forEach((sub, idx) => {
+          const row = document.createElement('div');
+          row.style.display = 'flex';
+          row.style.justifyContent = 'space-between';
+          row.style.alignItems = 'center';
+          row.innerHTML = `
+                    <label style="font-size: 14px; font-weight: 500; color: var(--text);">${escapeHtml(sub.nombre)} (${sub.ponderacion}%)</label>
+                    <input type="number" class="wizard-input grade-input-sub" data-idx="${idx}" placeholder="0-10" style="width: 80px; text-align: center;">
+                `;
+          container.appendChild(row);
+        });
+      } else {
+        // Render single input
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.justifyContent = 'space-between';
+        row.style.alignItems = 'center';
+        row.innerHTML = `
+                <label style="font-size: 14px; font-weight: 500; color: var(--text);">Nota de la prueba</label>
+                <input type="number" class="wizard-input" id="wizard-grade-main" placeholder="0-10" style="width: 100px; text-align: center;">
+            `;
+        container.appendChild(row);
+      }
+    }
+
+    document.getElementById('wizard-final-finish').addEventListener('click', () => {
+      // Collect grades
+      if (wizardData.subdivisiones && wizardData.subdivisiones.length > 0) {
+        document.querySelectorAll('.grade-input-sub').forEach(inp => {
+          const idx = parseInt(inp.dataset.idx);
+          if (wizardData.subdivisiones[idx]) {
+            wizardData.subdivisiones[idx].nota = inp.value;
+          }
+        });
+        // Main note will be calculated by system later
+        wizardData.nota = '';
+      } else {
+        const val = document.getElementById('wizard-grade-main').value;
+        wizardData.nota = val;
+      }
+
       finalizeWizard();
     });
 
