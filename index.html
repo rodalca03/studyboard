@@ -253,7 +253,7 @@
           style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative; border-bottom: 1px solid rgba(0,0,0,0.06);">
           <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
           <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;"
-            title="Ver historial de cambios">v3.2.6</div>
+            title="Ver historial de cambios">v3.2.7</div>
         </div>
         <div class="modal-body">
           <div id="sync-code-content"></div>
@@ -2014,7 +2014,7 @@
       const deltaX = touch.clientX - touchStartX;
       const deltaY = touch.clientY - touchStartY;
 
-      // If moved significantly before timer, cancel timer (it's a scroll or swipe)
+      // Cancel target if moved meaningfully
       if (!isDragging && (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10)) {
         clearTimeout(longPressTimer);
         longPressTimer = null;
@@ -2023,12 +2023,11 @@
 
       // 1. DRAGGING LOGIC
       if (isDragging && touchClone) {
-        e.preventDefault(); // Stop scrolling
+        if (e.cancelable) e.preventDefault();
 
-        // Update interactions
         moveMobileClone(touch.clientX, touch.clientY);
 
-        // Reorder in DOM
+        // Reorder
         const elements = [...container.querySelectorAll('.card:not(.dragging-placeholder)')];
         const afterElement = elements.find(el => {
           const box = el.getBoundingClientRect();
@@ -2043,11 +2042,9 @@
         return;
       }
 
-      // 2. SWIPE LOGIC (Only if not dragging)
-      if (!isDragging && hasMoved && Math.abs(deltaX) > Math.abs(deltaY)) {
-        // Horizontal Swipe Logic
-        if (!touchCard) return;
-        e.preventDefault(); // Stop text selection/scroll
+      // 2. SWIPE LOGIC
+      if (!isDragging && hasMoved && Math.abs(deltaX) > Math.abs(deltaY) && touchCard) {
+        if (e.cancelable) e.preventDefault();
 
         const cardWidth = touchCard.offsetWidth;
         const limit = cardWidth / 2;
@@ -2055,9 +2052,8 @@
 
         touchCard.style.transform = `translateX(${moveX}px)`;
 
-        // Visual Feedback for Swipe
-        const leftBg = touchCard.querySelector('.swipe-action-bg.left'); // Delete
-        const rightBg = touchCard.querySelector('.swipe-action-bg.right'); // Info
+        const leftBg = touchCard.querySelector('.swipe-action-bg.left');
+        const rightBg = touchCard.querySelector('.swipe-action-bg.right');
 
         const progress = Math.abs(moveX) / limit;
 
@@ -2119,6 +2115,9 @@
       if (!touchCard) return;
       isDragging = true;
 
+      // Cleanup previous ghosts
+      document.querySelectorAll('.drag-preview').forEach(el => el.remove());
+
       // Haptic feedback
       if (navigator.vibrate) navigator.vibrate(50);
 
@@ -2150,18 +2149,44 @@
       touchClone.style.top = (y - touchOffsetY) + 'px';
     }
 
-    function endMobileDrag() {
+    function cleanupDrag() {
       if (touchClone) {
         touchClone.remove();
         touchClone = null;
       }
+      document.querySelectorAll('.drag-preview').forEach(el => el.remove());
+
       if (touchCard) {
         touchCard.style.opacity = '';
         touchCard.classList.remove('dragging-placeholder');
-        touchCard.style.transform = ''; // Clear any swipe transform
-        guardar();
+        touchCard.style.transform = '';
+        const bgs = touchCard.querySelectorAll('.swipe-action-bg');
+        bgs.forEach(bg => { bg.style.opacity = 0; bg.classList.remove('visible'); });
+      }
+
+      isDragging = false;
+      hasMoved = false;
+      touchCard = null;
+
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
       }
     }
+
+    function endMobileDrag() {
+      guardar();
+      cleanupDrag();
+    }
+
+    // Safety listeners
+    container.addEventListener('touchcancel', cleanupDrag);
+    container.addEventListener('contextmenu', (e) => {
+      if (isDragging) {
+        e.preventDefault();
+        cleanupDrag();
+      }
+    });
 
     /* -------------------------
        Añadir tarjeta

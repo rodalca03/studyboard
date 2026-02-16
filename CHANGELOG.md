@@ -2,6 +2,11 @@
 
 Todos los cambios notables de este proyecto serán documentados en este archivo.
 
+## [v3.2.7] - 2026-02-16
+### Reordenación Móvil
+- **Corrección Fantasmas UI**: Implementada limpieza robusta de elementos de arrastre para evitar que se queden atascados en pantalla.
+- **Mejoras de Estabilidad**: Añadidos listeners de seguridad para cancelar el arrastre en interrupciones del sistema.
+
 ## [v3.2.6] - 2026-02-16
 ### Reordenación Móvil
 - **Rediseño Completo Touch**: Nueva lógica robusta para reordenar asignaturas "m manteniendo pulsado".
