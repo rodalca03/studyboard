@@ -4694,3 +4694,261 @@ body.glass-mode .wizard-input,
 body.glass-mode .wizard-select {
   background: rgba(255, 255, 255, 0.1);
 }
+
+/* -------------------------
+   TEST LIST REDESIGN
+   ------------------------- */
+
+.test-container {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.test-container:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Main Test Row */
+.test-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: transparent;
+  border-bottom: 1px solid transparent;
+}
+
+.test-container:not(:has(.sub-test-row)) .test-row {
+  border-bottom: none;
+}
+
+.test-row.main-test {
+  background: var(--card-bg);
+  position: relative;
+  z-index: 2;
+}
+
+/* Inputs Group */
+.test-inputs-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.test-name {
+  flex: 1;
+  font-weight: 500;
+  font-size: 15px;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  min-width: 120px;
+}
+
+.test-name:focus,
+.test-grade:focus,
+.test-weight:focus {
+  background: var(--input-bg);
+  border-color: var(--input-border);
+  outline: none;
+}
+
+.test-grade {
+  width: 60px;
+  text-align: center;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--input-bg);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.weight-wrapper {
+  position: relative;
+  width: 64px;
+}
+
+.test-weight {
+  width: 100%;
+  padding: 8px 24px 8px 8px;
+  /* Room for % */
+  text-align: right;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--text);
+}
+
+.percent-sign {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.btn-delete {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: none;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 16px;
+}
+
+.btn-delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+/* Subdivisions */
+.subdivisions-list {
+  background: rgba(0, 0, 0, 0.02);
+  border-top: 1px solid var(--border);
+}
+
+.sub-test-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px 8px 24px;
+  gap: 12px;
+  position: relative;
+}
+
+/* Vertical line indicator */
+.sub-indicator-line {
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.sub-test-row:last-child .sub-indicator-line {
+  height: 50%;
+  /* Stop at middle of last item */
+}
+
+/* Horizontal connector */
+.sub-test-row::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  width: 12px;
+  height: 2px;
+  background: #e2e8f0;
+}
+
+.sub-name {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Mobile Optimization */
+@media (max-width: 600px) {
+
+  .test-row,
+  .sub-test-row {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .test-name {
+    font-size: 14px;
+    padding: 6px;
+    min-width: 80px;
+    /* Allow shrinking */
+  }
+
+  .test-inputs-group {
+    gap: 6px;
+  }
+
+  .test-grade {
+    width: 48px;
+    padding: 6px 4px;
+    font-size: 14px;
+  }
+
+  .weight-wrapper {
+    width: 52px;
+  }
+
+  .test-weight {
+    padding: 6px 18px 6px 4px;
+    font-size: 14px;
+  }
+
+  .percent-sign {
+    right: 4px;
+    font-size: 10px;
+  }
+
+  .btn-delete {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  /* Subdivisions mobile */
+  .sub-test-row {
+    padding-left: 16px;
+    /* Less indentation */
+  }
+
+  .sub-indicator-line,
+  .sub-test-row::before {
+    display: none;
+    /* Hide fancy indicators to save space/clutter */
+  }
+
+  /* Maybe add a left border instead for subdivisions */
+  .subdivisions-list {
+    padding-left: 8px;
+    border-left: 3px solid #e2e8f0;
+    margin-left: 8px;
+    background: transparent;
+    border-top: none;
+  }
+}
+
+/* Dark Mode overrides for new elements */
+body.dark-mode .test-container {
+  background: var(--input-bg);
+  border-color: var(--border);
+}
+
+body.dark-mode .test-row.main-test {
+  background: var(--input-bg);
+}
+
+body.dark-mode .subdivisions-list {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .test-grade,
+body.dark-mode .test-weight {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: var(--border);
+}
+
+body.dark-mode .sub-indicator-line,
+body.dark-mode .sub-test-row::before {
+  background: var(--border);
+}

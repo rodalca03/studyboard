@@ -253,7 +253,7 @@
           style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative; border-bottom: 1px solid rgba(0,0,0,0.06);">
           <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
           <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;"
-            title="Ver historial de cambios">v3.2.1</div>
+            title="Ver historial de cambios">v3.2.2</div>
         </div>
         <div class="modal-body">
           <div id="sync-code-content"></div>
@@ -2928,11 +2928,13 @@
 
 
     function renderTests() {
+      const testsList = document.getElementById('tests-list');
+      if (!testsList) return;
       testsList.innerHTML = '';
       if (!activeCard) return;
       activeCard._tests = activeCard._tests || [];
 
-      // Sort logic (keep existing)
+      // Ordenar pruebas: parciales/teoría arriba, prácticas abajo, por número
       const sortedTests = [...activeCard._tests].sort((a, b) => {
         const nameA = (a.nombre || '').toLowerCase();
         const nameB = (b.nombre || '').toLowerCase();
@@ -2945,7 +2947,7 @@
         return nameA.localeCompare(nameB);
       });
 
-      sortedTests.forEach((t, idx) => {
+      sortedTests.forEach((t) => {
         const originalIdx = activeCard._tests.indexOf(t);
         const container = document.createElement('div');
         container.className = 'test-container';
@@ -2958,7 +2960,6 @@
         // Calculate grade if subdivs
         let displayGrade = t.nota;
         if (hasSubdivs) {
-          // Re-calculate local grade for display
           let subSuma = 0;
           let subPond = 0;
           t.subdivisiones.forEach(s => {
@@ -2971,15 +2972,17 @@
 
         const mainRow = document.createElement('div');
         mainRow.className = 'test-row main-test';
+        // Updated innerHTML with cleaner structure
         mainRow.innerHTML = `
-            <input class="test-name" type="text" value="${escapeHtml(t.nombre)}" aria-label="Nombre prueba">
-            <label style="display:flex; align-items:center; gap:6px; font-size:14px; color:#475569;">
-                Nota: <input class="test-grade" type="text" value="${escapeHtml(String(displayGrade || ''))}" ${hasSubdivs ? 'disabled style="background:#f1f5f9; cursor:not-allowed;"' : ''} aria-label="Nota">
-            </label>
-            <label style="display:flex; align-items:center; gap:6px; font-size:14px; color:#475569;">
-                Ponderación: <input class="test-weight" type="text" value="${escapeHtml(String(t.ponderacion || ''))}" aria-label="Ponderación"><span style="margin-left: 4px; font-weight: 600;">%</span>
-            </label>
-            <div class="test-actions"><button class="btn btn-delete delete-test">✕</button></div>
+            <input class="test-name" type="text" value="${escapeHtml(t.nombre)}" placeholder="Nombre de la prueba" aria-label="Nombre prueba">
+            <div class="test-inputs-group">
+                <input class="test-grade" type="text" value="${escapeHtml(String(displayGrade || ''))}" ${hasSubdivs ? 'disabled' : ''} placeholder="Nota" aria-label="Nota">
+                <div class="weight-wrapper">
+                    <input class="test-weight" type="text" value="${escapeHtml(String(t.ponderacion || ''))}" placeholder="%" aria-label="Ponderación">
+                    <span class="percent-sign">%</span>
+                </div>
+            </div>
+            <button class="btn-delete delete-test" title="Eliminar">✕</button>
         `;
 
         // Bind events for Main Row
@@ -2994,7 +2997,6 @@
           gradeInput.addEventListener('input', (e) => {
             activeCard._tests[originalIdx].nota = e.target.value;
             guardar();
-            // Update modal grade header
             const modalGrade = document.getElementById('modal-grade');
             if (modalGrade) modalGrade.textContent = calcularNotaAsignatura(activeCard);
           });
@@ -3021,18 +3023,22 @@
 
         // Subdivisions Rows
         if (hasSubdivs) {
+          const subContainer = document.createElement('div');
+          subContainer.className = 'subdivisions-list';
           t.subdivisiones.forEach((sub, subIdx) => {
             const subRow = document.createElement('div');
             subRow.className = 'sub-test-row';
+            // Integrated view: No "↳", just structure
             subRow.innerHTML = `
-                    <span style="color:#cbd5e1;">↳</span>
-                    <input class="test-name" type="text" value="${escapeHtml(sub.nombre)}" placeholder="Parte">
-                    <label class="sub-label">
-                        Nota: <input class="test-grade" type="text" value="${escapeHtml(String(sub.nota || ''))}">
-                    </label>
-                    <label class="sub-label">
-                        <input class="test-weight" type="text" value="${escapeHtml(String(sub.ponderacion || ''))}"> %
-                    </label>
+                    <div class="sub-indicator-line"></div>
+                    <input class="test-name sub-name" type="text" value="${escapeHtml(sub.nombre)}" placeholder="Parte" aria-label="Nombre parte">
+                    <div class="test-inputs-group">
+                        <input class="test-grade sub-grade" type="text" value="${escapeHtml(String(sub.nota || ''))}" placeholder="Nota">
+                        <div class="weight-wrapper">
+                            <input class="test-weight sub-weight" type="text" value="${escapeHtml(String(sub.ponderacion || ''))}" placeholder="%">
+                            <span class="percent-sign">%</span>
+                        </div>
+                    </div>
                 `;
 
             // Bind Sub-events
@@ -3056,7 +3062,6 @@
               let outcome = '-';
               if (subPond > 0) outcome = (subSuma / subPond).toFixed(2);
 
-              // Find parent input
               mainRow.querySelector('.test-grade').value = outcome;
 
               guardar();
@@ -3067,7 +3072,7 @@
             const sWeight = subRow.querySelector('.test-weight');
             sWeight.addEventListener('input', (e) => {
               t.subdivisiones[subIdx].ponderacion = e.target.value;
-              // Update calculations similarly
+              // Update calculations
               let subSuma = 0;
               let subPond = 0;
               t.subdivisiones.forEach(s => {
@@ -3083,19 +3088,19 @@
               if (modalGrade) modalGrade.textContent = calcularNotaAsignatura(activeCard);
             });
 
-            container.appendChild(subRow);
+            subContainer.appendChild(subRow);
           });
+          container.appendChild(subContainer);
         }
 
         testsList.appendChild(container);
       });
 
       if (sortedTests.length === 0) {
-        testsList.innerHTML = '<div style="color:#475569">No hay pruebas. Pulsa "Añadir prueba" para crear una.</div>';
+        testsList.innerHTML = '<div style="color:#475569; padding: 10px;">No hay pruebas. Pulsa "Añadir prueba" para crear una.</div>';
       }
 
       actualizarNotasCards();
-      // actualizar nota en el modal también
       const modalGrade = document.getElementById('modal-grade');
       if (modalGrade) {
         modalGrade.textContent = calcularNotaAsignatura(activeCard);

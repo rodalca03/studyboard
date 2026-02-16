@@ -2,6 +2,11 @@
 
 Todos los cambios notables de este proyecto serán documentados en este archivo.
 
+## [v3.2.2] - 2026-02-16
+### Mejorado
+- **Rediseño Lista de Pruebas**: Integración visual de las subdivisiones dentro de la tarjeta del examen principal.
+- **Optimización Móvil**: Ajuste del layout de pruebas para que todos los campos (nombre, nota, peso) quepan en una sola línea en pantallas pequeñas.
+
 ## [v3.2.1] - 2026-02-16
 ### Añadido
 - **Paso de Notas en Wizard**: Añadido un paso final al asistente para introducir directamente las notas obtenidas (global o por partes).
