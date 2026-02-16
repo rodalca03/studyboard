@@ -4717,10 +4717,14 @@ body.glass-mode .wizard-select {
 .test-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 14px 16px 14px 16px;
+  /* Explicitly symmetric vertical padding */
   background: transparent;
   border-bottom: 1px solid transparent;
+  min-height: 56px;
+  /* Ensure consistent height */
 }
 
 .test-container:not(:has(.sub-test-row)) .test-row {
