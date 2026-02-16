@@ -4989,18 +4989,23 @@ body.glass-mode .wizard-select {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    line-height: 1.5;
+    /* Proper line height for mobile */
   }
 
   .sub-name {
     font-size: 12px;
     padding: 6px 4px;
     min-width: 50px;
+    line-height: 1.5;
   }
 
   .test-inputs-group {
     gap: 4px;
     flex-shrink: 0;
     /* Don't shrink inputs */
+    align-items: center;
+    /* Ensure vertical alignment */
   }
 
   /* Compact grade input */
@@ -5009,11 +5014,15 @@ body.glass-mode .wizard-select {
     padding: 6px 2px;
     font-size: 13px;
     text-align: center;
+    line-height: 1.5;
+    /* Match other inputs */
   }
 
   /* Compact weight wrapper */
   .weight-wrapper {
     gap: 2px;
+    align-items: center;
+    /* Vertical alignment */
   }
 
   .test-weight {
@@ -5021,10 +5030,14 @@ body.glass-mode .wizard-select {
     padding: 6px 2px;
     font-size: 13px;
     text-align: center;
+    line-height: 1.5;
+    /* Match other inputs */
   }
 
   .percent-sign {
     font-size: 12px;
+    line-height: 1.5;
+    /* Match inputs */
   }
 
   /* Smaller delete button */
