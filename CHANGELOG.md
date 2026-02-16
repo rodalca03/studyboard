@@ -2,6 +2,11 @@
 
 Todos los cambios notables de este proyecto serán documentados en este archivo.
 
+## [v3.2.4] - 2026-02-16
+### 🎨 Visual
+- **Fondo de Pruebas**: Ajustado el color de fondo de las tarjetas de prueba a un tono gris más visible (#f1f5f9) para mayor consistencia.
+- **Espaciado**: Aumentado el padding en el campo de ponderación para evitar definitivamente el solapamiento de texto.
+
 ## [v3.2.3] - 2026-02-16
 ### 🎨 Visual
 - **Consistencia Visual**: Unificado el color de fondo de las pruebas y sus subdivisiones para una mejor integración.
