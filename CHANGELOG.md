@@ -2,6 +2,11 @@
 
 Todos los cambios notables de este proyecto serán documentados en este archivo.
 
+## [v3.2.5] - 2026-02-16
+### Correcciones
+- **Scroll en Pruebas**: Corregido problema donde la lista de pruebas no permitía scroll cuando había muchos elementos.
+- **Formato Fijo**: Asegurado que las tarjetas de prueba mantengan un tamaño mínimo y no se colapsen.
+
 ## [v3.2.4] - 2026-02-16
 ### 🎨 Visual
 - **Fondo de Pruebas**: Ajustado el color de fondo de las tarjetas de prueba a un tono gris más visible (#f1f5f9) para mayor consistencia.

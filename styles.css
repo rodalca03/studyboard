@@ -4954,3 +4954,44 @@ body.dark-mode .sub-indicator-line,
 body.dark-mode .sub-test-row::before {
   background: var(--border);
 }
+
+/* -------------------------
+   SCROLL & LAYOUT FIXES
+   ------------------------- */
+.modal-body {
+  overflow-y: auto;
+  max-height: 75vh;
+  /* Ensure it doesn't exceed screen */
+  padding-bottom: 40px;
+}
+
+#tests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.test-container {
+  flex-shrink: 0;
+  /* Prevent shrinking in flex container */
+  min-height: 60px;
+  /* Ensure minimum height */
+  background: var(--card-bg);
+  /* Use card-bg/input-bg depending on mode */
+}
+
+/* Ensure inputs are visible */
+.test-row input {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Fix for dark mode container background */
+.test-container {
+  background: #f1f5f9;
+}
+
+body.dark-mode .test-container {
+  background: var(--input-bg);
+}
