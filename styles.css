@@ -4949,10 +4949,13 @@ body.glass-mode .wizard-select {
 @media (max-width: 600px) {
 
   .test-row {
-    padding: 8px;
+    padding: 10px 8px 10px 8px;
+    /* Symmetric vertical padding */
     gap: 4px;
     flex-wrap: nowrap;
     /* Force single line */
+    min-height: 48px;
+    /* Consistent height on mobile */
   }
 
   .sub-test-row {
