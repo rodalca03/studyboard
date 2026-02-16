@@ -253,7 +253,7 @@
           style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative; border-bottom: 1px solid rgba(0,0,0,0.06);">
           <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
           <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;"
-            title="Ver historial de cambios">v3.2.8</div>
+            title="Ver historial de cambios">v3.2.9</div>
         </div>
         <div class="modal-body">
           <div id="sync-code-content"></div>
@@ -4485,6 +4485,71 @@
 
       // ============ GENERACIÓN DE RECOMENDACIÓN ============
 
+      // NUEVO: Detectar si todas las asignaturas están completadas al 100%
+      const allCompleted = withData.every(s => s.evaluatedPercent >= 100);
+
+      if (allCompleted && withData.length > 0) {
+        // RESUMEN DEL CUATRIMESTRE COMPLETADO
+        const passed = withData.filter(s => s.currentGrade >= 5);
+        const failed = withData.filter(s => s.currentGrade < 5);
+        const excellent = withData.filter(s => s.currentGrade >= 9);
+        const notable = withData.filter(s => s.currentGrade >= 7 && s.currentGrade < 9);
+        const bien = withData.filter(s => s.currentGrade >= 6 && s.currentGrade < 7);
+        const aprobado = withData.filter(s => s.currentGrade >= 5 && s.currentGrade < 6);
+
+        const avgGrade = withData.reduce((sum, s) => sum + s.currentGrade, 0) / withData.length;
+        const totalSubjects = withData.length;
+
+        let summaryEmoji = '';
+        let summaryText = '';
+
+        if (failed.length === 0) {
+          // TODAS APROBADAS
+          if (excellent.length === totalSubjects) {
+            summaryEmoji = '🏆';
+            summaryText = `¡MATRÍCULA DE HONOR! ${totalSubjects} sobresaliente${totalSubjects > 1 ? 's' : ''}. Promedio: ${avgGrade.toFixed(2)}. ¡Rendimiento excepcional!`;
+          } else if (excellent.length >= totalSubjects * 0.7) {
+            summaryEmoji = '🌟';
+            summaryText = `¡Cuatrimestre brillante! ${excellent.length} sobresaliente${excellent.length > 1 ? 's' : ''}, ${notable.length} notable${notable.length > 1 ? 's' : ''}. Promedio: ${avgGrade.toFixed(2)}. ¡Excelente trabajo!`;
+          } else if (avgGrade >= 8) {
+            summaryEmoji = '🎓';
+            summaryText = `¡Cuatrimestre excelente! Todas aprobadas con promedio de ${avgGrade.toFixed(2)}. ${excellent.length} sobresaliente${excellent.length > 1 ? 's' : ''}, ${notable.length} notable${notable.length > 1 ? 's' : ''}. ¡Felicidades!`;
+          } else if (avgGrade >= 7) {
+            summaryEmoji = '💪';
+            summaryText = `¡Buen cuatrimestre! ${totalSubjects} asignatura${totalSubjects > 1 ? 's' : ''} aprobada${totalSubjects > 1 ? 's' : ''} con promedio de ${avgGrade.toFixed(2)}. Notable rendimiento general.`;
+          } else if (avgGrade >= 6) {
+            summaryEmoji = '✅';
+            summaryText = `Cuatrimestre completado: ${totalSubjects} aprobada${totalSubjects > 1 ? 's' : ''}. Promedio: ${avgGrade.toFixed(2)}. ¡Objetivo cumplido!`;
+          } else {
+            summaryEmoji = '👍';
+            summaryText = `Cuatrimestre superado: ${totalSubjects} aprobada${totalSubjects > 1 ? 's' : ''} con promedio de ${avgGrade.toFixed(2)}. ¡Sigue así!`;
+          }
+        } else if (failed.length === totalSubjects) {
+          // TODAS SUSPENDIDAS
+          summaryEmoji = '📚';
+          summaryText = `Cuatrimestre difícil: ${failed.length} asignatura${failed.length > 1 ? 's' : ''} pendiente${failed.length > 1 ? 's' : ''}. Promedio: ${avgGrade.toFixed(2)}. Analiza qué mejorar para la próxima convocatoria.`;
+        } else {
+          // MIXTO
+          const passRate = (passed.length / totalSubjects * 100).toFixed(0);
+
+          if (passed.length >= failed.length * 2) {
+            summaryEmoji = '⚡';
+            summaryText = `Cuatrimestre con ${passed.length} aprobada${passed.length > 1 ? 's' : ''} y ${failed.length} pendiente${failed.length > 1 ? 's' : ''} (${passRate}% superado). Promedio: ${avgGrade.toFixed(2)}. ¡Recupera las pendientes!`;
+          } else if (passed.length > failed.length) {
+            summaryEmoji = '🔄';
+            summaryText = `Balance positivo: ${passed.length} aprobada${passed.length > 1 ? 's' : ''}, ${failed.length} suspendida${failed.length > 1 ? 's' : ''}. Promedio: ${avgGrade.toFixed(2)}. Enfócate en recuperar.`;
+          } else {
+            summaryEmoji = '⚠️';
+            summaryText = `Cuatrimestre complicado: ${passed.length} aprobada${passed.length > 1 ? 's' : ''}, ${failed.length} suspendida${failed.length > 1 ? 's' : ''}. Promedio: ${avgGrade.toFixed(2)}. Revisa tu estrategia de estudio.`;
+          }
+        }
+
+        aiText.textContent = `${summaryEmoji} ${summaryText}`;
+        aiDiv.style.display = 'flex';
+        return;
+      }
+
+      // LÓGICA ORIGINAL: Recomendaciones durante el cuatrimestre
       // Identificar casos críticos
       const criticalRisk = withData.filter(s => s.predictedGrade < 4.5);
       const atRisk = withData.filter(s => s.predictedGrade >= 4.5 && s.predictedGrade < 5);

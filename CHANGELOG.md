@@ -3,6 +3,25 @@
 Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 
+
+## [v3.2.9] - 2026-02-16
+### Nuevas Funcionalidades
+- **Resumen Inteligente de Cuatrimestre**: Cuando todas las asignaturas están completadas al 100%, la IA genera un resumen personalizado del cuatrimestre.
+- **Análisis de Rendimiento Completo**: Mensajes específicos según el resultado (matrícula de honor, todas aprobadas, mixto, etc.).
+- **Estadísticas Detalladas**: Muestra promedio general, asignaturas aprobadas/suspendidas, y distribución de calificaciones.
+
+### Mejoras
+- **Mensajes Personalizados**: 
+  - 🏆 Matrícula de honor (todas sobresalientes)
+  - 🌟 Cuatrimestre brillante (≥70% sobresalientes)
+  - 🎓 Excelente (todas aprobadas, promedio ≥8)
+  - 💪 Buen rendimiento (todas aprobadas, promedio ≥7)
+  - ✅ Objetivo cumplido (todas aprobadas, promedio ≥6)
+  - ⚡ Balance positivo (más aprobadas que suspendidas)
+  - 🔄 Mixto (aprobadas y suspendidas equilibradas)
+  - ⚠️ Complicado (más suspendidas que aprobadas)
+  - 📚 Difícil (todas suspendidas)
+
 ## [v3.2.8] - 2026-02-16
 ### Correcciones
 - **Modal de Pruebas**: Corregido error crítico que impedía abrir el modal de pruebas evaluables en asignaturas con subdivisiones.
