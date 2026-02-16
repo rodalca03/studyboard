@@ -4700,7 +4700,7 @@ body.glass-mode .wizard-select {
    ------------------------- */
 
 .test-container {
-  background: var(--card-bg);
+  background: rgba(0, 0, 0, 0.03);
   border: 1px solid var(--border);
   border-radius: 12px;
   margin-bottom: 12px;
@@ -4727,7 +4727,7 @@ body.glass-mode .wizard-select {
 }
 
 .test-row.main-test {
-  background: var(--card-bg);
+  background: transparent;
   position: relative;
   z-index: 2;
 }
@@ -4777,7 +4777,7 @@ body.glass-mode .wizard-select {
 
 .test-weight {
   width: 100%;
-  padding: 8px 24px 8px 8px;
+  padding: 8px 32px 8px 8px;
   /* Room for % */
   text-align: right;
   border: 1px solid var(--border);
@@ -4817,7 +4817,7 @@ body.glass-mode .wizard-select {
 
 /* Subdivisions */
 .subdivisions-list {
-  background: rgba(0, 0, 0, 0.02);
+  background: transparent;
   border-top: 1px solid var(--border);
 }
 
@@ -4935,11 +4935,11 @@ body.dark-mode .test-container {
 }
 
 body.dark-mode .test-row.main-test {
-  background: var(--input-bg);
+  background: transparent;
 }
 
 body.dark-mode .subdivisions-list {
-  background: rgba(0, 0, 0, 0.2);
+  background: transparent;
 }
 
 body.dark-mode .test-grade,

@@ -2,6 +2,11 @@
 
 Todos los cambios notables de este proyecto serán documentados en este archivo.
 
+## [v3.2.3] - 2026-02-16
+### 🎨 Visual
+- **Consistencia Visual**: Unificado el color de fondo de las pruebas y sus subdivisiones para una mejor integración.
+- **Correcciones UI**: Solucionado el solapamiento del símbolo "%" en el campo de ponderación.
+
 ## [v3.2.2] - 2026-02-16
 ### Mejorado
 - **Rediseño Lista de Pruebas**: Integración visual de las subdivisiones dentro de la tarjeta del examen principal.
