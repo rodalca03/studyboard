@@ -4486,7 +4486,8 @@
       // ============ GENERACIÓN DE RECOMENDACIÓN ============
 
       // NUEVO: Detectar si todas las asignaturas están completadas al 100%
-      const allCompleted = withData.every(s => s.evaluatedPercent >= 100);
+      // Tolerancia de ±3% para manejar errores de precisión de punto flotante
+      const allCompleted = withData.every(s => s.evaluatedPercent >= 97 && s.evaluatedPercent <= 103);
 
       if (allCompleted && withData.length > 0) {
         // RESUMEN DEL CUATRIMESTRE COMPLETADO

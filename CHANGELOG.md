@@ -4,11 +4,13 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 
 
+
 ## [v3.2.9] - 2026-02-16
 ### Nuevas Funcionalidades
 - **Resumen Inteligente de Cuatrimestre**: Cuando todas las asignaturas están completadas al 100%, la IA genera un resumen personalizado del cuatrimestre.
 - **Análisis de Rendimiento Completo**: Mensajes específicos según el resultado (matrícula de honor, todas aprobadas, mixto, etc.).
 - **Estadísticas Detalladas**: Muestra promedio general, asignaturas aprobadas/suspendidas, y distribución de calificaciones.
+- **Tolerancia de Precisión**: Detección de completado con margen de ±3% (97%-103%) para manejar errores de punto flotante.
 
 ### Mejoras
 - **Mensajes Personalizados**: 
