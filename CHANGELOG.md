@@ -5,6 +5,20 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 
 
+
+## [v3.3.0] - 2026-02-16
+### Mejoras de UI Móvil
+- **Optimización de Tarjetas de Prueba**: Todos los campos (nombre, nota, ponderación) ahora caben en una sola línea en móvil.
+- **Truncamiento Inteligente**: Nombres largos se truncan con ellipsis (...) para evitar saltos de línea.
+- **Espaciado Compacto**: Reducidos gaps y paddings en vista móvil para maximizar espacio.
+- **Tamaños Optimizados**:
+  - Nombre de prueba: max 140px con truncamiento
+  - Nota: 42px (compacto)
+  - Ponderación: 38px (compacto)
+  - Botón eliminar: 26px
+  - Font-size reducido a 13px para inputs
+- **Mejor Legibilidad**: Inputs centrados y alineados perfectamente en una línea horizontal.
+
 ## [v3.2.9] - 2026-02-16
 ### Nuevas Funcionalidades
 - **Resumen Inteligente de Cuatrimestre**: Cuando todas las asignaturas están completadas al 100%, la IA genera un resumen personalizado del cuatrimestre.

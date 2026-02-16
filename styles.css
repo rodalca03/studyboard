@@ -4937,13 +4937,15 @@ body.glass-mode .wizard-select {
 @media (max-width: 600px) {
 
   .test-row {
-    padding: 10px;
-    gap: 8px;
+    padding: 8px;
+    gap: 4px;
+    flex-wrap: nowrap;
+    /* Force single line */
   }
 
   .sub-test-row {
-    padding: 8px 10px 8px 0;
-    gap: 8px;
+    padding: 8px 8px 8px 0;
+    gap: 4px;
   }
 
   .sub-indicator-line {
@@ -4961,34 +4963,63 @@ body.glass-mode .wizard-select {
     padding-left: 36px;
   }
 
-  .test-name,
+  /* Optimize test name for mobile - allow truncation */
+  .test-name {
+    font-size: 13px;
+    padding: 6px 4px;
+    min-width: 60px;
+    max-width: 140px;
+    /* Limit width to prevent overflow */
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .sub-name {
-    font-size: 14px;
-    padding: 6px;
-    min-width: 80px;
+    font-size: 12px;
+    padding: 6px 4px;
+    min-width: 50px;
   }
 
   .test-inputs-group {
-    gap: 6px;
+    gap: 4px;
+    flex-shrink: 0;
+    /* Don't shrink inputs */
   }
 
+  /* Compact grade input */
   .test-grade {
-    width: 48px;
-    padding: 6px 4px;
-    font-size: 14px;
+    width: 42px;
+    padding: 6px 2px;
+    font-size: 13px;
+    text-align: center;
   }
 
-  /* End Mobile Optimization */
+  /* Compact weight wrapper */
+  .weight-wrapper {
+    gap: 2px;
+  }
 
-  /* Smaller btn */
+  .test-weight {
+    width: 38px;
+    padding: 6px 2px;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .percent-sign {
+    font-size: 12px;
+  }
+
+  /* Smaller delete button */
   .btn-delete {
-    width: 28px;
-    height: 28px;
-    font-size: 14px;
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+    flex-shrink: 0;
   }
 }
-
-/* End Mobile Optimization */
 
 /* Dark Mode overrides for new elements */
 body.dark-mode .test-container {
