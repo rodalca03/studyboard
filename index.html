@@ -253,7 +253,7 @@
           style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative; border-bottom: 1px solid rgba(0,0,0,0.06);">
           <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
           <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;"
-            title="Ver historial de cambios">v3.1.0</div>
+            title="Ver historial de cambios">v3.2.0</div>
         </div>
         <div class="modal-body">
           <div id="sync-code-content"></div>
@@ -1554,11 +1554,43 @@
       let suma = 0;
       let totalPonderacion = 0;
       card._tests.forEach(t => {
-        const nota = parseNumber(t.nota);
+        let notaTest = 0;
+
+        // Ensure ID
+        if (!t.id) t.id = Date.now() + Math.random();
+
+        if (t.subdivisiones && t.subdivisiones.length > 0) {
+          let subSuma = 0;
+          let subPonderacion = 0;
+          t.subdivisiones.forEach(sub => {
+            const subNota = parseNumber(sub.nota);
+            const subWeight = parseNumber(sub.ponderacion);
+            subSuma += subNota * subWeight;
+            subPonderacion += subWeight;
+          });
+          if (subPonderacion > 0) {
+            notaTest = subSuma / subPonderacion;
+          }
+          t.nota = notaTest.toFixed(2);
+        } else {
+          notaTest = parseNumber(t.nota);
+        }
+
         const ponderacion = parseNumber(t.ponderacion);
-        suma += nota * ponderacion;
-        totalPonderacion += ponderacion;
+
+        // Check if this test is substituted by another active test
+        const isSubstituted = card._tests.some(other =>
+          other.sustituye && other.sustituye.includes(t.id) &&
+          // Only if the other test has a valid grade (or at least entered)
+          (parseNumber(other.nota) >= 0 || (other.subdivisiones && other.subdivisiones.length > 0))
+        );
+
+        if (!isSubstituted) {
+          suma += notaTest * ponderacion;
+          totalPonderacion += ponderacion;
+        }
       });
+
       if (totalPonderacion === 0) return '-';
       const notaFinal = suma / 100;
       return notaFinal.toFixed(2);
@@ -2296,6 +2328,123 @@
     const duplicateCancel = document.getElementById('duplicate-cancel');
     const duplicateConfirm = document.getElementById('duplicate-confirm');
 
+
+    /* -------------------------
+       Wizard Modal Integration
+       ------------------------- */
+    const wizardHtml = `
+  <div class="modal-overlay" id="wizard-modal" style="display:none; z-index: 10000;">
+    <div class="modal wizard-modal">
+      <div class="modal-header wizard-header">
+        <h2 class="modal-title" id="wizard-title">Añadir Prueba</h2>
+        <button class="close-modal-btn" id="wizard-close">✕</button>
+      </div>
+      <div class="modal-body wizard-body">
+        <!-- Progress Bar -->
+        <div class="wizard-progress">
+          <div class="wizard-progress-bar" id="wizard-progress-bar" style="width: 20%;"></div>
+        </div>
+
+        <!-- Step 1: Tipo de prueba -->
+        <div class="wizard-step active" data-step="1">
+          <h3 class="step-title">¿Qué tipo de prueba vas a añadir?</h3>
+          <div class="step-content centered">
+            <button class="wizard-btn-large" data-type="Parcial">
+              <span class="icon">📝</span>
+              <span class="text">Parcial</span>
+            </button>
+            <button class="wizard-btn-large" data-type="Convocatoria">
+              <span class="icon">🎓</span>
+              <span class="text">Convocatoria</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Nombre y Categoría -->
+        <div class="wizard-step" data-step="2">
+          <h3 class="step-title">Datos de la prueba</h3>
+          <div class="step-content">
+            <label class="wizard-label">¿Cuál es el nombre de esta prueba?</label>
+            <input type="text" class="wizard-input" id="wizard-name" placeholder="Ej: Examen Tema 1">
+            
+            <label class="wizard-label">Categoría</label>
+            <select class="wizard-select" id="wizard-category">
+              <option value="Teoria">Teoría</option>
+              <option value="Practica">Práctica</option>
+            </select>
+          </div>
+          <div class="step-actions">
+            <!-- Back button handled globally or per step if needed, but Step 1 is special -->
+            <button class="btn btn-primary wizard-next">Siguiente</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Porcentaje y Sustitución -->
+        <div class="wizard-step" data-step="3">
+          <h3 class="step-title">Ponderación y Sustituciones</h3>
+          <div class="step-content">
+            <label class="wizard-label">¿Cuánto porcentaje de la nota final supone?</label>
+            <div class="input-with-suffix">
+              <input type="number" class="wizard-input" id="wizard-weight" min="0" max="100" placeholder="0">
+              <span class="suffix">%</span>
+            </div>
+
+            <div class="substitution-section">
+              <button class="wizard-toggle-btn" id="wizard-substitution-toggle">
+                ¿Esta prueba sustituye nota de otras pruebas?
+              </button>
+              <div class="substitution-list" id="wizard-substitution-list" style="display:none;">
+                <!-- List generated dynamically -->
+                <p class="empty-msg">No hay otras pruebas disponibles.</p>
+              </div>
+            </div>
+          </div>
+          <div class="step-actions">
+            <button class="btn btn-ghost wizard-prev">Atrás</button>
+            <button class="btn btn-primary wizard-next">Siguiente</button>
+          </div>
+        </div>
+
+        <!-- Step 4: Subdivisión Check -->
+        <div class="wizard-step" data-step="4">
+            <h3 class="step-title">Subdivisiones</h3>
+            <div class="step-content centered-text">
+                <p class="wizard-question">¿Esta prueba evaluable se subdivide en más notas?</p>
+                <div class="binary-choice">
+                    <button class="wizard-btn-binary" id="wizard-subdiv-no">No</button>
+                    <button class="wizard-btn-binary" id="wizard-subdiv-yes">Sí</button>
+                </div>
+            </div>
+            <div class="step-actions">
+                <button class="btn btn-ghost wizard-prev">Atrás</button>
+            </div>
+        </div>
+
+        <!-- Step 5: Configurar Subdivisiones -->
+        <div class="wizard-step" data-step="5">
+          <h3 class="step-title">Configurar Subdivisiones</h3>
+          <div class="step-content">
+             <div class="subdivision-header">
+                <p>Añade las partes en las que se divide (suma total: <span id="subdiv-total">0</span>%)</p>
+                <button class="btn-small-add" id="add-subdiv-btn">+ Añadir parte</button>
+             </div>
+             <div class="subdivisions-container" id="subdivisions-container">
+                <!-- Dynamic rows -->
+             </div>
+          </div>
+          <div class="step-actions">
+            <button class="btn btn-ghost wizard-prev">Atrás</button>
+            <button class="btn btn-primary" id="wizard-finish">Finalizar</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', wizardHtml);
+
+
     let _editingSemester = null;
     let _deletingSemesterId = null;
     let _duplicatingSemester = null;
@@ -2452,102 +2601,418 @@
       }
     });
 
+    /* -------------------------
+       WIZARD LOGIC
+       ------------------------- */
+    const wizardModal = document.getElementById('wizard-modal');
+    const wizardClose = document.getElementById('wizard-close');
+    const wizardProgressBar = document.getElementById('wizard-progress-bar');
+    let currentWizardStep = 1;
+    let wizardData = {};
+
     addTestBtn.addEventListener('click', () => {
       if (!activeCard) return;
-      activeCard._tests.push({ nombre: 'Nueva prueba', nota: '' });
+      openWizard();
+    });
+
+    wizardClose.addEventListener('click', closeWizard);
+
+    function openWizard() {
+      if (!activeCard) return;
+      wizardData = {
+        id: Date.now(),
+        nombre: '',
+        tipo: '',
+        categoria: 'Teoria',
+        ponderacion: 0,
+        sustituye: [],
+        subdivisiones: []
+      };
+      currentWizardStep = 1;
+      resetWizardUI();
+      updateWizardStep();
+      wizardModal.style.display = 'flex';
+      setTimeout(() => wizardModal.classList.add('show'), 10);
+    }
+
+    function closeWizard() {
+      wizardModal.classList.remove('show');
+      setTimeout(() => {
+        wizardModal.style.display = 'none';
+      }, 300);
+    }
+
+    function resetWizardUI() {
+      // Clear inputs
+      document.getElementById('wizard-name').value = '';
+      document.getElementById('wizard-category').value = 'Teoria';
+      document.getElementById('wizard-weight').value = '';
+      document.getElementById('wizard-substitution-list').innerHTML = '';
+      document.getElementById('wizard-substitution-list').style.display = 'none';
+      document.getElementById('wizard-substitution-toggle').classList.remove('active');
+      document.getElementById('subdivisions-container').innerHTML = '';
+      document.getElementById('subdiv-total').textContent = '0';
+    }
+
+    function updateWizardStep() {
+      document.querySelectorAll('.wizard-step').forEach(step => {
+        step.classList.remove('active');
+        if (parseInt(step.dataset.step) === currentWizardStep) {
+          step.classList.add('active');
+        }
+      });
+
+      // Update progress bar
+      const progress = (currentWizardStep / 5) * 100;
+      wizardProgressBar.style.width = `${progress}%`;
+
+      // Special render for step 3 (Loading substitutions)
+      if (currentWizardStep === 3) {
+        renderSubstitutionList();
+      }
+    }
+
+    function renderSubstitutionList() {
+      const list = document.getElementById('wizard-substitution-list');
+      list.innerHTML = '';
+
+      // Filter out this test (if editing, but we are adding new so no need) 
+      // and getting existing tests
+      const existingTests = activeCard._tests || [];
+
+      if (existingTests.length === 0) {
+        list.innerHTML = '<p class="empty-msg">No hay otras pruebas disponibles.</p>';
+        return;
+      }
+
+      existingTests.forEach(test => {
+        const item = document.createElement('div');
+        item.className = 'sub-item';
+        if (wizardData.sustituye.includes(test.id)) {
+          item.classList.add('selected');
+        }
+        item.innerHTML = `
+                <span>${escapeHtml(test.nombre)} (${test.ponderacion}%)</span>
+                ${wizardData.sustituye.includes(test.id) ? '<span>✓</span>' : ''}
+            `;
+        item.onclick = () => {
+          const id = test.id || (test.id = Date.now() + Math.random()); // Ensure ID
+          if (wizardData.sustituye.includes(id)) {
+            wizardData.sustituye = wizardData.sustituye.filter(i => i !== id);
+            item.classList.remove('selected');
+          } else {
+            wizardData.sustituye.push(id);
+            item.classList.add('selected');
+          }
+          // Save IDs back to test object if generated lazily
+          if (!test.id) guardar();
+          renderSubstitutionList();
+        };
+        list.appendChild(item);
+      });
+    }
+
+    // Step 1 Handlers
+    document.querySelectorAll('.wizard-btn-large').forEach(btn => {
+      btn.addEventListener('click', () => {
+        wizardData.tipo = btn.dataset.type;
+        currentWizardStep = 2;
+        updateWizardStep();
+      });
+    });
+
+    // Navigation Handlers
+    document.querySelectorAll('.wizard-next').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Validation
+        if (currentWizardStep === 2) {
+          const name = document.getElementById('wizard-name').value.trim();
+          const cat = document.getElementById('wizard-category').value;
+          if (!name) { alert('Introduce un nombre'); return; }
+          wizardData.nombre = name;
+          wizardData.categoria = cat;
+        }
+        if (currentWizardStep === 3) {
+          const w = document.getElementById('wizard-weight').value;
+          // Allow 0? Assume yes.
+          wizardData.ponderacion = w;
+        }
+
+        currentWizardStep++;
+        updateWizardStep();
+      });
+    });
+
+    document.querySelectorAll('.wizard-prev').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentWizardStep--;
+        updateWizardStep();
+      });
+    });
+
+    // Step 3 Substitution Toggle
+    document.getElementById('wizard-substitution-toggle').addEventListener('click', (e) => {
+      e.target.classList.toggle('active');
+      const list = document.getElementById('wizard-substitution-list');
+      list.style.display = list.style.display === 'none' ? 'block' : 'none';
+      if (list.style.display === 'block') renderSubstitutionList();
+    });
+
+    // Step 4 Binary Choice
+    document.getElementById('wizard-subdiv-no').addEventListener('click', () => {
+      // Finish without subdivisions
+      finalizeWizard();
+    });
+
+    document.getElementById('wizard-subdiv-yes').addEventListener('click', () => {
+      currentWizardStep = 5;
+      updateWizardStep();
+    });
+
+    // Step 5 Subdivisions Logic
+    const subdivContainer = document.getElementById('subdivisions-container');
+
+    document.getElementById('add-subdiv-btn').addEventListener('click', () => {
+      addSubdivisionRow();
+    });
+
+    function addSubdivisionRow(data = { nombre: '', ponderacion: '', nota: '' }) {
+      const div = document.createElement('div');
+      div.className = 'subdiv-row';
+      div.innerHTML = `
+            <input type="text" class="subdiv-name" placeholder="Nombre (ej: Tema 1)" value="${escapeHtml(data.nombre)}">
+            <input type="number" class="subdiv-weight" placeholder="%" value="${data.ponderacion}">
+            <button class="btn-remove-sub">✕</button>
+        `;
+
+      div.querySelector('.btn-remove-sub').addEventListener('click', () => {
+        div.remove();
+        updateSubdivTotal();
+      });
+
+      div.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', updateSubdivTotal);
+      });
+
+      subdivContainer.appendChild(div);
+    }
+
+    function updateSubdivTotal() {
+      let total = 0;
+      document.querySelectorAll('.subdiv-row .subdiv-weight').forEach(inp => {
+        total += parseNumber(inp.value);
+      });
+      document.getElementById('subdiv-total').textContent = total;
+      return total;
+    }
+
+    document.getElementById('wizard-finish').addEventListener('click', () => {
+      // Collect subdivisions
+      const rows = document.querySelectorAll('.subdiv-row');
+      const subs = [];
+      let valid = true;
+      rows.forEach(row => {
+        const name = row.querySelector('.subdiv-name').value.trim();
+        const weight = row.querySelector('.subdiv-weight').value;
+        if (!name) valid = false;
+        subs.push({
+          nombre: name,
+          ponderacion: weight,
+          nota: '' // Init empty
+        });
+      });
+
+      if (!valid) {
+        alert('Por favor, completa los nombres de todas las subdivisiones.');
+        return;
+      }
+
+      wizardData.subdivisiones = subs;
+      finalizeWizard();
+    });
+
+    function finalizeWizard() {
+      // Add to card
+      if (!activeCard._tests) activeCard._tests = [];
+
+      // Ensure ID is set
+      if (!wizardData.id) wizardData.id = Date.now();
+
+      activeCard._tests.push(wizardData);
+
       renderTests();
       guardar();
-    });
+      closeWizard();
+    }
+
 
     function renderTests() {
       testsList.innerHTML = '';
       if (!activeCard) return;
       activeCard._tests = activeCard._tests || [];
 
-      // Ordenar pruebas: parciales/teoría arriba, prácticas abajo, por número
+      // Sort logic (keep existing)
       const sortedTests = [...activeCard._tests].sort((a, b) => {
         const nameA = (a.nombre || '').toLowerCase();
         const nameB = (b.nombre || '').toLowerCase();
-
-        // Detectar tipo (práctica vs parcial/teoría)
         const isPracticaA = nameA.includes('práctica') || nameA.includes('practica');
         const isPracticaB = nameB.includes('práctica') || nameB.includes('practica');
-
-        // Primero ordenar por tipo: parciales/teoría (false) antes que prácticas (true)
-        if (isPracticaA !== isPracticaB) {
-          return isPracticaA ? 1 : -1;
-        }
-
-        // Extraer número del nombre (buscar primer número)
+        if (isPracticaA !== isPracticaB) return isPracticaA ? 1 : -1;
         const numA = parseInt(nameA.match(/\d+/)?.[0] || '999');
         const numB = parseInt(nameB.match(/\d+/)?.[0] || '999');
-
-        // Ordenar por número
-        if (numA !== numB) {
-          return numA - numB;
-        }
-
-        // Si tienen el mismo número, ordenar alfabéticamente
+        if (numA !== numB) return numA - numB;
         return nameA.localeCompare(nameB);
       });
 
       sortedTests.forEach((t, idx) => {
-        // Encontrar índice original para mantener referencias correctas
         const originalIdx = activeCard._tests.indexOf(t);
-        const row = document.createElement('div');
-        row.className = 'test-row';
-        row.innerHTML = `
-      <input class="test-name" type="text" value="${escapeHtml(t.nombre)}" aria-label="Nombre prueba ${idx + 1}">
-      <label style="display:flex; align-items:center; gap:6px; font-size:14px; color:#475569;">
-        Nota: <input class="test-grade" type="text" value="${escapeHtml(String(t.nota || ''))}" aria-label="Nota prueba ${idx + 1}">
-      </label>
-      <label style="display:flex; align-items:center; gap:6px; font-size:14px; color:#475569;">
-        Ponderación: <input class="test-weight" type="text" value="${escapeHtml(String(t.ponderacion || ''))}" aria-label="Ponderación prueba ${idx + 1}"><span style="margin-left: 4px; font-weight: 600;">%</span>
-      </label>
-      <div class="test-actions"><button class="btn btn-delete delete-test">Eliminar</button></div>
-    `;
-        const nameInput = row.querySelector('.test-name');
-        const gradeInput = row.querySelector('.test-grade');
-        const weightInput = row.querySelector('.test-weight');
-        const delBtn = row.querySelector('.delete-test');
+        const container = document.createElement('div');
+        container.className = 'test-container';
 
+        const hasSubdivs = t.subdivisiones && t.subdivisiones.length > 0;
+
+        // Ensure ID
+        if (!t.id) t.id = Date.now() + Math.random();
+
+        // Calculate grade if subdivs
+        let displayGrade = t.nota;
+        if (hasSubdivs) {
+          // Re-calculate local grade for display
+          let subSuma = 0;
+          let subPond = 0;
+          t.subdivisiones.forEach(s => {
+            subSuma += parseNumber(s.nota) * parseNumber(s.ponderacion);
+            subPond += parseNumber(s.ponderacion);
+          });
+          if (subPond > 0) displayGrade = (subSuma / subPond).toFixed(2);
+          else displayGrade = '-';
+        }
+
+        const mainRow = document.createElement('div');
+        mainRow.className = 'test-row main-test';
+        mainRow.innerHTML = `
+            <input class="test-name" type="text" value="${escapeHtml(t.nombre)}" aria-label="Nombre prueba">
+            <label style="display:flex; align-items:center; gap:6px; font-size:14px; color:#475569;">
+                Nota: <input class="test-grade" type="text" value="${escapeHtml(String(displayGrade || ''))}" ${hasSubdivs ? 'disabled style="background:#f1f5f9; cursor:not-allowed;"' : ''} aria-label="Nota">
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; font-size:14px; color:#475569;">
+                Ponderación: <input class="test-weight" type="text" value="${escapeHtml(String(t.ponderacion || ''))}" aria-label="Ponderación"><span style="margin-left: 4px; font-weight: 600;">%</span>
+            </label>
+            <div class="test-actions"><button class="btn btn-delete delete-test">✕</button></div>
+        `;
+
+        // Bind events for Main Row
+        const nameInput = mainRow.querySelector('.test-name');
         nameInput.addEventListener('input', (e) => {
           activeCard._tests[originalIdx].nombre = e.target.value;
           guardar();
         });
 
-        // Re-renderizar solo cuando termine de editar para aplicar ordenamiento
-        nameInput.addEventListener('blur', () => {
-          renderTests();
-        });
+        if (!hasSubdivs) {
+          const gradeInput = mainRow.querySelector('.test-grade');
+          gradeInput.addEventListener('input', (e) => {
+            activeCard._tests[originalIdx].nota = e.target.value;
+            guardar();
+            // Update modal grade header
+            const modalGrade = document.getElementById('modal-grade');
+            if (modalGrade) modalGrade.textContent = calcularNotaAsignatura(activeCard);
+          });
+        }
 
-        nameInput.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            e.target.blur();
-          }
-        });
-
-        gradeInput.addEventListener('input', (e) => {
-          activeCard._tests[originalIdx].nota = e.target.value;
-          guardar();
-        });
+        const weightInput = mainRow.querySelector('.test-weight');
         weightInput.addEventListener('input', (e) => {
           activeCard._tests[originalIdx].ponderacion = e.target.value;
           guardar();
+          const modalGrade = document.getElementById('modal-grade');
+          if (modalGrade) modalGrade.textContent = calcularNotaAsignatura(activeCard);
         });
+
+        const delBtn = mainRow.querySelector('.delete-test');
         delBtn.addEventListener('click', () => {
-          if (confirm('¿Estás seguro de que deseas eliminar esta prueba evaluable?')) {
+          if (confirm('¿Eliminar prueba?')) {
             activeCard._tests.splice(originalIdx, 1);
             renderTests();
             guardar();
           }
         });
 
-        testsList.appendChild(row);
+        container.appendChild(mainRow);
+
+        // Subdivisions Rows
+        if (hasSubdivs) {
+          t.subdivisiones.forEach((sub, subIdx) => {
+            const subRow = document.createElement('div');
+            subRow.className = 'sub-test-row';
+            subRow.innerHTML = `
+                    <span style="color:#cbd5e1;">↳</span>
+                    <input class="test-name" type="text" value="${escapeHtml(sub.nombre)}" placeholder="Parte">
+                    <label class="sub-label">
+                        Nota: <input class="test-grade" type="text" value="${escapeHtml(String(sub.nota || ''))}">
+                    </label>
+                    <label class="sub-label">
+                        <input class="test-weight" type="text" value="${escapeHtml(String(sub.ponderacion || ''))}"> %
+                    </label>
+                `;
+
+            // Bind Sub-events
+            const sName = subRow.querySelector('.test-name');
+            sName.addEventListener('input', (e) => {
+              t.subdivisiones[subIdx].nombre = e.target.value;
+              guardar();
+            });
+
+            const sGrade = subRow.querySelector('.test-grade');
+            sGrade.addEventListener('input', (e) => {
+              t.subdivisiones[subIdx].nota = e.target.value;
+
+              // Re-calculate parent grade locally
+              let subSuma = 0;
+              let subPond = 0;
+              t.subdivisiones.forEach(s => {
+                subSuma += parseNumber(s.nota) * parseNumber(s.ponderacion);
+                subPond += parseNumber(s.ponderacion);
+              });
+              let outcome = '-';
+              if (subPond > 0) outcome = (subSuma / subPond).toFixed(2);
+
+              // Find parent input
+              mainRow.querySelector('.test-grade').value = outcome;
+
+              guardar();
+              const modalGrade = document.getElementById('modal-grade');
+              if (modalGrade) modalGrade.textContent = calcularNotaAsignatura(activeCard);
+            });
+
+            const sWeight = subRow.querySelector('.test-weight');
+            sWeight.addEventListener('input', (e) => {
+              t.subdivisiones[subIdx].ponderacion = e.target.value;
+              // Update calculations similarly
+              let subSuma = 0;
+              let subPond = 0;
+              t.subdivisiones.forEach(s => {
+                subSuma += parseNumber(s.nota) * parseNumber(s.ponderacion);
+                subPond += parseNumber(s.ponderacion);
+              });
+              let outcome = '-';
+              if (subPond > 0) outcome = (subSuma / subPond).toFixed(2);
+              mainRow.querySelector('.test-grade').value = outcome;
+
+              guardar();
+              const modalGrade = document.getElementById('modal-grade');
+              if (modalGrade) modalGrade.textContent = calcularNotaAsignatura(activeCard);
+            });
+
+            container.appendChild(subRow);
+          });
+        }
+
+        testsList.appendChild(container);
       });
+
       if (sortedTests.length === 0) {
         testsList.innerHTML = '<div style="color:#475569">No hay pruebas. Pulsa "Añadir prueba" para crear una.</div>';
       }
+
       actualizarNotasCards();
       // actualizar nota en el modal también
       const modalGrade = document.getElementById('modal-grade');

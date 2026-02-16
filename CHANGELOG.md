@@ -2,6 +2,16 @@
 
 Todos los cambios notables de este proyecto serán documentados en este archivo.
 
+## [v3.2.0] - 2026-02-16
+### Añadido
+- **Nuevo Asistente de Pruebas**: Implementado un wizard paso a paso para añadir pruebas evaluables de forma intuitiva.
+- **Soporte de Subdivisiones**: Ahora las pruebas pueden dividirse en partes (ej: Teoría/Práctica) con pesos independientes.
+- **Sustitución de Notas**: Funcionalidad para indicar si una prueba sustituye la nota de otra anterior.
+- **Visualización Anidada**: Las pruebas subdivididas se muestran jerárquicamente en la tarjeta de la asignatura.
+
+### Mejorado
+- **Cálculo de Notas**: Actualizado el motor de cálculo para soportar recursividad en subdivisiones y lógica de sustitución.
+
 ## [v3.1.0] - 2026-01-05
 ### Añadido
 - **Calendario Interactivo**: Nueva vista mensual para visualizar los exámenes y entregas.
