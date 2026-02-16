@@ -4750,6 +4750,8 @@ body.glass-mode .wizard-select {
   background: transparent;
   color: var(--text);
   min-width: 120px;
+  line-height: 1.4;
+  vertical-align: middle;
 }
 
 .test-name:focus,
@@ -4769,6 +4771,8 @@ body.glass-mode .wizard-select {
   background: var(--input-bg);
   font-weight: 600;
   color: var(--text);
+  line-height: 1.4;
+  vertical-align: middle;
 }
 
 
@@ -4788,6 +4792,8 @@ body.glass-mode .wizard-select {
   border-radius: 6px;
   background: var(--input-bg);
   color: var(--text);
+  line-height: 1.4;
+  vertical-align: middle;
 }
 
 .percent-sign {
@@ -4796,6 +4802,8 @@ body.glass-mode .wizard-select {
   font-size: 14px;
   color: var(--text-muted);
   pointer-events: none;
+  line-height: 1.4;
+  vertical-align: middle;
 }
 
 

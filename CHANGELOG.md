@@ -18,6 +18,7 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
   - Botón eliminar: 26px
   - Font-size reducido a 13px para inputs
 - **Mejor Legibilidad**: Inputs centrados y alineados perfectamente en una línea horizontal.
+- **Centrado Vertical Perfecto**: Todos los inputs ahora tienen `line-height: 1.4` y `vertical-align: middle` para centrado vertical consistente.
 
 ## [v3.2.9] - 2026-02-16
 ### Nuevas Funcionalidades
