@@ -6,6 +6,21 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 
 
+## [v3.4.1] - 2026-02-19
+
+### 🔧 Correcciones
+- **Línea de subdivisión (PC)**: Eliminados huecos entre segmentos de la línea que conecta subdivisiones en escritorio. Usa `top: -100%` relativo en vez de `-24px` fijo, garantizando conexión sin huecos.
+- **Línea de subdivisión (Móvil)**: Actualizada para usar el mismo sistema relativo, evitando descuadres al reducir resolución.
+- **Conector horizontal**: Cambiado de `top: 24px` fijo a `top: 50%; transform: translateY(-50%)` para centrarse siempre en la fila.
+- **Swipe en tarjetas**: Los fondos rojo/azul de deslizamiento ahora cubren correctamente el contenido (`z-index: 10` + `pointer-events: none`) en vez de quedar por detrás.
+- **Recomendaciones IA incorrectas**: Corregido `evaluatedPercent` que no detectaba cuatrimestres al 100%. Ahora suma todas las ponderaciones de pruebas no sustituidas, igual que `updateSubjectProgress`.
+
+### 🎨 Mejoras de Diseño
+- **Modo noche – Líneas de subdivisión**: Color cambiado de `var(--border)` (invisible) a `#6366f1` (índigo brillante) para destacar.
+- **Modo noche – Inputs de subdivisiones**: Fondo oscuro con borde visible (`#64748b`), texto claro (`#e2e8f0`), focus con borde índigo.
+- **Modo noche – Inputs de pruebas**: Colores de texto, placeholders y signo `%` ajustados para consistencia visual.
+- **Modo noche – Nombres de subdivisiones**: Color `#cbd5e1` con focus índigo para coherencia.
+
 ## [v3.4.0] - 2026-02-19
 
 ### ✨ Nuevas Funcionalidades

@@ -1444,10 +1444,11 @@ main {
   font-size: 18px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  z-index: -1;
+  z-index: 10;
   border-radius: 14px;
   transition: opacity 0.2s ease;
   opacity: 0;
+  pointer-events: none;
 }
 
 .swipe-action-bg.left {
@@ -4910,18 +4911,23 @@ body.glass-mode .wizard-select {
 .sub-indicator-line {
   position: absolute;
   left: 24px;
-  top: -24px;
-  /* Connect from row above */
+  top: -100%;
+  /* Extend far enough upward to cover any gap between rows */
   bottom: 0;
   width: 2px;
   background: #cbd5e1;
   z-index: 1;
 }
 
+/* First row: start line from top of this row, not above */
+.sub-test-row:first-child .sub-indicator-line {
+  top: 0;
+}
+
 .sub-test-row:last-child .sub-indicator-line {
-  height: 48px;
-  /* Stop halfway down for last item (approx) */
+  height: 50%;
   bottom: auto;
+  top: 0;
 }
 
 /* Horizontal connector (branch) */
@@ -4929,8 +4935,8 @@ body.glass-mode .wizard-select {
   content: '';
   position: absolute;
   left: 24px;
-  top: 24px;
-  /* Center VERTICALLY relative to row height approx */
+  top: 50%;
+  transform: translateY(-50%);
   width: 20px;
   height: 2px;
   background: #cbd5e1;
@@ -4989,16 +4995,28 @@ body.glass-mode .wizard-select {
   .sub-test-row {
     padding: 8px 8px 8px 0;
     gap: 4px;
+    min-height: 48px;
   }
 
   .sub-indicator-line {
     left: 14px;
-    top: -20px;
+    top: -100%;
+  }
+
+  .sub-test-row:first-child .sub-indicator-line {
+    top: 0;
+  }
+
+  .sub-test-row:last-child .sub-indicator-line {
+    height: 50%;
+    bottom: auto;
+    top: 0;
   }
 
   .sub-test-row::before {
     left: 14px;
-    top: 24px;
+    top: 50%;
+    transform: translateY(-50%);
     width: 14px;
   }
 
@@ -5064,10 +5082,10 @@ body.glass-mode .wizard-select {
   }
 }
 
-/* Dark Mode overrides for new elements */
+/* Dark Mode overrides for test elements */
 body.dark-mode .test-container {
   background: var(--input-bg);
-  border-color: var(--border);
+  border-color: var(--input-border);
 }
 
 body.dark-mode .test-row.main-test {
@@ -5076,17 +5094,60 @@ body.dark-mode .test-row.main-test {
 
 body.dark-mode .subdivisions-list {
   background: transparent;
+  border-color: var(--input-border);
 }
 
+/* Inputs de notas y ponderación en dark mode */
 body.dark-mode .test-grade,
 body.dark-mode .test-weight {
-  background: rgba(0, 0, 0, 0.2);
-  border-color: var(--border);
+  background: rgba(15, 23, 42, 0.4);
+  border-color: #64748b;
+  color: #e2e8f0;
 }
 
+body.dark-mode .test-name {
+  color: #e2e8f0;
+}
+
+body.dark-mode .test-name::placeholder,
+body.dark-mode .test-grade::placeholder,
+body.dark-mode .test-weight::placeholder {
+  color: #64748b;
+}
+
+/* Líneas de subdivisión en dark mode — color brillante para visibilidad */
 body.dark-mode .sub-indicator-line,
 body.dark-mode .sub-test-row::before {
-  background: var(--border);
+  background: #6366f1;
+}
+
+/* Inputs de subdivisiones en dark mode */
+body.dark-mode .sub-grade,
+body.dark-mode .sub-weight {
+  background: rgba(15, 23, 42, 0.4) !important;
+  border-color: #64748b !important;
+  color: #e2e8f0;
+}
+
+body.dark-mode .sub-grade:focus,
+body.dark-mode .sub-weight:focus {
+  background: var(--input-bg) !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+body.dark-mode .sub-name {
+  color: #cbd5e1;
+}
+
+body.dark-mode .sub-name:focus {
+  background: var(--input-bg);
+  border-color: #6366f1;
+}
+
+/* Porcentaje signo en dark mode */
+body.dark-mode .percent-sign {
+  color: #94a3b8;
 }
 
 /* -------------------------
