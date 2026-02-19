@@ -6,6 +6,11 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 
 
+## [v3.4.2] - 2026-02-19
+
+### 🔧 Correcciones
+- **Changelog y Datos Aleatorios**: Mejorado el cierre automático del modal de changelog al generar datos aleatorios, asegurando que la interfaz se actualice correctamente.
+
 ## [v3.4.1] - 2026-02-19
 
 ### 🔧 Correcciones

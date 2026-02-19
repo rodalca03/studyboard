@@ -253,7 +253,7 @@
           style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative; border-bottom: 1px solid rgba(0,0,0,0.06);">
           <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
           <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;"
-            title="Ver historial de cambios">v3.4.1</div>
+            title="Ver historial de cambios">v3.4.2</div>
         </div>
         <div class="modal-body">
           <div id="sync-code-content"></div>
@@ -276,6 +276,11 @@
             <div style="margin-top: 10px;">
               <button id="test-ios-btn" class="tutorial-launcher-btn" title="Probar sugerencia Liquid Glass en iOS">
                 🍎 Test iOS: Prueba Liquid Glass
+              </button>
+              <button id="generate-random-btn" class="tutorial-launcher-btn"
+                style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); margin-top: 8px;"
+                title="Generar datos de prueba" onclick="generateRandomScenarioSemester()">
+                🎲 Generar Cuatrimestre Aleatorio
               </button>
             </div>
           </div>
@@ -3369,6 +3374,114 @@
       return '📦';
     }
 
+    /* Generar datos aleatorios para pruebas completas */
+    window.generateRandomScenarioSemester = function () {
+      if (!confirm('⚠️ ¿Generar un CUATRIMESTRE DE PRUEBA con datos aleatorios?\n\nEsto creará un nuevo cuatrimestre con asignaturas en diferentes estados (aprobadas, suspensas, incompletas, sustituciones...) para probar la app.')) {
+        return;
+      }
+
+      // 1. Obtener lista actual de cuatrimestres (desde localStorage para seguridad)
+      let cuatrimestresList = [];
+      try {
+        const stored = localStorage.getItem('cuatrimestres');
+        cuatrimestresList = stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        console.error('Error leyendo localStorage:', e);
+        cuatrimestresList = [];
+      }
+
+      const scenarios = [
+        { name: 'Gestión de Proyectos (Vacía)', type: 'empty', color: '#94a3b8' },
+        { name: 'Matemáticas (Aprobada)', type: 'pass', color: '#10b981' },
+        { name: 'Física Avanzada (Suspensa)', type: 'fail', color: '#ef4444' },
+        { name: 'Historia del Arte (Excelente)', type: 'excellent', color: '#f59e0b' },
+        { name: 'Programación III (En curso)', type: 'progress', color: '#3b82f6' },
+        { name: 'Química (Sustitución)', type: 'substituted', color: '#8b5cf6' },
+        { name: 'Anatomía (Subdivisiones)', type: 'subdiv', color: '#ec4899' }
+      ];
+
+      const newSubjects = scenarios.map((sce, idx) => {
+        let tests = [];
+        const baseId = Date.now() + idx * 100;
+
+        if (sce.type === 'pass') {
+          tests = [
+            { id: baseId + 1, nombre: 'Parcial 1', nota: '6.50', ponderacion: '40' },
+            { id: baseId + 2, nombre: 'Parcial 2', nota: '7.00', ponderacion: '60' }
+          ];
+        } else if (sce.type === 'fail') {
+          tests = [
+            { id: baseId + 1, nombre: 'Examen Final', nota: '3.20', ponderacion: '100' }
+          ];
+        } else if (sce.type === 'excellent') {
+          tests = [
+            { id: baseId + 1, nombre: 'Proyecto Final', nota: '9.80', ponderacion: '100' }
+          ];
+        } else if (sce.type === 'progress') {
+          tests = [
+            { id: baseId + 1, nombre: 'Práctica 1', nota: '8.50', ponderacion: '20' },
+            { id: baseId + 2, nombre: 'Práctica 2', nota: '9.00', ponderacion: '20' }
+            // Falta el 60%
+          ];
+        } else if (sce.type === 'substituted') {
+          tests = [
+            { id: baseId + 1, nombre: 'Parcial 1', nota: '2.50', ponderacion: '40' },
+            { id: baseId + 2, nombre: 'Recuperación P1', nota: '7.50', ponderacion: '40', sustituye: [baseId + 1] },
+            { id: baseId + 3, nombre: 'Final', nota: '6.00', ponderacion: '60' }
+          ];
+        } else if (sce.type === 'subdiv') {
+          tests = [
+            {
+              id: baseId + 1,
+              nombre: 'Bloque A',
+              nota: '7.50', // (7+8)/2
+              ponderacion: '50',
+              subdivisiones: [
+                { nombre: 'Teoría', nota: '7.00', ponderacion: '50' },
+                { nombre: 'Práctica', nota: '8.00', ponderacion: '50' }
+              ]
+            },
+            { id: baseId + 2, nombre: 'Bloque B', nota: '5.00', ponderacion: '50' }
+          ];
+        }
+
+        return {
+          id: baseId,
+          nombre: sce.name,
+          ects: '6',
+          color: sce.color,
+          tests: tests
+        };
+      });
+
+      const newSemester = {
+        id: Date.now(),
+        nombre: `🧪 Test Scenarios ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+        asignaturas: newSubjects
+      };
+
+      // 2. Guardar nuevo estado
+      cuatrimestresList.push(newSemester);
+      localStorage.setItem('cuatrimestres', JSON.stringify(cuatrimestresList));
+      console.log('Cuatrimestre generado y guardado:', newSemester);
+
+      // 3. Actualizar UI
+      // Intentar actualizar variable global si existe, o recargar
+      if (typeof currentSemester !== 'undefined') {
+        currentSemester = newSemester;
+      } else {
+        window.currentSemester = newSemester;
+      }
+
+      // Llamar a renderizadores globales si están disponibles
+      if (typeof renderSemesters === 'function') renderSemesters();
+      if (typeof showSubjectsScreen === 'function') showSubjectsScreen(newSemester);
+
+      alert('✅ Cuatrimestre de prueba generado correctamente.\nSe han creado asignaturas con diferentes estados para probar todas las funcionalidades.');
+      if (typeof closeChangelog === 'function') closeChangelog();
+    }
+
+
     // Event listeners para changelog
     function initChangelogListeners() {
       const versionBadge = document.getElementById('version-badge');
@@ -3405,6 +3518,7 @@
           setTimeout(() => showOnboarding(), 300);
         });
       }
+
       const testIosBtn = document.getElementById('test-ios-btn');
       if (testIosBtn) {
         testIosBtn.addEventListener('click', () => {
@@ -3415,6 +3529,7 @@
           }
         });
       }
+
 
       if (changelogModal) {
         changelogModal.addEventListener('click', (e) => {
