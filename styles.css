@@ -732,7 +732,7 @@ h1 {
 /* Contenedor */
 main {
   width: 100%;
-  max-width: 520px;
+  max-width: 780px;
   padding: 0 12px;
 }
 
@@ -758,6 +758,9 @@ main {
   will-change: transform;
   animation: cardFadeIn 0.4s ease forwards;
   opacity: 0;
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid transparent;
 }
 
 @keyframes cardFadeIn {
@@ -2353,7 +2356,7 @@ main {
 /* Estadísticas del cuatrimestre */
 .subjects-stats {
   width: calc(100% - 24px);
-  max-width: 500px;
+  max-width: 780px;
   margin: 0 auto 16px;
   display: flex;
   gap: 20px;
@@ -2362,6 +2365,7 @@ main {
   border-radius: 12px;
   box-shadow: var(--shadow);
   justify-content: center;
+  box-sizing: border-box;
 }
 
 .stat-item {
@@ -4242,14 +4246,40 @@ body.glass-mode .exam-detail-actions .btn:hover {
     display: none;
   }
 
-  /* Adjust containers for full width of their cells */
-  main {
-    max-width: 100%;
+  /* Adjust subjects screen containers for consistent width */
+  #subjects-content-wrapper {
+    max-width: 780px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 12px;
+    width: 100%;
+  }
+
+  #subjects-screen main,
+  #subjects-screen .subjects-stats {
+    max-width: 100% !important;
+    width: 100%;
+  }
+
+  #subjects-screen main {
+    padding: 0;
+  }
+
+  #subjects-screen .subjects-stats {
+    width: 100%;
+    max-width: 100% !important;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Menu screen keeps full width for grid layout */
+  #menu-screen header {
+    max-width: 100% !important;
     padding: 0 24px;
   }
 
-  header {
-    max-width: 100%;
+  #menu-screen main {
+    max-width: 100% !important;
     padding: 0 24px;
   }
 }
@@ -5098,4 +5128,232 @@ body.dark-mode .sub-test-row::before {
 
 body.dark-mode .test-container {
   background: var(--input-bg);
+}
+
+/* --- Estado Visual: Prueba Sustituida --- */
+.test-container.test-substituted {
+  opacity: 0.5;
+  position: relative;
+  border-left: 3px solid #ef4444;
+  background: repeating-linear-gradient(-45deg,
+      transparent,
+      transparent 8px,
+      rgba(239, 68, 68, 0.03) 8px,
+      rgba(239, 68, 68, 0.03) 16px);
+}
+
+.test-container.test-substituted .test-name {
+  text-decoration: line-through;
+  text-decoration-color: #ef4444;
+  text-decoration-thickness: 2px;
+  color: #94a3b8;
+}
+
+.test-container.test-substituted .test-grade,
+.test-container.test-substituted .test-weight {
+  color: #94a3b8;
+  text-decoration: line-through;
+  text-decoration-color: rgba(239, 68, 68, 0.5);
+}
+
+/* Badge "Sustituida" */
+.test-container.test-substituted::after {
+  content: '⟳ Sustituida';
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+  letter-spacing: 0.3px;
+}
+
+/* Dark mode */
+body.dark-mode .test-container.test-substituted {
+  border-left-color: #f87171;
+  background: repeating-linear-gradient(-45deg,
+      transparent,
+      transparent 8px,
+      rgba(248, 113, 113, 0.05) 8px,
+      rgba(248, 113, 113, 0.05) 16px);
+}
+
+body.dark-mode .test-container.test-substituted .test-name,
+body.dark-mode .test-container.test-substituted .test-grade,
+body.dark-mode .test-container.test-substituted .test-weight {
+  color: #64748b;
+}
+
+body.dark-mode .test-container.test-substituted::after {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.15);
+}
+
+/* Glass mode */
+body.glass-mode .test-container.test-substituted {
+  border-left-color: rgba(239, 68, 68, 0.6);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+body.glass-mode .test-container.test-substituted::after {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                               NUEVOS ESTADOS                               */
+/* -------------------------------------------------------------------------- */
+
+/* 1. Estado Vacío (Empty State) - Sin evaluaciones */
+.card.empty-card {
+  background-color: #e2e8f0 !important;
+  /* Gris claro */
+  border-color: #cbd5e1 !important;
+  --card-color: #94a3b8 !important;
+}
+
+.card.empty-card .titulo {
+  color: #64748b;
+  /* Texto gris */
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Dark Mode override for Empty State */
+body.dark-mode .card.empty-card {
+  background-color: #334155 !important;
+  /* Gris oscuro */
+  border-color: #475569 !important;
+  --card-color: #64748b !important;
+}
+
+body.dark-mode .card.empty-card .titulo {
+  color: #94a3b8;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Glass Mode override for Empty State */
+body.glass-mode .card.empty-card {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+
+/* 2. Estado Completado (Completed State) - 100% Evaluado */
+.card.completed-state {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  border-color: #2563eb !important;
+  --card-color: #3b82f6 !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.card.completed-state .titulo {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.card.completed-state .subject-grade {
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.card.completed-state .open-tests-btn {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #fff;
+}
+
+/* Asegurar que el contenido esté por encima de los laureles */
+.card.completed-state .card-inner,
+.card.completed-state .progress-wrapper,
+.card.completed-state .controls {
+  position: relative;
+  z-index: 2;
+}
+
+/* Laureles (Pseudo-elementos) */
+.card.completed-state::before,
+.card.completed-state::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  /* Ancho ajustado */
+  height: 90%;
+  /* "no acapare más del alto" */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.15;
+  /* Sutil */
+  pointer-events: none;
+  z-index: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* SVG Laurel Izquierdo (Curva hacia adentro) */
+.card.completed-state::before {
+  left: 0px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 200'%3E%3Cpath d='M80,180 Q20,100 80,20' stroke='white' stroke-width='6' fill='none' stroke-linecap='round' /%3E%3Cg fill='white'%3E%3Cellipse cx='65' cy='160' rx='8' ry='15' transform='rotate(-20 65 160)' /%3E%3Cellipse cx='50' cy='140' rx='8' ry='15' transform='rotate(-25 50 140)' /%3E%3Cellipse cx='40' cy='120' rx='8' ry='15' transform='rotate(-30 40 120)' /%3E%3Cellipse cx='35' cy='100' rx='8' ry='15' transform='rotate(-35 35 100)' /%3E%3Cellipse cx='35' cy='80' rx='8' ry='15' transform='rotate(-35 35 80)' /%3E%3Cellipse cx='40' cy='60' rx='8' ry='15' transform='rotate(-30 40 60)' /%3E%3Cellipse cx='50' cy='40' rx='8' ry='15' transform='rotate(-25 50 40)' /%3E%3Cellipse cx='65' cy='20' rx='8' ry='15' transform='rotate(-20 65 20)' /%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                SCROLLBARS                                  */
+/* -------------------------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+/* Dark Mode Scrollbars */
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background-color: #475569;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background-color: #64748b;
+}
+
+/* Glass Mode Scrollbars */
+body.glass-mode ::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+body.glass-mode ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+
+/* SVG Laurel Derecho (Espejo del izquierdo) */
+.card.completed-state::after {
+  right: 0px;
+  transform: translateY(-50%) scaleX(-1);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 200'%3E%3Cpath d='M80,180 Q20,100 80,20' stroke='white' stroke-width='6' fill='none' stroke-linecap='round' /%3E%3Cg fill='white'%3E%3Cellipse cx='65' cy='160' rx='8' ry='15' transform='rotate(-20 65 160)' /%3E%3Cellipse cx='50' cy='140' rx='8' ry='15' transform='rotate(-25 50 140)' /%3E%3Cellipse cx='40' cy='120' rx='8' ry='15' transform='rotate(-30 40 120)' /%3E%3Cellipse cx='35' cy='100' rx='8' ry='15' transform='rotate(-35 35 100)' /%3E%3Cellipse cx='35' cy='80' rx='8' ry='15' transform='rotate(-35 35 80)' /%3E%3Cellipse cx='40' cy='60' rx='8' ry='15' transform='rotate(-30 40 60)' /%3E%3Cellipse cx='50' cy='40' rx='8' ry='15' transform='rotate(-25 50 40)' /%3E%3Cellipse cx='65' cy='20' rx='8' ry='15' transform='rotate(-20 65 20)' /%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Ajuste Glass Mode para Completed State */
+body.glass-mode .card.completed-state {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.6) 0%, rgba(37, 99, 235, 0.6) 100%) !important;
+  backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
 }

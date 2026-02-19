@@ -6,6 +6,25 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 
 
+## [v3.4.0] - 2026-02-19
+
+### ✨ Nuevas Funcionalidades
+- **Estados Visuales de Asignaturas**: Las tarjetas cambian de apariencia según su estado:
+  - 🔘 **Sin pruebas**: Fondo grisáceo para indicar que no hay evaluaciones añadidas.
+  - 🔵 **100% evaluada**: Fondo azul con laureles decorativos sutiles a los lados.
+- **Indicador de Sustitución**: Las pruebas sustituidas por otras se muestran visualmente tachadas, oscurecidas y con un badge "⟳ Sustituida".
+- **Cerrar controles al clic externo**: Los controles de una tarjeta (color, eliminar, estadísticas) se ocultan automáticamente al hacer clic fuera de ella.
+
+### 🎨 Mejoras de Diseño
+- **Scrollbars Slim**: Barras de desplazamiento rediseñadas con estilo fino (6px) y colores adaptados a cada modo (claro, oscuro, glass).
+- **Ancho de tarjetas ampliado**: Las tarjetas de asignaturas son ahora un 50% más anchas para mejor legibilidad.
+- **Barra de estadísticas consistente**: La barra de Media/ECTS ahora tiene el mismo ancho que las tarjetas en todas las vistas.
+- **Layout desktop optimizado**: Vista de escritorio con contenedores unificados para asignaturas sin afectar la cuadrícula del menú principal.
+
+### 🔧 Correcciones
+- **Conflicto de clase CSS**: Renombrada la clase `empty-state` a `empty-card` para evitar conflicto con estilos globales que agrandaban las tarjetas.
+- **Bordes consistentes**: Todas las tarjetas ahora tienen un borde transparente base, evitando diferencias de tamaño entre estados.
+
 ## [v3.3.0] - 2026-02-16
 ### Mejoras de UI Móvil
 - **Optimización de Tarjetas de Prueba**: Todos los campos (nombre, nota, ponderación) ahora caben en una sola línea en móvil.

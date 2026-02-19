@@ -253,7 +253,7 @@
           style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative; border-bottom: 1px solid rgba(0,0,0,0.06);">
           <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
           <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;"
-            title="Ver historial de cambios">v3.3.0</div>
+            title="Ver historial de cambios">v3.4.0</div>
         </div>
         <div class="modal-body">
           <div id="sync-code-content"></div>
@@ -1698,6 +1698,25 @@
           bar.style.backgroundColor = '#facc15'; // Amarillo por defecto
         }
       }
+
+      // ---------------------------------------------------------
+      // NUEVO: Estados visuales (Gris si vacío, Azul+Laureles si 100%)
+      // ---------------------------------------------------------
+
+      // 1. Estado Vacío (Empty State)
+      if (!card._tests || card._tests.length === 0) {
+        card.classList.add('empty-card');
+      } else {
+        card.classList.remove('empty-card');
+      }
+
+      // 2. Estado Completado (Completed State)
+      // Se considera completado si el porcentaje evaluado es >= 99.5% (por redondeo)
+      if (porcentaje >= 99.5) {
+        card.classList.add('completed-state');
+      } else {
+        card.classList.remove('completed-state');
+      }
     }
 
     function actualizarEstadisticas() {
@@ -1894,6 +1913,13 @@
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
     }
+
+    /* Cerrar controles al hacer clic fuera de cualquier tarjeta */
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.card')) {
+        document.querySelectorAll('.card.show-controls').forEach(c => c.classList.remove('show-controls'));
+      }
+    });
 
     /* -------------------------
        Reordenación RATÓN (desktop) - MEJORADO
@@ -2973,6 +2999,17 @@
 
         // Ensure ID
         if (!t.id) t.id = Date.now() + Math.random();
+
+        // Check if this test is substituted by another test
+        const substitutedBy = activeCard._tests.find(other =>
+          other.sustituye && other.sustituye.includes(t.id) &&
+          (parseNumber(other.nota) >= 0 || (other.subdivisiones && other.subdivisiones.length > 0))
+        );
+        if (substitutedBy) {
+          container.classList.add('test-substituted');
+          // Add tooltip/title to explain
+          container.title = `Sustituida por: ${substitutedBy.nombre || 'otra prueba'}`;
+        }
 
         // Calculate grade if subdivs
         let displayGrade = t.nota;
