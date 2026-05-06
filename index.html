@@ -253,7 +253,7 @@
           style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); position: relative; border-bottom: 1px solid rgba(0,0,0,0.06);">
           <h2 class="modal-title">🔄 Sincronización en la Nube</h2>
           <div class="app-version" id="version-badge" style="cursor: pointer; user-select: none;"
-            title="Ver historial de cambios">v3.4.2</div>
+            title="Ver historial de cambios">v3.4.3</div>
         </div>
         <div class="modal-body">
           <div id="sync-code-content"></div>
@@ -1554,6 +1554,15 @@
       actualizarEstadisticas();
     }
 
+    // Devuelve true si una prueba evaluable tiene nota asignada
+    // (campo nota no vacío, o subdivisiones con nota)
+    function tieneNota(t) {
+      if (t.subdivisiones && t.subdivisiones.length > 0) {
+        return t.subdivisiones.some(sub => sub.nota !== '' && sub.nota !== null && sub.nota !== undefined);
+      }
+      return t.nota !== '' && t.nota !== null && t.nota !== undefined;
+    }
+
     function calcularNotaAsignatura(card) {
       if (!card._tests || card._tests.length === 0) return '-';
       let suma = 0;
@@ -1563,6 +1572,9 @@
 
         // Ensure ID
         if (!t.id) t.id = Date.now() + Math.random();
+
+        // Si la prueba no tiene nota asignada, se ignora completamente
+        if (!tieneNota(t)) return;
 
         if (t.subdivisiones && t.subdivisiones.length > 0) {
           let subSuma = 0;
@@ -1586,8 +1598,7 @@
         // Check if this test is substituted by another active test
         const isSubstituted = card._tests.some(other =>
           other.sustituye && other.sustituye.includes(t.id) &&
-          // Only if the other test has a valid grade (or at least entered)
-          (parseNumber(other.nota) >= 0 || (other.subdivisiones && other.subdivisiones.length > 0))
+          tieneNota(other)
         );
 
         if (!isSubstituted) {
@@ -1615,6 +1626,8 @@
 
             if (card._tests && card._tests.length > 0) {
               card._tests.forEach(t => {
+                // Solo contar pruebas con nota asignada
+                if (!tieneNota(t)) return;
                 const notaTest = parseNumber(t.nota);
                 const ponderacion = parseNumber(t.ponderacion);
                 notaAcumulada += (notaTest * ponderacion) / 100;
@@ -1680,6 +1693,8 @@
       let totalPonderacion = 0;
       if (card._tests && card._tests.length > 0) {
         card._tests.forEach(t => {
+          // Solo contar pruebas con nota asignada
+          if (!tieneNota(t)) return;
           const ponderacion = parseNumber(t.ponderacion);
           totalPonderacion += ponderacion;
         });

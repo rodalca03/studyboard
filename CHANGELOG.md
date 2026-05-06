@@ -6,6 +6,13 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 
 
+## [v3.4.3] - 2026-05-06
+
+### 🔧 Correcciones
+- **Pruebas sin nota ignoradas**: Las pruebas evaluables sin nota asignada ya no afectan al cálculo de la nota media, la barra de progreso, el emoji de la tarjeta ni el estado "completado" (azul con laureles). Solo cuentan como si no existieran hasta que se les asigna una nota.
+- **Estado "completado" más preciso**: La tarjeta solo pasa a azul con laureles cuando la suma de ponderaciones de las pruebas **con nota** es ≥ 99.5%.
+- **Sustitución de pruebas mejorada**: La detección de pruebas sustituidas ahora usa la función `tieneNota()` para ser consistente con el resto del sistema.
+
 ## [v3.4.2] - 2026-02-19
 
 ### 🔧 Correcciones
